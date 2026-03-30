@@ -15,6 +15,6 @@ document.head.appendChild(style)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <Logisim />
   </React.StrictMode>
 )
