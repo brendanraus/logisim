@@ -2,28 +2,28 @@ import { useState, useCallback, useEffect, useRef } from "react";
 
 /* ===== DATA ===== */
 const MARKETS = [
-  { id:"uk",name:"United Kingdom",flag:"\u{1F1EC}\u{1F1E7}",baseRent:75,capRate:4.8,demand:0.85 },
-  { id:"de",name:"Germany",flag:"\u{1F1E9}\u{1F1EA}",baseRent:52,capRate:4.2,demand:0.80 },
-  { id:"fr",name:"France",flag:"\u{1F1EB}\u{1F1F7}",baseRent:58,capRate:4.5,demand:0.75 },
-  { id:"pl",name:"Poland",flag:"\u{1F1F5}\u{1F1F1}",baseRent:42,capRate:6.5,demand:0.90 },
-  { id:"nl",name:"Netherlands",flag:"\u{1F1F3}\u{1F1F1}",baseRent:68,capRate:4.0,demand:0.82 },
-  { id:"cz",name:"Czech Republic",flag:"\u{1F1E8}\u{1F1FF}",baseRent:48,capRate:5.8,demand:0.78 },
-  { id:"es",name:"Spain",flag:"\u{1F1EA}\u{1F1F8}",baseRent:50,capRate:5.2,demand:0.72 },
-  { id:"se",name:"Sweden",flag:"\u{1F1F8}\u{1F1EA}",baseRent:62,capRate:4.3,demand:0.70 },
-  { id:"it",name:"Italy",flag:"\u{1F1EE}\u{1F1F9}",baseRent:46,capRate:5.5,demand:0.68 },
-  { id:"be",name:"Belgium",flag:"\u{1F1E7}\u{1F1EA}",baseRent:55,capRate:4.6,demand:0.76 },
-  { id:"at",name:"Austria",flag:"\u{1F1E6}\u{1F1F9}",baseRent:50,capRate:4.9,demand:0.74 },
-  { id:"dk",name:"Denmark",flag:"\u{1F1E9}\u{1F1F0}",baseRent:64,capRate:4.1,demand:0.72 },
+  { id:"uk",name:"United Kingdom",flag:"\u{1F1EC}\u{1F1E7}",city:"London",baseRent:75,capRate:4.8,demand:0.85 },
+  { id:"de",name:"Germany",flag:"\u{1F1E9}\u{1F1EA}",city:"Frankfurt",baseRent:52,capRate:4.2,demand:0.80 },
+  { id:"fr",name:"France",flag:"\u{1F1EB}\u{1F1F7}",city:"Paris",baseRent:58,capRate:4.5,demand:0.75 },
+  { id:"pl",name:"Poland",flag:"\u{1F1F5}\u{1F1F1}",city:"Warsaw",baseRent:42,capRate:6.5,demand:0.90 },
+  { id:"nl",name:"Netherlands",flag:"\u{1F1F3}\u{1F1F1}",city:"Amsterdam",baseRent:68,capRate:4.0,demand:0.82 },
+  { id:"cz",name:"Czech Republic",flag:"\u{1F1E8}\u{1F1FF}",city:"Prague",baseRent:48,capRate:5.8,demand:0.78 },
+  { id:"es",name:"Spain",flag:"\u{1F1EA}\u{1F1F8}",city:"Madrid",baseRent:50,capRate:5.2,demand:0.72 },
+  { id:"se",name:"Sweden",flag:"\u{1F1F8}\u{1F1EA}",city:"Stockholm",baseRent:62,capRate:4.3,demand:0.70 },
+  { id:"it",name:"Italy",flag:"\u{1F1EE}\u{1F1F9}",city:"Milan",baseRent:46,capRate:5.5,demand:0.68 },
+  { id:"be",name:"Belgium",flag:"\u{1F1E7}\u{1F1EA}",city:"Brussels",baseRent:55,capRate:4.6,demand:0.76 },
+  { id:"at",name:"Austria",flag:"\u{1F1E6}\u{1F1F9}",city:"Vienna",baseRent:50,capRate:4.9,demand:0.74 },
+  { id:"dk",name:"Denmark",flag:"\u{1F1E9}\u{1F1F0}",city:"Copenhagen",baseRent:64,capRate:4.1,demand:0.72 },
 ];
 
 const ASSET_CLASSES = [
-  { id:"bigbox",name:"Big Box / Distribution",icon:"\u{1F4E6}",rentMult:1.0,capRateMult:1.0,riskFactor:0.05,demandMult:1.0 },
-  { id:"lastmile",name:"Last Mile / Urban",icon:"\u{1F3D9}\uFE0F",rentMult:1.35,capRateMult:0.85,riskFactor:0.08,demandMult:1.1 },
-  { id:"fulfilment",name:"Fulfilment Centre",icon:"\u{1F6D2}",rentMult:1.15,capRateMult:0.95,riskFactor:0.07,demandMult:1.05 },
-  { id:"datactr",name:"Data Centre",icon:"\u{1F5A5}\uFE0F",rentMult:2.2,capRateMult:0.7,riskFactor:0.15,demandMult:0.7 },
-  { id:"coldstor",name:"Cold Storage",icon:"\u2744\uFE0F",rentMult:1.5,capRateMult:0.9,riskFactor:0.10,demandMult:0.75 },
-  { id:"multilet",name:"Multi-Let Industrial",icon:"\u{1F3ED}",rentMult:0.9,capRateMult:1.1,riskFactor:0.04,demandMult:0.95 },
-  { id:"crossdock",name:"Cross-Dock Terminal",icon:"\u{1F69B}",rentMult:1.1,capRateMult:0.92,riskFactor:0.06,demandMult:1.02 },
+  { id:"bigbox",    name:"Big Box / Distribution", icon:"\u{1F4E6}", tileColor:"#eab308", tileDark:"#713f12", rentMult:1.0, capRateMult:1.0, riskFactor:0.05, demandMult:1.0 },
+  { id:"lastmile",  name:"Last Mile / Urban",       icon:"\u{1F3D9}\uFE0F", tileColor:"#a16207", tileDark:"#451a03", rentMult:1.35,capRateMult:0.85,riskFactor:0.08,demandMult:1.1 },
+  { id:"fulfilment",name:"Fulfilment Centre",        icon:"\u{1F6D2}", tileColor:"#16a34a", tileDark:"#052e16", rentMult:1.15,capRateMult:0.95,riskFactor:0.07,demandMult:1.05 },
+  { id:"datactr",   name:"Data Centre",              icon:"\u{1F5A5}\uFE0F", tileColor:"#db2777", tileDark:"#500724", rentMult:2.2, capRateMult:0.7, riskFactor:0.15,demandMult:0.7 },
+  { id:"coldstor",  name:"Cold Storage",             icon:"\u2744\uFE0F", tileColor:"#0ea5e9", tileDark:"#082f49", rentMult:1.5, capRateMult:0.9, riskFactor:0.10,demandMult:0.75 },
+  { id:"multilet",  name:"Multi-Let Industrial",     icon:"\u{1F3ED}", tileColor:"#dc2626", tileDark:"#450a0a", rentMult:0.9, capRateMult:1.1, riskFactor:0.04,demandMult:0.95 },
+  { id:"crossdock", name:"Cross-Dock Terminal",      icon:"\u{1F69B}", tileColor:"#ea580c", tileDark:"#431407", rentMult:1.1, capRateMult:0.92,riskFactor:0.06,demandMult:1.02 },
 ];
 
 const ASSET_NAMES = [
@@ -106,12 +106,33 @@ const TEAM_ROLES = [
   { id:"transactions",name:"Transactions",icon:"\u{1F91D}",salaryCost:120000,desc:"Better deal discovery, lower asking prices" },
   { id:"assetMgmt",name:"Asset Management",icon:"\u{1F527}",salaryCost:100000,desc:"Better occupancy, faster lease-up" },
   { id:"portfolioMgmt",name:"Portfolio Management",icon:"\u{1F4CA}",salaryCost:130000,desc:"Strategic oversight, risk monitoring" },
+  { id:"bi",name:"Business Intelligence",icon:"\u{1F4C8}",salaryCost:110000,desc:"Unlocks portfolio charts — each analyst hired unlocks one additional data view" },
+  { id:"treasury",name:"Treasury",icon:"\u{1F3E6}",salaryCost:140000,desc:"Reduces financing costs per hire; first hire unlocks debt markets — drawdown capital to fund acquisitions" },
+  { id:"esg",name:"ESG & Sustainability",icon:"\u{1F33F}",salaryCost:105000,desc:"Improves EPC rating speed, attracts premium institutional tenants to green-rated buildings, and boosts board ESG score" },
+];
+
+const DEBT_TYPES = [
+  { id:"senior",name:"Senior Secured",icon:"\u{1F3DB}\uFE0F",spread:1.5,ltv:0.60,desc:"Standard institutional senior lending against portfolio GAV" },
+  { id:"green",name:"Green Bond",icon:"\u{1F331}",spread:1.0,ltv:0.55,desc:"ESG-linked green finance — lower spread, requires EPC B+ portfolio average" },
+  { id:"mezz",name:"Mezzanine",icon:"\u{1F4CA}",spread:3.5,ltv:0.75,desc:"Higher leverage tranche — expensive but unlocks more capital" },
+  { id:"sovereign",name:"Sovereign / EIB",icon:"\u{1F1EA}\u{1F1FA}",fixedRate:3.2,ltv:0.50,desc:"Fixed-rate European sovereign debt — cheapest option, conservative LTV" },
+];
+const BASE_RATE = 3.0; // EURIBOR equivalent %
+
+const MEGA_ASSET_DEFS = [
+  { name:"Tesla Gigafactory Hub",assetClass:"bigbox",glaRange:[280000,420000],rentMultBonus:1.4,icon:"\u26A1",desc:"EV mega-campus logistics" },
+  { name:"Amazon Prime Central",assetClass:"fulfilment",glaRange:[350000,500000],rentMultBonus:1.3,icon:"\u{1F4E6}",desc:"Hyper-scale fulfilment" },
+  { name:"IKEA Mega Distribution",assetClass:"bigbox",glaRange:[200000,320000],rentMultBonus:1.2,icon:"\u{1F6CD}\uFE0F",desc:"Big-box retail logistics" },
+  { name:"Microsoft Azure Campus",assetClass:"datactr",glaRange:[60000,120000],rentMultBonus:2.5,icon:"\u{1F9CA}",desc:"Hyperscale data centre" },
+  { name:"DHL SuperHub Gateway",assetClass:"crossdock",glaRange:[180000,300000],rentMultBonus:1.35,icon:"\u2708\uFE0F",desc:"International air-freight gateway" },
+  { name:"Maersk Global Port DC",assetClass:"fulfilment",glaRange:[250000,380000],rentMultBonus:1.25,icon:"\u{1F6A2}",desc:"Port-side mega distribution" },
+  { name:"Lidl Cold Mega Hub",assetClass:"coldstor",glaRange:[120000,200000],rentMultBonus:1.5,icon:"\u2744\uFE0F",desc:"National cold-chain backbone" },
 ];
 
 const MAINT = [
-  { id:"rm",name:"R&M",costPerSqm:30,gradeUp:false,esgBoost:false,occBoost:0 },
-  { id:"esg",name:"ESG Upgrade",costPerSqm:180,gradeUp:false,esgBoost:true,occBoost:0.05 },
-  { id:"refurb",name:"Refurbishment",costPerSqm:350,gradeUp:true,esgBoost:false,occBoost:0.08 },
+  { id:"rm",name:"R&M",costPerSqm:8,gradeUp:false,esgBoost:false,occBoost:0 },
+  { id:"esg",name:"ESG Upgrade",costPerSqm:50,gradeUp:false,esgBoost:true,occBoost:0.05 },
+  { id:"refurb",name:"Refurbishment",costPerSqm:120,gradeUp:true,esgBoost:false,occBoost:0.08 },
 ];
 
 const ISSUES = [
@@ -175,10 +196,12 @@ function Tip({ text, children }) {
       {children}
       {show && (
         <span style={{
-          position:"fixed", left: Math.min(pos.x, 600), top: pos.y, transform:"translateX(-50%)",
+          position:"fixed",
+          left: Math.max(115, Math.min(pos.x, (typeof window !== "undefined" ? window.innerWidth : 1400) - 115)),
+          top: pos.y, transform:"translateX(-50%)",
           background:"#1e293b", color:"#e2e8f0", padding:"8px 12px", borderRadius:"6px",
-          fontSize:"11px", lineHeight:1.5, maxWidth:"220px", zIndex:9999,
-          boxShadow:"0 4px 16px rgba(0,0,0,0.5)", border:"1px solid #2d3f56",
+          fontSize:"11px", lineHeight:1.5, maxWidth:"220px", zIndex:99999,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.6)", border:"1px solid #3b82f6",
           pointerEvents:"none", whiteSpace:"normal", letterSpacing:"0", textTransform:"none"
         }}>{text}</span>
       )}
@@ -236,47 +259,200 @@ function Spark({ data, color = "#3b82f6", height = 40 }) {
   );
 }
 
+/* Monopoly-style property tile SVG */
 function WHouse({ condition, gla, developing, assetClass, seed = 0 }) {
   const w = 120, h = 80;
+  const ac = ASSET_CLASSES.find(a => a.id === assetClass) || ASSET_CLASSES[0];
+  const tileCol = developing ? "#3b82f6" : ac.tileColor || "#64748b";
+  const tileDark = developing ? "#1e3a6e" : ac.tileDark || "#1e293b";
+
+  // Condition-driven building palette
+  const condA = condition !== "C";
+  const wallCol = condition === "A" ? "#1e293b" : condition === "B" ? "#1c1a10" : "#1a1010";
+  const wallBorder = condition === "A" ? "#334155" : condition === "B" ? "#44400a" : "#3a2020";
+  const doorCol = tileCol;
+  const winOpacity = condition === "A" ? 0.55 : condition === "B" ? 0.3 : 0.1;
+
+  const stripH = 22; // coloured Monopoly band height
   const sr = Math.min(1, Math.max(0.5, gla / 50000));
-  const bW = 60 + sr * 30, bH = 30 + sr * 15;
-  const bx = (w - bW) / 2, by = h - bH - 10;
+  const bW = 56 + sr * 28, bH = 26 + sr * 10;
+  const bx = (w - bW) / 2, by = h - bH - 6;
   const v = seed % 3;
-  const isD = assetClass === "datactr", isC = assetClass === "coldstor";
-  let c;
-  if (developing) {
-    c = { wall:"#1e4a7f",roof:"#3b82f6",acc:"#60a5fa",gnd:"#0f1e33",door:"#2563eb",win:"#93c5fd" };
-  } else if (condition === "A") {
-    c = { wall:isD?"#2a2a4e":isC?"#1e3e5a":"#1e3e64", roof:isD?"#8b5cf6":isC?"#22d3ee":"#38bdf8", acc:isD?"#c4b5fd":isC?"#67e8f9":"#7dd3fc", gnd:"#111e33", door:isD?"#7c3aed":"#0ea5e9", win:isD?"#ddd6fe":"#bae6fd" };
-  } else if (condition === "B") {
-    c = { wall:"#3a3520",roof:"#d97706",acc:"#f59e0b",gnd:"#1e1a10",door:"#b45309",win:"#fcd34d" };
-  } else {
-    c = { wall:"#3a2828",roof:"#dc2626",acc:"#f87171",gnd:"#1e1414",door:"#b91c1c",win:"#fca5a5" };
-  }
   const dk = condition === "A" ? 4 : condition === "B" ? 3 : 2;
-  const dW = (bW - 10) / dk;
+  const dW = (bW - 8) / dk;
+
+  // Tiny stars in the strip
+  const stars = [0,1,2,3].map(i => ({
+    cx: (seed * 13 + i * 31) % w,
+    cy: 4 + (i * 5) % (stripH - 8),
+  }));
+
   return (
     <svg viewBox={"0 0 " + w + " " + h} style={{ width:"100%",height:"100%",borderRadius:"6px" }}>
-      <rect width={w} height={h} fill={c.gnd} />
-      {[0,1,2,3,4,5,6].map(i => <circle key={i} cx={(seed*17+i*29)%w} cy={3+(i*7)%18} r="0.7" fill="#fff" opacity="0.35" />)}
-      <rect x="0" y={h-10} width={w} height="10" fill={c.gnd} />
+      {/* Card body */}
+      <rect width={w} height={h} fill="#0d1829" />
+
+      {/* Monopoly colour strip at top */}
+      <rect width={w} height={stripH} fill={tileCol} />
+      {/* Subtle texture dots in strip */}
+      {stars.map((s,i) => <circle key={i} cx={s.cx} cy={s.cy} r="0.8" fill="#fff" opacity="0.18" />)}
+
+      {/* Asset class icon as text in strip (centered) */}
+      <text x={w/2} y={stripH - 5} textAnchor="middle" fontSize="11" fontFamily="sans-serif">{ac.icon}</text>
+
       {developing ? (
+        /* ── Under construction ── */
         <>
-          <line x1={w/2} y1={by-20} x2={w/2} y2={by+bH} stroke="#f97316" strokeWidth="1.5" />
-          <line x1={w/2-20} y1={by-18} x2={w/2+25} y2={by-18} stroke="#f97316" strokeWidth="1" />
-          <rect x={bx} y={by+bH*0.4} width={bW} height={bH*0.6} fill={c.wall} stroke={c.acc} strokeWidth="0.5" opacity="0.7" strokeDasharray="3,2" />
+          {/* Scaffold poles */}
+          <line x1={bx+4} y1={stripH+2} x2={bx+4} y2={h-5} stroke="#f97316" strokeWidth="1.2" opacity="0.9" />
+          <line x1={bx+bW-4} y1={stripH+2} x2={bx+bW-4} y2={h-5} stroke="#f97316" strokeWidth="1.2" opacity="0.9" />
+          <line x1={bx} y1={stripH+8} x2={bx+bW} y2={stripH+8} stroke="#f97316" strokeWidth="0.8" opacity="0.7" />
+          <line x1={bx} y1={stripH+16} x2={bx+bW} y2={stripH+16} stroke="#f97316" strokeWidth="0.8" opacity="0.7" />
+          {/* Partial wall outline */}
+          <rect x={bx} y={by+bH*0.5} width={bW} height={bH*0.5} fill={tileDark} stroke={tileCol} strokeWidth="0.6" strokeDasharray="3,2" opacity="0.7" />
+          <text x={w/2} y={h-10} textAnchor="middle" fontSize="7" fill="#f97316" fontFamily="Inter,sans-serif" fontWeight="700">UNDER CONSTRUCTION</text>
         </>
       ) : (
+        /* ── Completed building ── */
         <>
-          <rect x={bx} y={by} width={bW} height={bH} fill={c.wall} stroke={c.acc} strokeWidth="0.5" />
-          {v===0 && <polygon points={bx+","+by+" "+(bx+bW/2)+","+(by-6)+" "+(bx+bW)+","+by} fill={c.roof} opacity="0.9" />}
-          {v===1 && <rect x={bx} y={by-3} width={bW} height="3" fill={c.roof} opacity="0.9" />}
-          {v===2 && <rect x={bx} y={by-2} width={bW} height="2" fill={c.roof} opacity="0.9" />}
-          {Array.from({length:dk}).map((_,i) => <rect key={i} x={bx+5+i*dW} y={by+bH-10} width={dW-3} height="10" fill={c.door} opacity="0.8" rx="1" />)}
-          {condition!=="C" && Array.from({length:Math.floor(bW/15)}).map((_,i) => <rect key={i} x={bx+8+i*15} y={by+5} width={6} height={4} fill={c.win} opacity={condition==="A"?"0.6":"0.35"} rx="0.5" />)}
+          {/* Building body */}
+          <rect x={bx} y={by} width={bW} height={bH} fill={wallCol} stroke={wallBorder} strokeWidth="0.6" rx="1" />
+
+          {/* Roof shape by seed */}
+          {v===0 && <polygon points={`${bx},${by} ${bx+bW/2},${by-8} ${bx+bW},${by}`} fill={tileCol} opacity="0.85" />}
+          {v===1 && <rect x={bx} y={by-4} width={bW} height="4" fill={tileCol} opacity="0.85" />}
+          {v===2 && (
+            <>
+              <rect x={bx} y={by-3} width={bW} height="3" fill={tileCol} opacity="0.85" />
+              <rect x={bx+bW*0.2} y={by-7} width={bW*0.6} height="4" fill={tileCol} opacity="0.7" />
+            </>
+          )}
+
+          {/* Dock doors (colour-matched) */}
+          {Array.from({length:dk}).map((_,i) => (
+            <rect key={i} x={bx+4+i*dW} y={by+bH-11} width={dW-3} height="11" fill={doorCol} opacity="0.75" rx="1" />
+          ))}
+
+          {/* Windows above doors */}
+          {condA && Array.from({length:Math.max(1,Math.floor(bW/18))}).map((_,i) => (
+            <rect key={i} x={bx+6+i*18} y={by+5} width={7} height={4} fill={tileCol} opacity={winOpacity} rx="0.8" />
+          ))}
+
+          {/* Condition badge: A = small green dot, B = amber, C = red crack lines */}
+          {condition==="A" && <circle cx={bx+bW-5} cy={by+5} r="2.5" fill="#34d399" opacity="0.9" />}
+          {condition==="B" && <circle cx={bx+bW-5} cy={by+5} r="2.5" fill="#fbbf24" opacity="0.9" />}
+          {condition==="C" && (
+            <>
+              <line x1={bx+bW-8} y1={by+3} x2={bx+bW-5} y2={by+9} stroke="#f87171" strokeWidth="0.8" opacity="0.8" />
+              <line x1={bx+bW-5} y1={by+3} x2={bx+bW-8} y2={by+9} stroke="#f87171" strokeWidth="0.8" opacity="0.8" />
+            </>
+          )}
         </>
       )}
     </svg>
+  );
+}
+
+/* ===== EUROPE MAP ===== */
+const MAP_CITY_POS = {
+  uk:{ x:62,  y:80  },
+  de:{ x:140, y:90  },
+  fr:{ x:88,  y:103 },
+  pl:{ x:190, y:78  },
+  nl:{ x:108, y:74  },
+  cz:{ x:158, y:95  },
+  es:{ x:55,  y:138 },
+  se:{ x:172, y:46  },
+  it:{ x:144, y:119 },
+  be:{ x:120, y:83  },
+  at:{ x:172, y:106 },
+  dk:{ x:148, y:63  },
+};
+
+function EuropeMap({ portfolio }) {
+  const assetsByMkt = {};
+  portfolio.forEach(a => {
+    if (a.developing) return;
+    if (!assetsByMkt[a.market]) assetsByMkt[a.market] = [];
+    assetsByMkt[a.market].push(a);
+  });
+
+  const hexPts = (cx, cy, r) => {
+    const pts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 3 * i - Math.PI / 6;
+      pts.push((cx + r * Math.cos(a)).toFixed(1) + "," + (cy + r * Math.sin(a)).toFixed(1));
+    }
+    return pts.join(" ");
+  };
+
+  return (
+    <div style={{ background:"#060e1c",border:"1px solid #1e2a3a",borderRadius:"7px",overflow:"hidden" }}>
+      <div style={{ padding:"5px 8px 2px",fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+        {"\u{1F5FA}\uFE0F"} Portfolio Map
+      </div>
+      <svg viewBox="0 0 260 172" style={{ display:"block",width:"100%" }}>
+        {/* Sea */}
+        <rect width="260" height="172" fill="#060e1c" />
+        {/* Main Europe landmass */}
+        <polygon
+          points="22,118 24,150 55,160 78,163 108,152 140,149 158,163 175,158 198,160 228,145 240,108 222,78 245,28 200,5 175,5 140,20 115,55 135,62 148,68 112,73 92,84 70,95 65,128 45,125 Z"
+          fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8"
+        />
+        {/* UK island */}
+        <polygon
+          points="42,95 44,72 52,55 62,58 60,70 72,95 68,106 50,106 Z"
+          fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8"
+        />
+        {/* Scandinavia peninsula */}
+        <polygon
+          points="115,55 130,20 155,5 200,5 210,25 195,50 175,60 155,65 140,70 Z"
+          fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8"
+        />
+        {/* Country markers */}
+        {MARKETS.map((mkt, mktIdx) => {
+          const pos = MAP_CITY_POS[mkt.id];
+          if (!pos) return null;
+          const assets = assetsByMkt[mkt.id] || [];
+          const hasAssets = assets.length > 0;
+          const r = hasAssets ? 10 : 6;
+          const activeColors = ["#22d3ee","#34d399","#fbbf24","#a78bfa","#f472b6","#60a5fa","#fb923c","#4ade80","#f87171","#e879f9","#38bdf8","#facc15"];
+          const ac = activeColors[mktIdx % activeColors.length];
+          return (
+            <g key={mkt.id}>
+              {hasAssets && (
+                <polygon points={hexPts(pos.x, pos.y, r + 5)}
+                  fill={ac + "22"} stroke={ac + "55"} strokeWidth="0.5" />
+              )}
+              <polygon points={hexPts(pos.x, pos.y, r)}
+                fill={hasAssets ? ac + "33" : "#1a2030"}
+                stroke={hasAssets ? ac : "#3a4a5a"}
+                strokeWidth={hasAssets ? 2 : 0.5}
+              />
+              <text x={pos.x} y={pos.y + 2.8} textAnchor="middle"
+                fontSize={hasAssets ? 7 : 5.5}
+                fill={hasAssets ? ac : "#4a5a6a"}
+                fontWeight="800"
+                fontFamily="'Inter', sans-serif">
+                {mkt.id.toUpperCase()}
+              </text>
+              {hasAssets && (
+                <>
+                  {/* Bright pin */}
+                  <circle cx={pos.x} cy={pos.y - r - 6} r="5" fill={ac} />
+                  <line x1={pos.x} y1={pos.y - r - 1} x2={pos.x} y2={pos.y - r - 5} stroke={ac} strokeWidth="2" />
+                  <text x={pos.x} y={pos.y - r - 3.8} textAnchor="middle" fontSize="5.5" fill="#000" fontWeight="800">{assets.length}</text>
+                  {/* City label */}
+                  <text x={pos.x} y={pos.y + r + 8} textAnchor="middle" fontSize="5" fill={ac} fontFamily="'Inter', sans-serif" fontWeight="600">
+                    {mkt.city}
+                  </text>
+                </>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -286,18 +462,23 @@ function NewsFeed({ items }) {
   useEffect(() => { if (ref.current) ref.current.scrollTop = 0; }, [items.length]);
   if (!items || !items.length) {
     return (
-      <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"7px",padding:"8px 12px",display:"flex",alignItems:"center" }}>
-        <span style={{ fontSize:"10px",color:T.txtM }}>{"\u{1F4F0}"} No news yet</span>
+      <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"7px",padding:"8px 12px",display:"flex",alignItems:"center",minHeight:"80px" }}>
+        <div style={{ fontSize:"10px",color:T.txtD,lineHeight:1.7 }}>
+          <div style={{ fontWeight:700,color:T.acc,marginBottom:"4px" }}>{"\u{1F4CB}"} Getting started</div>
+          <div>{"\u{1F3E2}"} <b>Acquire</b> assets to build your portfolio</div>
+          <div>{"\u{1F527}"} <b>Maintain</b> assets to protect occupancy</div>
+          <div>{"\u25B6\uFE0F"} Press <b>Simulate to next qtr</b> to advance time</div>
+        </div>
       </div>
     );
   }
   return (
-    <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"7px",overflow:"hidden",maxHeight:"68px" }}>
+    <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"7px",overflow:"hidden",maxHeight:"96px" }}>
       <div style={{ padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:"5px",borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
         <span style={{ fontSize:"9px",fontWeight:700,color:T.amb,letterSpacing:"0.1em" }}>{"\u{1F4F0}"} NEWS</span>
         <span style={{ fontSize:"8px",color:T.txtM }}>{items.length}</span>
       </div>
-      <div ref={ref} style={{ overflowY:"auto",maxHeight:"42px",padding:"3px 10px" }}>
+      <div ref={ref} style={{ overflowY:"auto",maxHeight:"70px",padding:"3px 10px" }}>
         {items.slice(-8).reverse().map((n, i) => (
           <div key={i} style={{ fontSize:"10px",color:n.color||T.txtD,lineHeight:1.6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>
             <span style={{ marginRight:"4px" }}>{n.icon}</span>{n.text}
@@ -311,7 +492,7 @@ function NewsFeed({ items }) {
 /* ===== TENANT SELECTION MODAL ===== */
 function TenantModal({ candidates, assetName, onSelect, onClose }) {
   return (
-    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'JetBrains Mono', monospace" }}>
+    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
       <div style={{ background:"#111827",border:"1px solid #3b82f6",borderRadius:"10px",padding:"20px",maxWidth:"520px",width:"92%",maxHeight:"80vh",overflowY:"auto" }}>
         <div style={{ fontSize:"15px",fontWeight:800,color:"#fff",marginBottom:"4px" }}>{"\u{1F3E2}"} Tenant Interest - {assetName}</div>
         <div style={{ fontSize:"10px",color:"#94a3b8",marginBottom:"16px" }}>Multiple tenants interested. Choose based on credit quality and risk.</div>
@@ -377,11 +558,123 @@ function genDev(mkt) {
   return { id:"d"+aCtr, name:name+" (Dev)", market:mkt.id, marketName:mkt.name, flag:mkt.flag, assetClass:ac.id, assetClassName:ac.name, assetClassIcon:ac.icon, gla, devCost:gla*rBetween(400,800)*ac.rentMult, estRentPsm:mkt.baseRent*ac.rentMult*rBetween(1.0,1.3), estYield:mkt.capRate*ac.capRateMult*rBetween(1.05,1.25), quartersToComplete:Math.round(rBetween(3,8)) };
 }
 
-function genTenantCandidates(acId, rentPsm) {
-  const pool = TENANT_POOL[acId] || TENANT_POOL.bigbox;
-  return [...pool].sort(() => Math.random()-0.5).slice(0, 2+Math.floor(Math.random()*2)).map(name => ({
-    name, term: Math.round(rBetween(3,10)), rentPsm: rentPsm * rBetween(0.92, 1.12)
+// Premium tenants that prefer EPC A/B (green buildings)
+const GREEN_TENANT_BOOST = {
+  bigbox:    ["Amazon","Kuehne+Nagel","DSV Panalpina","Lidl Distribution"],
+  lastmile:  ["Amazon Logistics","UPS Express","DHL Express"],
+  fulfilment:["Amazon","Zalando","Zara Logistics","Decathlon"],
+  datactr:   ["AWS","Microsoft Azure","Google Cloud","Equinix"],
+  coldstor:  ["Lineage Logistics","Americold","Tesco Distribution"],
+  multilet:  ["Regional Distributors"],
+  crossdock: ["DHL Express","UPS","FedEx"],
+};
+
+function genTenantCandidates(acId, rentPsm, epcRating, esgCount) {
+  const pool = [...(TENANT_POOL[acId] || TENANT_POOL.bigbox)];
+  const isGreen = (esgCount || 0) > 0 && (epcRating === "A" || epcRating === "B");
+  // Green building: inject 1-2 premium tenants at front, with slightly higher rent
+  if (isGreen) {
+    const prems = GREEN_TENANT_BOOST[acId] || GREEN_TENANT_BOOST.bigbox;
+    const pick = [...prems].sort(() => Math.random()-0.5).slice(0, 2);
+    pick.forEach(t => { if (!pool.includes(t)) pool.unshift(t); });
+  }
+  const count = 2 + Math.floor(Math.random() * 2);
+  const candidates = pool.sort(() => Math.random()-0.5).slice(0, count);
+  return candidates.map(name => ({
+    name,
+    term: Math.round(rBetween(isGreen ? 5 : 3, isGreen ? 12 : 10)),
+    rentPsm: rentPsm * rBetween(isGreen ? 1.0 : 0.92, isGreen ? 1.18 : 1.12),
   }));
+}
+
+/* ===== MARKET INTELLIGENCE ===== */
+function initMarketData() {
+  const data = {};
+  MARKETS.forEach(m => {
+    const ner = m.baseRent * rBetween(0.92, 1.12);
+    data[m.id] = {
+      ner,                                              // Net effective rent €/sqm
+      nerPrev: ner,
+      primeYield: m.capRate + rBetween(-0.2, 0.2),     // Prime cap rate %
+      marketVacancy: rBetween(0.04, 0.12),              // Market vacancy %
+      demandIndex: Math.round(m.demand * 75 + rBetween(0, 20)), // 0-100
+      rentalGrowthQoQ: 0,                               // % change last qtr
+      absorptionKsqm: Math.round(rBetween(30, 250)),   // k sqm taken up
+      supplyPipelineKsqm: Math.round(rBetween(50, 400)),// k sqm in pipeline
+    };
+  });
+  return data;
+}
+
+function updateMarketData(data, quarter, newsOut) {
+  const updated = {};
+  MARKETS.forEach(m => {
+    const prev = data[m.id] || {};
+    // NER: mean-reverting random walk ±3%
+    const nerShock = rBetween(-0.03, 0.04);
+    const ner = Math.max(m.baseRent * 0.6, (prev.ner || m.baseRent) * (1 + nerShock));
+    const growth = prev.ner > 0 ? (ner - prev.ner) / prev.ner : 0;
+    // Yield: drifts ±0.08% per quarter
+    const yShock = rBetween(-0.08, 0.08);
+    const primeYield = Math.max(2.5, Math.min(9, (prev.primeYield || m.capRate) + yShock));
+    // Vacancy: random walk ±0.8%
+    const vac = Math.max(0.01, Math.min(0.30, (prev.marketVacancy || 0.07) + rBetween(-0.008, 0.008)));
+    // Demand index: ±4 pts
+    const dem = Math.max(0, Math.min(100, (prev.demandIndex || 60) + Math.round(rBetween(-4, 4))));
+    const absorption = Math.max(10, Math.round((prev.absorptionKsqm || 100) * rBetween(0.85, 1.18)));
+    const supply = Math.max(20, Math.round((prev.supplyPipelineKsqm || 200) * rBetween(0.90, 1.12)));
+    // Notable market moves → news
+    if (Math.abs(growth) > 0.025) {
+      const dir = growth > 0 ? "\u2B06\uFE0F" : "\u2B07\uFE0F";
+      newsOut.push({ icon:dir, text:m.name + " rents " + (growth>0?"up":"down") + " " + (Math.abs(growth)*100).toFixed(1) + "% to \u20AC" + ner.toFixed(0) + "/sqm", color: growth>0 ? "#34d399" : "#f87171" });
+    }
+    if (Math.abs(yShock) > 0.05) {
+      newsOut.push({ icon:"\u{1F3AF}", text:m.name + " prime yield " + (yShock>0?"expanded":"compressed") + " to " + primeYield.toFixed(2) + "%", color: yShock>0 ? "#f87171" : "#34d399" });
+    }
+    updated[m.id] = { ner, nerPrev:prev.ner||ner, primeYield, marketVacancy:vac, demandIndex:dem, rentalGrowthQoQ:growth, absorptionKsqm:absorption, supplyPipelineKsqm:supply };
+  });
+  return updated;
+}
+
+/* ===== BOARD SCORE ===== */
+function calcBoardScore(m, state) {
+  let score = 0;
+  const irr = calcIRR(state.initialCash||state.cash, m.totalGAV, state.cash, state.quarter);
+  if (irr !== null) score += Math.min(28, Math.max(0, (irr / 0.12) * 28));
+  else score += 10; // starting bonus
+  score += Math.min(24, m.avgOcc * 24);
+  score += Math.min(20, (m.noiYield / 0.05) * 20);
+  const esg = calcESG(state.portfolio||[]);
+  score += Math.min(14, (esg / 100) * 14);
+  score += Math.min(8, (m.totalGAV / 500e6) * 8);
+  const totalDebt = (state.debtDrawdowns||[]).reduce((a, d) => a + d.amount, 0);
+  const ltv = m.totalGAV > 0 ? totalDebt / m.totalGAV : 0;
+  if (ltv > 0.7) score -= 10;
+  else if (ltv > 0.55) score -= 4;
+  return Math.round(Math.min(100, Math.max(0, score)));
+}
+
+/* ===== MEGA ACQUISITION GENERATOR ===== */
+function genMegaAcquisition(mkt, tx) {
+  const def = rFrom(MEGA_ASSET_DEFS);
+  const ac = ASSET_CLASSES.find(a => a.id === def.assetClass) || ASSET_CLASSES[0];
+  aCtr++;
+  const gla = Math.round(rBetween(def.glaRange[0], def.glaRange[1]));
+  const rentPsm = mkt.baseRent * ac.rentMult * def.rentMultBonus * rBetween(0.9, 1.1);
+  const occ = rBetween(0.8, 0.98);
+  const tenant = rFrom(TENANT_POOL[ac.id] || TENANT_POOL.bigbox);
+  const gri = gla * rentPsm * occ;
+  const capRate = mkt.capRate * ac.capRateMult;
+  const val = gri / (capRate / 100);
+  const askPrice = val * rBetween(0.95 - Math.min(0.08, (tx||0)*0.015), 1.12);
+  return {
+    id:"mg"+aCtr, name:def.name+" \u2605", market:mkt.id, marketName:mkt.name, flag:mkt.flag,
+    assetClass:ac.id, assetClassName:ac.name, assetClassIcon:ac.icon,
+    gla, rentPsm, occupancy:occ, tenant, leaseRemaining:Math.round(rBetween(5,15)),
+    gri, value:val, age:Math.round(rBetween(2,10)), condition:"A", epcRating:"A",
+    capexSpent:0, acquired:false, askPrice, developing:false, isMega:true,
+    visualSeed:aCtr, urgentIssue:null, lastRM:0, megaIcon:def.icon, megaDesc:def.desc,
+  };
 }
 
 function initGame(cfg = {}) {
@@ -392,14 +685,19 @@ function initGame(cfg = {}) {
     const cls = ["bigbox","fulfilment","lastmile"];
     sm.forEach((mId, i) => { const m = MARKETS.find(x => x.id === mId); if (m) portfolio.push(genAsset(m, cls[i % cls.length])); });
   }
-  const team = { transactions:1, assetMgmt:1, portfolioMgmt:1 };
+  const team = { transactions:1, assetMgmt:1, portfolioMgmt:1, bi:0, treasury:0, esg:0 };
   const acqM = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 10);
   const devM = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 5);
+  // 1-2 mega assets in initial acquisition list
+  const megaMkts = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 2);
+  const megaAcq = megaMkts.map(m => genMegaAcquisition(m, 1));
+  const marketData = initMarketData();
   return {
     companyName, quarter:1, year:2026, cash, portfolio, team,
-    acquisitions: acqM.map(m => genMktAsset(m, 1)),
+    acquisitions: [...acqM.map(m => genMktAsset(m, 1)), ...megaAcq],
     devSites: devM.map(m => genDev(m)),
-    history:[], events:[], newsLog:[], initialCash:cash, tenantSelection:null
+    history:[], events:[], newsLog:[], initialCash:cash, tenantSelection:null,
+    marketData, debtDrawdowns:[],
   };
 }
 
@@ -438,13 +736,16 @@ function calcIRR(init, gav, cash, q) {
 }
 
 function advanceQ(state) {
-  let { quarter, year, cash, portfolio, acquisitions, devSites, history, team, newsLog } = state;
+  let { quarter, year, cash, portfolio, acquisitions, devSites, history, team, newsLog, marketData, debtDrawdowns } = state;
   const ev = [], news = [];
   quarter++;
   const ql = getQL(quarter, year);
   const tc = teamQCost(team);
   cash -= tc;
   if (tc > 0) ev.push(ql + ": Team salaries (" + fmtK(tc) + ")");
+  // Debt interest
+  const debtInt = (debtDrawdowns||[]).reduce((acc, d) => acc + d.amount * d.rate / 4 / 100, 0);
+  if (debtInt > 0) { cash -= debtInt; ev.push(ql + ": Debt interest (" + fmtK(debtInt) + ")"); }
   const op = portfolio.filter(a => !a.developing);
   const qr = op.reduce((acc, a) => acc + a.gri/4, 0);
   const qo = qr * 0.15;
@@ -493,12 +794,16 @@ function advanceQ(state) {
     a.occupancy = Math.min(1, Math.max(0, a.occupancy + rBetween(-dr, dr + am*0.005)));
 
     // Lease events
+    const mktD = (marketData||{})[a.market] || {};
+    const marketNER = mktD.ner || a.rentPsm;
     if (a.leaseRemaining > 0) {
       a.leaseRemaining -= 0.25;
       if (a.leaseRemaining <= 0) {
         if (Math.random() < 0.45 + am * 0.05) {
           a.leaseRemaining = Math.round(rBetween(3,7));
-          a.rentPsm *= rBetween(1.0, 1.08);
+          // Rent reversion toward market NER
+          const reversion = marketNER * rBetween(0.97, 1.08);
+          a.rentPsm = Math.max(a.rentPsm * 0.96, Math.min(reversion, a.rentPsm * 1.12));
           ev.push("\u2705 " + a.flag + " " + a.name + ": " + a.tenant + " renewed");
           news.push({ icon:"\u2705", text:a.tenant + " renewed at " + a.name, color:T.grn });
         } else {
@@ -511,7 +816,7 @@ function advanceQ(state) {
     } else if (a.occupancy < 0.7 && Math.random() < 0.25 + am * 0.05) {
       const ds = (mkt?.demand||0.5) * (ac?.demandMult||1);
       if (ds > 0.85 && !pendTS) {
-        pendTS = { assetId:a.id, assetName:a.flag+" "+a.name, candidates:genTenantCandidates(a.assetClass, a.rentPsm) };
+        pendTS = { assetId:a.id, assetName:a.flag+" "+a.name, candidates:genTenantCandidates(a.assetClass, a.rentPsm, a.epcRating, team.esg||0) };
         news.push({ icon:"\u{1F4CB}", text:"Tenant offers for " + a.name, color:T.acc });
       } else {
         a.occupancy = Math.min(1, a.occupancy + rBetween(0.15, 0.4));
@@ -529,18 +834,28 @@ function advanceQ(state) {
       ev.push("\u{1F527} " + a.flag + " " + a.name + ": Degraded to " + a.condition);
       news.push({ icon:"\u{1F4C9}", text:a.name + " degraded to Grade " + a.condition, color:T.amb });
     }
-    const ecr = (mkt?.capRate||5) * (ac?.capRateMult||1);
+    // Use market prime yield for valuation
+    const marketYield = mktD.primeYield || (mkt?.capRate||5);
+    const ecr = marketYield * (ac?.capRateMult||1);
     a.gri = a.gla * a.rentPsm * a.occupancy;
     a.value = a.gri > 0 ? a.gri / (ecr/100) : a.gla * (mkt?.baseRent||5) * 0.3 / (ecr/100);
   });
 
-  const nAcq = Math.min(12, 6 + tx + Math.floor(Math.random()*4));
+  // Update market intelligence data
+  const updatedMarketData = updateMarketData(marketData||{}, quarter, news);
+
+  const nAcq = Math.min(11, 5 + tx + Math.floor(Math.random()*3));
   acquisitions = [...MARKETS].sort(() => Math.random()-0.5).slice(0, nAcq).map(m => genMktAsset(m, tx));
+  // 1-2 mega assets every few quarters
+  if (quarter % 2 === 0 || Math.random() < 0.4) {
+    const megaMkts = [...MARKETS].sort(() => Math.random()-0.5).slice(0, Math.random() < 0.5 ? 1 : 2);
+    megaMkts.forEach(m => acquisitions.push(genMegaAcquisition(m, tx)));
+  }
   devSites = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 3+Math.floor(Math.random()*4)).map(m => genDev(m));
-  if (!news.length) news.push({ icon:"\u{1F4CA}", text:"Quiet quarter", color:T.txtD });
+  if (!news.length) news.push({ icon:"\u{1F4CA}", text:"The board has reviewed quarterly pack materials - please check updated commentary", color:T.txtD });
   const metrics = calcMetrics({ portfolio, team });
   history.push({ quarter, ...metrics, cash });
-  return { ...state, quarter, cash, portfolio:[...portfolio], acquisitions, devSites, history, events:ev, newsLog:[...(newsLog||[]),...news], tenantSelection:pendTS };
+  return { ...state, quarter, cash, portfolio:[...portfolio], acquisitions, devSites, history, events:ev, newsLog:[...(newsLog||[]),...news], tenantSelection:pendTS, marketData:updatedMarketData, debtDrawdowns:debtDrawdowns||[] };
 }
 
 /* ===== SENTIMENT ===== */
@@ -587,8 +902,241 @@ function genSentiment(met, hist, state) {
   }
 
   if (esg < 50) bc.push({ member:"Head of ESG", text:"Multiple assets below EPC minimums. Budget for remediation." });
+
+  // Market intelligence commentary
+  const mktD = state?.marketData || {};
+  const bullMkts = MARKETS.filter(m => (mktD[m.id]?.rentalGrowthQoQ||0) > 0.02).map(m => m.name);
+  const bearMkts = MARKETS.filter(m => (mktD[m.id]?.rentalGrowthQoQ||0) < -0.02).map(m => m.name);
+  if (bullMkts.length) bc.push({ member:"Head of Research", text:"Rental growth in "+bullMkts.slice(0,2).join(", ")+" — consider reversion opportunities on upcoming lease events." });
+  if (bearMkts.length) bc.push({ member:"Head of Research", text:"Softening rents in "+bearMkts.slice(0,2).join(", ")+" — watch lease expiries closely." });
+
+  // Debt commentary
+  const totalDebt = (state?.debtDrawdowns||[]).reduce((a, d) => a + d.amount, 0);
+  const metGAV = state ? calcMetrics(state).totalGAV : 0;
+  const ltv = metGAV > 0 ? totalDebt / metGAV : 0;
+  if (ltv > 0.65) bc.push({ member:"CFO", text:"Portfolio LTV at "+fmtP(ltv)+" — approaching covenant limits. Prioritise deleveraging." });
+  else if (totalDebt > 0 && ltv < 0.4) bc.push({ member:"CFO", text:"Leverage at "+fmtP(ltv)+" LTV — headroom available. Treasury team may drawdown further if attractive assets emerge." });
+  if ((state?.team?.treasury||0) === 0 && metGAV > 100e6) bc.push({ member:"CFO", text:"Portfolio at "+fmtM(metGAV)+" GAV with no treasury function — missing debt financing opportunity." });
+
+  // ESG team commentary
+  const esgTeam = state?.team?.esg || 0;
+  if (esgTeam > 0 && esg > 75) bc.push({ member:"Head of ESG", text:"ESG score "+esg.toFixed(0)+"/100. Green credentials attracting institutional-grade tenants with longer leases. Well done team." });
+  else if (esgTeam > 0 && esg < 60) bc.push({ member:"Head of ESG", text:"ESG team in place but portfolio EPC average below expectations. Prioritise CAPEX ESG upgrades on the lowest-rated assets." });
+  else if (esgTeam === 0 && esg < 65) bc.push({ member:"Head of ESG", text:"No ESG function in place. Regulation risk rising — tenants and LPs increasingly requiring EPC B+ minimum. Hire ESG capability." });
+
   if (!bc.length) bc.push({ member: hist.length <= 1 ? "Board Chair" : "CFO", text: hist.length <= 1 ? "Welcome. LPs expect 10-12% net IRR over 5 years. Build a diversified logistics portfolio." : "Steady quarter. Maintain pricing discipline." });
   return { sentiments: sArr, boardComments: bc };
+}
+
+/* ===== BOARD SCORE GAUGE ===== */
+function BoardGauge({ score }) {
+  const v = Math.max(0, Math.min(100, score || 0));
+  const cx = 70, cy = 60, r = 48, sw = 12;
+  // point on semicircle: pct=0 → left, pct=100 → right
+  const pt = (pct, rr) => {
+    const a = (pct / 100) * Math.PI;
+    return [(cx - rr * Math.cos(a)).toFixed(1), (cy - rr * Math.sin(a)).toFixed(1)];
+  };
+  const seg = (p0, p1, rr = r) => {
+    const [ax,ay] = pt(p0,rr), [bx,by] = pt(p1,rr);
+    const la = (p1 - p0) > 50 ? 1 : 0;
+    return `M ${ax} ${ay} A ${rr} ${rr} 0 ${la} 0 ${bx} ${by}`;
+  };
+  const color = v >= 65 ? "#34d399" : v >= 35 ? "#fbbf24" : "#f87171";
+  const label = v >= 75 ? "EXCELLENT" : v >= 60 ? "STRONG" : v >= 45 ? "DEVELOPING" : v >= 25 ? "WEAK" : "CRITICAL";
+  // needle tip at mid-stroke radius
+  const [nx, ny] = pt(v, r - sw/2 - 1);
+  return (
+    <div style={{ textAlign:"center" }}>
+      <svg viewBox="0 0 140 72" style={{ width:"100%",maxWidth:"150px",display:"block",margin:"0 auto" }}>
+        {/* Zone bands (subtle) */}
+        <path d={seg(0,35)} fill="none" stroke="#f87171" strokeWidth={sw} strokeLinecap="butt" opacity="0.18" />
+        <path d={seg(35,65)} fill="none" stroke="#fbbf24" strokeWidth={sw} strokeLinecap="butt" opacity="0.18" />
+        <path d={seg(65,100)} fill="none" stroke="#34d399" strokeWidth={sw} strokeLinecap="butt" opacity="0.18" />
+        {/* Dark track */}
+        <path d={seg(0,100)} fill="none" stroke="#0f172a" strokeWidth={sw-2} strokeLinecap="round" opacity="0.7" />
+        {/* Active fill */}
+        {v > 0 && <path d={seg(0,v)} fill="none" stroke={color} strokeWidth={sw-2} strokeLinecap="round" />}
+        {/* Tick marks */}
+        {[0,25,50,75,100].map(t => {
+          const [ix,iy] = pt(t, r+sw/2+1), [ox,oy] = pt(t, r+sw/2+4);
+          return <line key={t} x1={ix} y1={iy} x2={ox} y2={oy} stroke="#334155" strokeWidth="1.2" />;
+        })}
+        {/* Needle */}
+        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff" strokeWidth="1.5" strokeLinecap="round" opacity="0.95" />
+        <circle cx={cx} cy={cy} r="3" fill={color} stroke="#0f172a" strokeWidth="1" />
+        {/* Score */}
+        <text x={cx} y={cy-6} textAnchor="middle" fontSize="19" fontWeight="800" fill="#fff" fontFamily="Inter,sans-serif">{v}</text>
+        <text x={cx} y={cy+5} textAnchor="middle" fontSize="7" fill="#64748b" fontFamily="Inter,sans-serif">/100</text>
+        {/* Min/max labels */}
+        <text x={cx-r-4} y={cy+13} textAnchor="middle" fontSize="7" fill="#475569" fontFamily="Inter,sans-serif">0</text>
+        <text x={cx+r+4} y={cy+13} textAnchor="middle" fontSize="7" fill="#475569" fontFamily="Inter,sans-serif">100</text>
+      </svg>
+      <div style={{ fontSize:"10px",fontWeight:800,color,letterSpacing:"0.08em",marginTop:"-4px" }}>{label}</div>
+    </div>
+  );
+}
+
+/* ===== MARKET INTELLIGENCE PANEL ===== */
+function MarketIntelPanel({ marketData }) {
+  const [selMkt, setSelMkt] = useState(null);
+  const md = marketData || {};
+  return (
+    <div>
+      <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px" }}>
+        {"\u{1F4CA}"} Live Market Intelligence — updated each quarter
+      </div>
+      {/* Summary table */}
+      <div style={{ overflowX:"auto",marginBottom:"10px" }}>
+        <table style={{ width:"100%",borderCollapse:"collapse",fontSize:"10px" }}>
+          <thead>
+            <tr style={{ borderBottom:"1px solid "+T.bdr }}>
+              {["Market","NER \u20AC/sqm","\u0394 QoQ","Prime Yield","Mkt Vacancy","Demand"].map(h => (
+                <th key={h} style={{ padding:"4px 6px",color:T.txtM,fontWeight:600,textAlign:"left",whiteSpace:"nowrap" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {MARKETS.map((mkt,i) => {
+              const d = md[mkt.id] || {};
+              const growth = d.rentalGrowthQoQ || 0;
+              const growthColor = growth > 0.02 ? "#34d399" : growth < -0.02 ? "#f87171" : T.txtD;
+              const isSelected = selMkt === mkt.id;
+              return (
+                <tr key={mkt.id} onClick={() => setSelMkt(isSelected ? null : mkt.id)}
+                  style={{ borderBottom:"1px solid rgba(255,255,255,0.04)",cursor:"pointer",
+                    background:isSelected ? "rgba(59,130,246,0.1)" : i%2===0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
+                  <td style={{ padding:"5px 6px",color:T.txt,fontWeight:600,whiteSpace:"nowrap" }}>{mkt.flag} {mkt.name}</td>
+                  <td style={{ padding:"5px 6px",color:"#fff",fontWeight:700 }}>{"\u20AC"}{(d.ner||mkt.baseRent).toFixed(0)}</td>
+                  <td style={{ padding:"5px 6px",color:growthColor,fontWeight:700 }}>{growth>=0?"+":""}{(growth*100).toFixed(1)}%</td>
+                  <td style={{ padding:"5px 6px",color:T.txtD }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</td>
+                  <td style={{ padding:"5px 6px",color:d.marketVacancy>0.10?"#f87171":d.marketVacancy>0.07?"#fbbf24":"#34d399",fontWeight:600 }}>{fmtP(d.marketVacancy||0.07)}</td>
+                  <td style={{ padding:"5px 6px" }}>
+                    <div style={{ display:"flex",alignItems:"center",gap:"4px" }}>
+                      <div style={{ width:"40px",height:"4px",background:"#1e2a3a",borderRadius:"2px" }}>
+                        <div style={{ height:"100%",width:((d.demandIndex||60)+"%"),background:d.demandIndex>70?"#34d399":d.demandIndex>45?"#fbbf24":"#f87171",borderRadius:"2px" }} />
+                      </div>
+                      <span style={{ color:T.txtD,fontSize:"9px" }}>{d.demandIndex||60}</span>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {/* Detail pane for selected market */}
+      {selMkt && (() => {
+        const mkt = MARKETS.find(m => m.id === selMkt);
+        const d = md[selMkt] || {};
+        return (
+          <div style={{ ...S.card,background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.25)" }}>
+            <div style={{ fontSize:"13px",fontWeight:700,color:T.wht,marginBottom:"8px" }}>{mkt.flag} {mkt.name} — {mkt.city} Market Detail</div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"10px" }}>
+              <div><div style={{ color:T.txtM }}>Net Effective Rent</div><div style={{ color:"#fff",fontWeight:700,fontSize:"14px" }}>{"\u20AC"}{(d.ner||mkt.baseRent).toFixed(1)}<span style={{ fontSize:"9px",color:T.txtD }}>/sqm</span></div></div>
+              <div><div style={{ color:T.txtM }}>QoQ Rental Growth</div><div style={{ color:(d.rentalGrowthQoQ||0)>0?"#34d399":"#f87171",fontWeight:700,fontSize:"14px" }}>{(d.rentalGrowthQoQ||0)>=0?"+":""}{((d.rentalGrowthQoQ||0)*100).toFixed(2)}%</div></div>
+              <div><div style={{ color:T.txtM }}>Prime Cap Rate</div><div style={{ color:"#fff",fontWeight:700,fontSize:"14px" }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</div></div>
+              <div><div style={{ color:T.txtM }}>Market Vacancy</div><div style={{ color:(d.marketVacancy||0.07)>0.10?"#f87171":"#34d399",fontWeight:700,fontSize:"14px" }}>{fmtP(d.marketVacancy||0.07)}</div></div>
+              <div><div style={{ color:T.txtM }}>Demand Index</div><div style={{ color:"#fbbf24",fontWeight:700,fontSize:"14px" }}>{d.demandIndex||60}<span style={{ fontSize:"9px",color:T.txtD }}>/100</span></div></div>
+              <div><div style={{ color:T.txtM }}>Take-up (k sqm)</div><div style={{ color:"#fff",fontWeight:700,fontSize:"14px" }}>{d.absorptionKsqm||100}k</div></div>
+              <div><div style={{ color:T.txtM }}>Pipeline Supply</div><div style={{ color:"#fff",fontWeight:700,fontSize:"14px" }}>{d.supplyPipelineKsqm||200}k sqm</div></div>
+              <div><div style={{ color:T.txtM }}>Base Rate (EURIBOR)</div><div style={{ color:"#60a5fa",fontWeight:700,fontSize:"14px" }}>{BASE_RATE.toFixed(1)}%</div></div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+/* ===== FINANCING PANEL ===== */
+function FinancingPanel({ state, onDrawDebt, onRepayDebt }) {
+  const [selDebt, setSelDebt] = useState(null);
+  const [drawAmt, setDrawAmt] = useState("");
+  const totalDebt = (state.debtDrawdowns||[]).reduce((a, d) => a + d.amount, 0);
+  const m = calcMetrics(state);
+  const ltv = m.totalGAV > 0 ? totalDebt / m.totalGAV : 0;
+  const treasuryCount = state.team?.treasury || 0;
+  const spreadReduction = Math.min(0.5, treasuryCount * 0.1); // up to 0.5% discount
+  const esg = calcESG(state.portfolio||[]);
+
+  return (
+    <div>
+      <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>{"\u{1F3E6}"} Debt Financing</div>
+      {/* LTV overview */}
+      <div style={{ ...S.card,background:"rgba(59,130,246,0.07)",border:"1px solid rgba(59,130,246,0.25)",marginBottom:"10px" }}>
+        <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",fontSize:"10px" }}>
+          <div><div style={{ color:T.txtM }}>Total Debt</div><div style={{ color:"#fff",fontWeight:800,fontSize:"14px" }}>{fmtM(totalDebt)}</div></div>
+          <div><div style={{ color:T.txtM }}>Portfolio LTV</div><div style={{ color:ltv>0.65?"#f87171":ltv>0.50?"#fbbf24":"#34d399",fontWeight:800,fontSize:"14px" }}>{fmtP(ltv)}</div></div>
+          <div><div style={{ color:T.txtM }}>Annual Interest</div><div style={{ color:"#f87171",fontWeight:800,fontSize:"14px" }}>{fmtM((state.debtDrawdowns||[]).reduce((a,d)=>a+d.amount*d.rate/100,0))}</div></div>
+        </div>
+        <div style={{ marginTop:"7px",height:"4px",background:"#1e2a3a",borderRadius:"2px" }}>
+          <div style={{ height:"100%",width:Math.min(100,ltv*100)+"%",background:ltv>0.65?"#f87171":ltv>0.50?"#fbbf24":"#34d399",borderRadius:"2px",transition:"width 0.4s" }} />
+        </div>
+        <div style={{ fontSize:"8px",color:T.txtM,marginTop:"2px" }}>Covenant limit: 70% LTV</div>
+      </div>
+      {/* Outstanding facilities */}
+      {(state.debtDrawdowns||[]).length > 0 && (
+        <div style={{ marginBottom:"10px" }}>
+          <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"5px",textTransform:"uppercase" }}>Outstanding Facilities</div>
+          {state.debtDrawdowns.map(d => {
+            const dt = DEBT_TYPES.find(x => x.id === d.type) || DEBT_TYPES[0];
+            return (
+              <div key={d.id} style={{ ...S.card,padding:"7px 10px",marginBottom:"5px",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+                <div>
+                  <div style={{ fontSize:"10px",fontWeight:700,color:T.txt }}>{dt.icon} {dt.name}</div>
+                  <div style={{ fontSize:"9px",color:T.txtM }}>{fmtM(d.amount)} @ {d.rate.toFixed(2)}% p.a. — Q{d.drawQuarter}</div>
+                </div>
+                <button style={{ ...btnSt("red"),fontSize:"9px",padding:"3px 7px" }} onClick={() => onRepayDebt(d.id)}>Repay</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {/* Debt type selector */}
+      <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"6px",textTransform:"uppercase" }}>Available Facilities</div>
+      {DEBT_TYPES.map(dt => {
+        const effectiveRate = dt.fixedRate ? dt.fixedRate : (BASE_RATE + dt.spread - spreadReduction);
+        const maxDraw = Math.max(0, m.totalGAV * dt.ltv - totalDebt);
+        const greenLocked = dt.id === "green" && esg < 65;
+        return (
+          <div key={dt.id} onClick={() => !greenLocked && setSelDebt(selDebt===dt.id?null:dt.id)}
+            style={{ ...S.card,marginBottom:"6px",cursor:greenLocked?"not-allowed":"pointer",opacity:greenLocked?0.5:1,
+              border:"1px solid "+(selDebt===dt.id ? T.acc : "rgba(255,255,255,0.15)"),
+              background:selDebt===dt.id ? "rgba(59,130,246,0.1)" : T.card }}>
+            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+              <div>
+                <div style={{ fontSize:"11px",fontWeight:700,color:T.wht }}>{dt.icon} {dt.name}</div>
+                <div style={{ fontSize:"9px",color:T.txtD,marginTop:"1px" }}>{dt.desc}{greenLocked ? " — requires ESG score ≥ 65" : ""}</div>
+              </div>
+              <div style={{ textAlign:"right" }}>
+                <div style={{ fontSize:"13px",fontWeight:800,color:"#60a5fa" }}>{effectiveRate.toFixed(2)}%</div>
+                <div style={{ fontSize:"8px",color:T.txtM }}>LTV {(dt.ltv*100).toFixed(0)}% max</div>
+              </div>
+            </div>
+            {selDebt === dt.id && (
+              <div style={{ marginTop:"8px",paddingTop:"8px",borderTop:"1px solid rgba(255,255,255,0.1)" }}>
+                <div style={{ fontSize:"9px",color:T.txtM,marginBottom:"4px" }}>Drawdown amount (max {fmtM(maxDraw)} headroom)</div>
+                <div style={{ display:"flex",gap:"5px",alignItems:"center" }}>
+                  <input
+                    type="number" placeholder="€m e.g. 50000000"
+                    value={drawAmt}
+                    onChange={e => setDrawAmt(e.target.value)}
+                    style={{ flex:1,padding:"5px 8px",background:"#0a1020",border:"1px solid "+T.bdr,borderRadius:"4px",color:T.txt,fontSize:"10px",fontFamily:"inherit" }}
+                  />
+                  <button style={{ ...btnSt("green"),padding:"5px 10px" }}
+                    onClick={() => { const amt = Number(drawAmt); if (amt > 0 && amt <= maxDraw) { onDrawDebt(dt.id, amt, effectiveRate); setDrawAmt(""); setSelDebt(null); } }}>
+                    Drawdown
+                  </button>
+                </div>
+                {spreadReduction > 0 && <div style={{ fontSize:"8px",color:"#34d399",marginTop:"3px" }}>Treasury discount applied: -{fmtP(spreadReduction/100)} spread</div>}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function SentBadge({ mood, label }) {
@@ -600,12 +1148,12 @@ function SentBadge({ mood, label }) {
 /* ===== STYLES ===== */
 const tabGlow = "0 0 20px rgba(59,130,246,0.3), inset 0 0 20px rgba(59,130,246,0.1)";
 const S = {
-  app:{ minHeight:"100vh",background:"linear-gradient(180deg,"+T.bg+",#0d1321)",color:T.txt,fontFamily:"'JetBrains Mono', monospace",fontSize:"13px",lineHeight:1.5 },
+  app:{ minHeight:"100vh",background:"linear-gradient(180deg,"+T.bg+",#0d1321)",color:T.txt,fontFamily:"'Inter', sans-serif",fontSize:"13px",lineHeight:1.5 },
   hdr:{ padding:"10px 18px",borderBottom:"1px solid "+T.bdr,display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap" },
   logo:{ display:"flex",alignItems:"center",gap:"10px",flexShrink:0 },
   mBar:{ display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(130px, 1fr))",gap:"1px",background:"#334155",borderBottom:"2px solid "+T.acc },
   mCell:{ background:"#0f172a",padding:"14px 16px",textAlign:"center" },
-  mLbl:{ fontSize:"10px",color:"#64748b",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px",display:"flex",alignItems:"center",justifyContent:"center",gap:"4px" },
+  mLbl:{ fontSize:"10px",color:"#e2e8f0",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px",display:"flex",alignItems:"center",justifyContent:"center",gap:"4px" },
   mVal:{ fontSize:"20px",fontWeight:800,color:"#ffffff" },
   main:{ display:"grid",gridTemplateColumns:"1fr 380px",minHeight:"calc(100vh - 160px)" },
   lp:{ padding:"14px 18px",overflowY:"auto",borderRight:"1px solid "+T.bdr },
@@ -649,7 +1197,7 @@ function condSt(c) {
 function MetricCell({ label, value, color, icon }) {
   return (
     <div style={S.mCell}>
-      <div style={S.mLbl}>{icon && <span style={{ fontSize:"12px" }}>{icon}</span>}<TipLbl label={label} style={{ fontSize:"10px",color:"#64748b",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase" }} /></div>
+      <div style={S.mLbl}>{icon && <span style={{ fontSize:"12px" }}>{icon}</span>}<TipLbl label={label} style={{ fontSize:"10px",color:"#e2e8f0",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase" }} /></div>
       <div style={{ ...S.mVal, color: color || "#ffffff" }}>{value}</div>
     </div>
   );
@@ -658,6 +1206,7 @@ function MetricCell({ label, value, color, icon }) {
 function AssetCard({ asset, onMaint, onDispose, onFix }) {
   const ac = ASSET_CLASSES.find(x => x.id === asset.assetClass);
   const tInfo = asset.tenant ? getTI(asset.tenant) : null;
+  const mktCity = MARKETS.find(m => m.id === asset.market)?.city || "";
   const thumb = (
     <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"6px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.1)" }}>
       <WHouse condition={asset.condition} gla={asset.gla} developing={asset.developing} assetClass={asset.assetClass} seed={asset.visualSeed||0} />
@@ -704,7 +1253,7 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
                 {asset.urgentIssue && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"4px",fontSize:"9px",fontWeight:700,background:T.redD,color:T.red,marginLeft:"5px" }}>{"\u26A0"} ISSUE</span>}
               </div>
               <div style={{ fontSize:"11px",color:T.txtD }}>
-                {ac?.icon} {asset.assetClassName} {"\u00B7"} {asset.marketName}
+                {ac?.icon} {asset.assetClassName} {"\u00B7"} {asset.marketName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}
                 {asset.tenant && (
                   <>{" \u00B7 "}<span style={{ color:T.acc }}>{asset.tenant}</span>
                   {tInfo && <span style={{ marginLeft:"4px",fontSize:"9px",color:credCol(tInfo.credit),background:"rgba(0,0,0,0.3)",padding:"1px 4px",borderRadius:"3px" }}>{tInfo.credit}</span>}</>
@@ -732,8 +1281,13 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
         <div><TipLbl label="Rent/sqm" style={S.stat} /><div style={S.val}>{"\u20AC"}{asset.rentPsm.toFixed(1)}</div></div>
         <div><TipLbl label="WALT" style={S.stat} /><div style={S.val}>{asset.leaseRemaining > 0 ? asset.leaseRemaining.toFixed(1) + "yr" : "Vacant"}</div></div>
       </div>
-      <div style={{ height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"6px" }}>
-        <div style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,borderRadius:"2px" }} />
+      <div style={{ display:"flex",alignItems:"center",gap:"6px",marginTop:"6px" }}>
+        <span style={{ fontSize:"8px",color:T.txtM,flexShrink:0,width:"52px" }}>Occupancy</span>
+        <div style={{ width:"140px",height:"4px",background:T.bdr,borderRadius:"2px",flexShrink:0 }}>
+          <div style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,borderRadius:"2px" }} />
+        </div>
+        <span style={{ fontSize:"8px",color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,fontWeight:700 }}>{fmtP(asset.occupancy)}</span>
+        <span style={{ fontSize:"8px",color:T.txtM,marginLeft:"4px" }}>vac {fmtP(1-asset.occupancy)}</span>
       </div>
       <div style={S.row}>
         {MAINT.map(mt => (
@@ -749,6 +1303,7 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
 
 function AcqCard({ asset, onAcquire, ok }) {
   const ac = ASSET_CLASSES.find(x => x.id === asset.assetClass);
+  const mktCity = MARKETS.find(m => m.id === asset.market)?.city || "";
   return (
     <div style={{ ...S.card, opacity:ok?1:0.5 }}>
       <div style={{ display:"flex",gap:"12px" }}>
@@ -759,7 +1314,7 @@ function AcqCard({ asset, onAcquire, ok }) {
           <div style={{ display:"flex",justifyContent:"space-between" }}>
             <div>
               <div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.flag} {asset.name}</div>
-              <div style={{ fontSize:"11px",color:T.txtD }}>{ac?.icon} {asset.assetClassName} {"\u00B7"} {asset.marketName}{asset.tenant && <>{" \u00B7 "}<span style={{ color:T.acc }}>{asset.tenant}</span></>}</div>
+              <div style={{ fontSize:"11px",color:T.txtD }}>{ac?.icon} {asset.assetClassName} {"\u00B7"} {asset.marketName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" \u00B7 "}<span style={{ color:T.acc }}>{asset.tenant}</span></>}</div>
             </div>
             <span style={condSt(asset.condition)}>Gr {asset.condition}</span>
           </div>
@@ -844,7 +1399,7 @@ function StartScreen({ onStart }) {
   const next = () => { if (step < 2) setStep(step + 1); else onStart({ companyName:cn.trim(), cash:cap, startMarkets:sm, difficulty:diff }); };
   const saved = hasSave() ? loadGame() : null;
 
-  const wrap = { minHeight:"100vh",background:"linear-gradient(180deg,"+T.bg+",#0d1321)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'JetBrains Mono', monospace",color:T.txt,padding:"20px" };
+  const wrap = { minHeight:"100vh",background:"linear-gradient(180deg,"+T.bg+",#0d1321)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif",color:T.txt,padding:"20px" };
   const cont = { maxWidth:"500px",width:"100%" };
   const opt = (sel) => ({ padding:"11px 12px",background:sel?T.accD:T.card,border:"1px solid "+(sel?T.acc:T.bdr),borderRadius:"6px",cursor:"pointer",marginBottom:"6px" });
   const mktSt = (sel) => ({ padding:"9px 10px",background:sel?T.accD:T.card,border:"1px solid "+(sel?T.acc:T.bdr),borderRadius:"6px",cursor:"pointer",textAlign:"center" });
@@ -855,7 +1410,7 @@ function StartScreen({ onStart }) {
 
   return (
     <div style={wrap}>
-      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <div style={cont}>
         <div style={{ textAlign:"center",marginBottom:"36px" }}>
           <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:"10px",marginBottom:"4px" }}>
@@ -1041,6 +1596,23 @@ export default function LogisticsRESimulator() {
 
   const onDecline = useCallback(() => setState(p => p ? { ...p, tenantSelection:null } : p), []);
 
+  const onDrawDebt = useCallback((typeId, amount, rate) => setState(p => {
+    if (!p) return p;
+    const id = "debt_" + Date.now();
+    return { ...p, cash: p.cash + amount,
+      debtDrawdowns: [...(p.debtDrawdowns||[]), { id, type:typeId, amount, rate, drawQuarter:p.quarter }],
+      newsLog:[...(p.newsLog||[]), {icon:"\u{1F3E6}",text:"Drew "+fmtM(amount)+" "+typeId+" facility @ "+rate.toFixed(2)+"%",color:"#60a5fa"}] };
+  }), []);
+
+  const onRepayDebt = useCallback((debtId) => setState(p => {
+    if (!p) return p;
+    const d = (p.debtDrawdowns||[]).find(x => x.id === debtId);
+    if (!d || p.cash < d.amount) return p;
+    return { ...p, cash: p.cash - d.amount,
+      debtDrawdowns: (p.debtDrawdowns||[]).filter(x => x.id !== debtId),
+      newsLog:[...(p.newsLog||[]), {icon:"\u{1F3E6}",text:"Repaid "+fmtM(d.amount)+" "+d.type+" facility",color:"#f87171"}] };
+  }), []);
+
   if (!started || !state) return <StartScreen onStart={onStart} />;
 
   const m = calcMetrics(state);
@@ -1049,7 +1621,7 @@ export default function LogisticsRESimulator() {
 
   return (
     <div style={S.app}>
-      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
       {state.tenantSelection && <TenantModal candidates={state.tenantSelection.candidates} assetName={state.tenantSelection.assetName} onSelect={onSelectTenant} onClose={onDecline} />}
 
@@ -1072,7 +1644,7 @@ export default function LogisticsRESimulator() {
             <div style={{ fontSize:"9px",color:T.acc,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>PERIOD</div>
             <div style={{ fontSize:"15px",fontWeight:800,color:"#ffffff" }}>{ql}</div>
           </div>
-          <button style={{ padding:"9px 18px",background:"linear-gradient(135deg,#ef4444,#dc2626)",color:T.wht,border:"none",borderRadius:"6px",cursor:"pointer",fontSize:"11px",fontWeight:800,fontFamily:"inherit",letterSpacing:"0.05em",textTransform:"uppercase",boxShadow:"0 2px 16px rgba(239,68,68,0.4)" }} onClick={onAdvance}>Next Qtr {"\u2192"}</button>
+          <button style={{ padding:"9px 18px",background:"linear-gradient(135deg,#ef4444,#dc2626)",color:T.wht,border:"none",borderRadius:"6px",cursor:"pointer",fontSize:"11px",fontWeight:800,fontFamily:"inherit",letterSpacing:"0.05em",textTransform:"uppercase",boxShadow:"0 2px 16px rgba(239,68,68,0.4)" }} onClick={onAdvance}>Simulate to next qtr {"\u2192"}</button>
           <button style={{ ...btnSt("green"),padding:"5px 9px",fontSize:"9px" }} onClick={onSave}>{saved ? "\u2713" : "Save"}</button>
           <button style={{ ...btnSt("default"),padding:"5px 9px",fontSize:"9px" }} onClick={onReset}>Reset</button>
         </div>
@@ -1094,15 +1666,55 @@ export default function LogisticsRESimulator() {
       <div style={S.main}>
         <div style={S.lp}>
           <div style={S.tabs}>
-            {["portfolio","acquire","develop","team"].map(t => (
+            {["portfolio","acquire","develop","team","markets"].map(t => (
               <button key={t} style={tabSt(tab===t)} onClick={() => setTab(t)}>
-                {t==="portfolio" ? "Portfolio ("+state.portfolio.length+")" : t==="acquire" ? "Acquire ("+state.acquisitions.length+")" : t==="develop" ? "Develop ("+state.devSites.length+")" : "Team"}
+                {t==="portfolio" ? "Portfolio ("+state.portfolio.length+")" : t==="acquire" ? "Acquire ("+state.acquisitions.length+")" : t==="develop" ? "Develop ("+state.devSites.length+")" : t==="markets" ? "\uD83C\uDF0D Markets" : "Team"}
               </button>
             ))}
           </div>
 
           {tab === "portfolio" && (
             <>
+              {/* ── PORTFOLIO OVERVIEW: occupancy summary + map ── */}
+              <div style={{ display:"flex",gap:"10px",marginBottom:"10px",alignItems:"stretch" }}>
+                {/* Occupancy summary */}
+                <div style={{ flex:1,background:"rgba(255,255,255,0.07)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.18)",borderRadius:"8px",padding:"10px 12px",display:"flex",flexDirection:"column",justifyContent:"center",gap:"8px" }}>
+                  <div style={{ fontSize:"9px",fontWeight:700,color:"#ffffff",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"2px" }}>Portfolio Occupancy</div>
+                  {/* Avg Occupancy bar */}
+                  <div>
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"3px" }}>
+                      <span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>Avg Occupied</span>
+                      <span style={{ fontSize:"12px",fontWeight:800,color:m.avgOcc>0.85?"#34d399":m.avgOcc>0.6?"#fbbf24":"#f87171" }}>{fmtP(m.avgOcc)}</span>
+                    </div>
+                    <div style={{ width:"100%",height:"5px",background:"rgba(255,255,255,0.12)",borderRadius:"3px" }}>
+                      <div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?"#34d399":m.avgOcc>0.6?"#fbbf24":"#f87171",borderRadius:"3px",transition:"width 0.4s" }} />
+                    </div>
+                  </div>
+                  {/* Avg Vacancy bar */}
+                  <div>
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"3px" }}>
+                      <span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>Avg Vacant</span>
+                      <span style={{ fontSize:"12px",fontWeight:800,color:"#f87171" }}>{fmtP(1-m.avgOcc)}</span>
+                    </div>
+                    <div style={{ width:"100%",height:"5px",background:"rgba(255,255,255,0.12)",borderRadius:"3px" }}>
+                      <div style={{ height:"100%",width:((1-m.avgOcc)*100)+"%",background:"#f87171",borderRadius:"3px",transition:"width 0.4s" }} />
+                    </div>
+                  </div>
+                  {/* Vacancy area */}
+                  <div style={{ display:"flex",justifyContent:"space-between",paddingTop:"4px",borderTop:"1px solid rgba(255,255,255,0.12)" }}>
+                    <span style={{ fontSize:"9px",color:"rgba(255,255,255,0.6)" }}>Vacant GLA</span>
+                    <span style={{ fontSize:"10px",fontWeight:700,color:"#fbbf24" }}>{((m.totalGLA*(1-m.avgOcc))/1000).toFixed(0)}k sqm</span>
+                  </div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}>
+                    <span style={{ fontSize:"9px",color:"rgba(255,255,255,0.6)" }}>Void Risk p.a.</span>
+                    <span style={{ fontSize:"10px",fontWeight:700,color:"#f87171" }}>{fmtM(m.totalGRI*(1-m.avgOcc)/m.avgOcc||0)}</span>
+                  </div>
+                </div>
+                {/* Map */}
+                <div style={{ width:"220px",flexShrink:0 }}>
+                  <EuropeMap portfolio={state.portfolio} />
+                </div>
+              </div>
               {!state.portfolio.length && <div style={S.empty}>No assets yet. Go to Acquire.</div>}
               {state.portfolio.map(a => <AssetCard key={a.id} asset={a} onMaint={onMaint} onDispose={onDispose} onFix={onFix} />)}
             </>
@@ -1121,22 +1733,44 @@ export default function LogisticsRESimulator() {
               {state.devSites.map(s => <DevCard key={s.id} site={s} onDev={onDev} ok={state.cash >= s.devCost} />)}
             </>
           )}
-          {tab === "team" && <TeamPanel team={state.team} onHire={onHire} onFire={onFire} />}
+          {tab === "team" && (
+            <>
+              <TeamPanel team={state.team} onHire={onHire} onFire={onFire} />
+              {(state.team?.treasury||0) >= 1 && (
+                <div style={{ marginTop:"12px" }}>
+                  <div style={S.sec}>Debt Financing</div>
+                  <FinancingPanel state={state} onDrawDebt={onDrawDebt} onRepayDebt={onRepayDebt} />
+                </div>
+              )}
+            </>
+          )}
+          {tab === "markets" && (
+            <MarketIntelPanel marketData={state.marketData} />
+          )}
         </div>
 
         <div style={S.rp}>
           <div style={S.tabs}>
-            {["sentiment","charts","events"].map(t => (
-              <button key={t} style={tabSt(rTab===t)} onClick={() => setRTab(t)}>
-                {t==="sentiment" ? "Board" : t==="charts" ? "Charts" : "Events"}
-              </button>
-            ))}
+            {["sentiment","charts","events"].map(t => {
+              const biCount = state.team?.bi || 0;
+              const label = t==="sentiment" ? "Board" : t==="charts" ? (biCount > 0 ? "Charts ("+biCount+")" : "\u{1F512} Charts") : "Events";
+              return (
+                <button key={t} style={tabSt(rTab===t)} onClick={() => setRTab(t)}>{label}</button>
+              );
+            })}
           </div>
 
           {rTab === "sentiment" && (() => {
             const { sentiments, boardComments } = genSentiment(m, state.history, state);
+            const bScore = calcBoardScore(m, state);
             return (
               <div>
+                {/* Board / Investor Gauge */}
+                <div style={{ ...S.card, marginBottom:"10px", textAlign:"center", padding:"14px 12px" }}>
+                  <div style={{ fontSize:"9px",fontWeight:700,color:T.txtD,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"6px" }}>Investor Satisfaction</div>
+                  <BoardGauge score={bScore} />
+                  <div style={{ fontSize:"9px",color:T.txtD,marginTop:"4px" }}>Board score updates each quarter based on IRR, occupancy, NOI yield, ESG &amp; scale</div>
+                </div>
                 {irr !== null && (
                   <div style={{ ...S.card, background:irr>0.10?T.grnD:irr>0.05?T.ambD:T.redD, border:"1px solid "+(irr>0.10?T.grn:irr>0.05?T.amb:T.red), marginBottom:"10px", textAlign:"center" }}>
                     <div style={{ fontSize:"9px",color:irr>0.10?T.grn:irr>0.05?T.amb:T.red,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase" }}>Portfolio IRR</div>
@@ -1165,24 +1799,51 @@ export default function LogisticsRESimulator() {
             );
           })()}
 
-          {rTab === "charts" && (
-            <div>
-              {state.history.length < 2 ? <div style={S.empty}>Advance a few quarters.</div> : (
-                [{l:"Portfolio GAV",k:"totalGAV",c:T.acc,f:fmtM},{l:"Occupancy",k:"avgOcc",c:T.grn,f:fmtP},{l:"NOI p.a.",k:"noi",c:"#10b981",f:fmtM},{l:"Cash",k:"cash",c:T.amb,f:fmtM}].map(ch => (
-                  <div key={ch.k}>
-                    <div style={S.sec}>{ch.l}</div>
-                    <div style={{ ...S.card, padding:"8px 12px", marginBottom:"7px" }}>
-                      <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"4px" }}>
-                        <span style={{ fontSize:"10px",color:T.txtD }}>{ch.l}</span>
-                        <span style={{ fontSize:"14px",fontWeight:800,color:T.wht }}>{ch.f(state.history[state.history.length-1]?.[ch.k]||0)}</span>
+          {rTab === "charts" && (() => {
+            const biCount = state.team?.bi || 0;
+            const allCharts = [
+              {l:"Portfolio GAV",k:"totalGAV",c:T.acc,f:fmtM},
+              {l:"Occupancy",k:"avgOcc",c:T.grn,f:fmtP},
+              {l:"NOI p.a.",k:"noi",c:"#10b981",f:fmtM},
+              {l:"Cash",k:"cash",c:T.amb,f:fmtM}
+            ];
+            if (biCount === 0) return (
+              <div style={{ textAlign:"center",padding:"32px 20px" }}>
+                <div style={{ fontSize:"40px",marginBottom:"12px" }}>{"\u{1F512}"}</div>
+                <div style={{ fontSize:"14px",fontWeight:700,color:T.wht,marginBottom:"6px" }}>Charts Locked</div>
+                <div style={{ fontSize:"11px",color:T.txtD,lineHeight:1.6,marginBottom:"16px" }}>
+                  Hire a <span style={{ color:T.acc,fontWeight:700 }}>Business Intelligence</span> analyst<br/>
+                  to unlock data views. Each hire unlocks one chart.
+                </div>
+                <div style={{ fontSize:"10px",color:T.txtM }}>Team {"\u2192"} Business Intelligence</div>
+              </div>
+            );
+            const visibleCharts = allCharts.slice(0, biCount);
+            const lockedCount = allCharts.length - biCount;
+            return (
+              <div>
+                {state.history.length < 2 ? <div style={S.empty}>Advance a few quarters to see data.</div> : (
+                  visibleCharts.map(ch => (
+                    <div key={ch.k}>
+                      <div style={S.sec}>{ch.l}</div>
+                      <div style={{ ...S.card, padding:"8px 12px", marginBottom:"7px" }}>
+                        <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"4px" }}>
+                          <span style={{ fontSize:"10px",color:T.txtD }}>{ch.l}</span>
+                          <span style={{ fontSize:"14px",fontWeight:800,color:T.wht }}>{ch.f(state.history[state.history.length-1]?.[ch.k]||0)}</span>
+                        </div>
+                        <Spark data={state.history.map(h => h[ch.k])} color={ch.c} height={48} />
                       </div>
-                      <Spark data={state.history.map(h => h[ch.k])} color={ch.c} height={48} />
                     </div>
+                  ))
+                )}
+                {lockedCount > 0 && (
+                  <div style={{ ...S.card, textAlign:"center",padding:"12px",opacity:0.5,borderStyle:"dashed" }}>
+                    <span style={{ fontSize:"10px",color:T.txtM }}>{"\u{1F512}"} {lockedCount} more chart{lockedCount>1?"s":""} locked — hire more BI analysts</span>
                   </div>
-                ))
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            );
+          })()}
 
           {rTab === "events" && (
             <div style={S.evLog}>
