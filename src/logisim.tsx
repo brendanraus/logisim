@@ -172,65 +172,32 @@ const ISSUES = [
 /* ===== UTILS ===== */
 const rFrom = (a) => a[Math.floor(Math.random() * a.length)];
 const rBetween = (a, b) => a + Math.random() * (b - a);
-const fmtM = (n) => (n < 0 ? "-" : "") + "\u20AC" + (Math.abs(n) / 1e6).toFixed(1) + "m";
-const fmtK = (n) => (n < 0 ? "-" : "") + "\u20AC" + (Math.abs(n) / 1e3).toFixed(0) + "k";
+const fmtM = (n) => n < 0 ? "(\u20AC" + (Math.abs(n) / 1e6).toFixed(1) + "m)" : "\u20AC" + (n / 1e6).toFixed(1) + "m";
+const fmtK = (n) => n < 0 ? "(\u20AC" + (Math.abs(n) / 1e3).toFixed(0) + "k)" : "\u20AC" + (n / 1e3).toFixed(0) + "k";
 const fmtP = (n) => (n * 100).toFixed(1) + "%";
 const getTI = (n) => TENANT_DB[n] || { credit:"NR",revenue:"N/A",employees:"N/A",sector:"Unknown",insolvencyRisk:0.10 };
 const credCol = (c) => (c.startsWith("AA")||c==="A+"||c==="A") ? "#10b981" : (c.startsWith("BBB")||c==="A-") ? "#f59e0b" : "#ef4444";
 
 /* ===== PROPERTY COST MODEL ===== */
-/*
-  Per asset, per annum:
-  - Service Charge (SC): scPerSqm * totalGLA — recoverable from tenants pro rata occupancy
-  - Insurance: insurancePerSqm * totalGLA — landlord pays on whole building
-  - Rates (empty): ratesPerSqm * vacantGLA — landlord liable on void units (after 3-month grace)
-  - Maintenance drag: maintPerSqm * totalGLA — scales with condition (A=0.6x, B=1x, C=1.5x)
-  - Management fee: 3% of GRI (property manager)
-  
-  Recoverable = SC * occupancy (tenants pay their share)
-  Irrecoverable = SC * (1 - occupancy) + Insurance + Void Rates + Maint drag + Mgmt fee
-  
-  NOI = GRI - Irrecoverable costs - G&A (team salaries)
-*/
-
 function calcAssetCosts(asset, ac) {
   if (!ac) ac = ASSET_CLASSES.find(x => x.id === asset.assetClass) || ASSET_CLASSES[0];
   const gla = asset.gla;
   const occ = asset.occupancy;
   const vacantGla = gla * (1 - occ);
-  
-  // Service charge — tenants pay their share, landlord eats the void portion
   const totalSC = ac.scPerSqm * gla;
   const recoveredSC = totalSC * occ;
   const irrecoverableSC = totalSC - recoveredSC;
-  
-  // Insurance — landlord pays on whole building regardless
   const insurance = ac.insurancePerSqm * gla;
-  
-  // Void rates — landlord pays rates on empty space
   const voidRates = ac.ratesPerSqm * vacantGla;
-  
-  // Maintenance drag — condition-dependent
   const condMult = asset.condition === "A" ? 0.6 : asset.condition === "B" ? 1.0 : 1.5;
   const issueMult = asset.urgentIssue ? 1.4 : 1.0;
   const maintDrag = ac.maintPerSqm * gla * condMult * issueMult;
-  
-  // Property management fee — % of rent collected
   const mgmtFee = asset.gri * 0.03;
-  
   const totalRecoverable = recoveredSC;
   const totalIrrecoverable = irrecoverableSC + insurance + voidRates + maintDrag + mgmtFee;
-  
   return {
-    totalSC,
-    recoveredSC,
-    irrecoverableSC,
-    insurance,
-    voidRates,
-    maintDrag,
-    mgmtFee,
-    totalRecoverable,
-    totalIrrecoverable,
+    totalSC, recoveredSC, irrecoverableSC, insurance, voidRates, maintDrag, mgmtFee,
+    totalRecoverable, totalIrrecoverable,
     netPropertyIncome: asset.gri - totalIrrecoverable,
   };
 }
@@ -238,7 +205,7 @@ function calcAssetCosts(asset, ac) {
 /* ===== THEME ===== */
 const T = {
   bg:"#0a0f1a",card:"#111827",bdr:"#1e2a3a",acc:"#3b82f6",accD:"#1e3a5f",
-  grn:"#10b981",grnD:"#064e3b",red:"#ef4444",redD:"#7f1d1d",amb:"#f59e0b",ambD:"#78350f",
+  grn:"#10b981",grnD:"#064e3b",red:"#ef4444",redD:"#7f1d1d",  amb:"#22d3ee",ambD:"#0e3a4a",
   txt:"#e2e8f0",txtD:"#94a3b8",txtM:"#7c8ba3",wht:"#ffffff",
 };
 
@@ -265,11 +232,25 @@ const delSave = () => { _save = null; };
 /* ===== SMALL COMPONENTS ===== */
 function Tip({ text, children }) {
   const [show, setShow] = useState(false);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const ref = useRef(null);
+  const [style, setStyle] = useState({});
+  useEffect(() => {
+    if (show && ref.current) {
+      const r = ref.current.getBoundingClientRect();
+      const vw = window.innerWidth || 360;
+      const vh = window.innerHeight || 640;
+      const tipW = 220;
+      let left = r.left + r.width / 2;
+      let top = r.bottom + 6;
+      left = Math.max(tipW / 2 + 8, Math.min(left, vw - tipW / 2 - 8));
+      if (top + 60 > vh) top = r.top - 40;
+      setStyle({ position:"fixed", left, top, transform:"translateX(-50%)" });
+    }
+  }, [show]);
   return (
-    <span onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setPos({ x: r.left + r.width / 2, y: r.bottom + 6 }); setShow(true); }} onMouseLeave={() => setShow(false)} style={{ cursor:"help",borderBottom:"1px dotted "+T.txtM,position:"relative" }}>
+    <span ref={ref} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)} onTouchStart={() => setShow(s => !s)} style={{ cursor:"help",borderBottom:"1px dotted "+T.txtM,position:"relative" }}>
       {children}
-      {show && <span style={{ position:"fixed",left:Math.max(115,Math.min(pos.x,(typeof window!=="undefined"?window.innerWidth:1400)-115)),top:pos.y,transform:"translateX(-50%)",background:"#1e293b",color:"#e2e8f0",padding:"8px 12px",borderRadius:"6px",fontSize:"11px",lineHeight:1.5,maxWidth:"220px",zIndex:99999,boxShadow:"0 4px 16px rgba(0,0,0,0.6)",border:"1px solid #3b82f6",pointerEvents:"none",whiteSpace:"normal",letterSpacing:"0",textTransform:"none" }}>{text}</span>}
+      {show && <span style={{ ...style, background:"#1e293b",color:"#e2e8f0",padding:"8px 12px",borderRadius:"6px",fontSize:"11px",lineHeight:1.5,maxWidth:"220px",zIndex:99999,boxShadow:"0 4px 16px rgba(0,0,0,0.6)",border:"1px solid #3b82f6",pointerEvents:"none",whiteSpace:"normal",letterSpacing:"0",textTransform:"none" }}>{text}</span>}
     </span>
   );
 }
@@ -367,46 +348,74 @@ function WHouse({ condition, gla, developing, assetClass, seed = 0 }) {
 
 /* ===== EUROPE MAP ===== */
 const MAP_CITY_POS = {
-  uk:{x:62,y:80},de:{x:140,y:90},fr:{x:88,y:103},pl:{x:190,y:78},nl:{x:108,y:74},
-  cz:{x:158,y:95},es:{x:55,y:138},se:{x:172,y:46},it:{x:144,y:119},be:{x:120,y:83},
-  at:{x:172,y:106},dk:{x:148,y:63},tr:{x:248,y:130},ro:{x:210,y:112},hu:{x:186,y:104},
-  gr:{x:198,y:140},pt:{x:35,y:135},ie:{x:42,y:78},sk:{x:178,y:97},hr:{x:170,y:115},
-  bg:{x:215,y:122},fi:{x:195,y:32},no:{x:158,y:30},rs:{x:195,y:118},
+  uk:{x:95,y:115},de:{x:185,y:140},fr:{x:140,y:175},pl:{x:240,y:125},nl:{x:170,y:118},
+  cz:{x:215,y:145},es:{x:105,y:225},se:{x:225,y:65},it:{x:200,y:200},be:{x:165,y:135},
+  at:{x:210,y:160},dk:{x:185,y:95},tr:{x:340,y:210},ro:{x:290,y:170},hu:{x:250,y:165},
+  gr:{x:280,y:220},pt:{x:80,y:225},ie:{x:75,y:115},sk:{x:245,y:150},hr:{x:230,y:180},
+  bg:{x:295,y:190},fi:{x:270,y:50},no:{x:200,y:45},rs:{x:265,y:185},
 };
 
 function EuropeMap({ portfolio }) {
   const assetsByMkt = {};
   portfolio.forEach(a => { if (a.developing) return; if (!assetsByMkt[a.market]) assetsByMkt[a.market] = []; assetsByMkt[a.market].push(a); });
   const hexPts = (cx, cy, r) => { const pts = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 6; pts.push((cx + r * Math.cos(a)).toFixed(1) + "," + (cy + r * Math.sin(a)).toFixed(1)); } return pts.join(" "); };
+  const countries = [
+    { d:"M200,20 L195,35 L190,55 L185,70 L192,80 L200,75 L210,60 L220,45 L230,30 L225,20 L215,15 Z", id:"no_c" },
+    { d:"M220,30 L215,45 L210,60 L215,75 L225,85 L235,75 L240,60 L238,45 L230,30 Z", id:"se_c" },
+    { d:"M255,25 L250,40 L252,55 L258,70 L268,75 L278,65 L280,50 L275,35 L265,25 Z", id:"fi_c" },
+    { d:"M85,95 L82,105 L80,115 L83,125 L88,135 L95,140 L102,138 L108,130 L107,120 L105,110 L100,100 L92,95 Z", id:"uk_c" },
+    { d:"M85,85 L82,90 L85,95 L92,95 L100,100 L105,95 L102,88 L95,83 Z", id:"uk_sc" },
+    { d:"M65,105 L62,112 L64,122 L70,128 L78,126 L82,118 L80,110 L75,105 Z", id:"ie_c" },
+    { d:"M120,140 L115,155 L110,170 L108,185 L115,200 L125,210 L140,215 L155,208 L165,195 L168,180 L165,165 L160,150 L150,140 L135,135 Z", id:"fr_c" },
+    { d:"M75,210 L72,225 L78,240 L90,248 L110,250 L130,245 L142,235 L145,220 L140,212 L125,210 L110,208 L95,210 Z", id:"es_c" },
+    { d:"M72,215 L70,225 L72,238 L78,240 L82,232 L80,220 L75,212 Z", id:"pt_c" },
+    { d:"M165,105 L160,115 L158,130 L162,145 L170,155 L180,160 L195,158 L205,148 L210,135 L208,120 L200,110 L190,105 L178,102 Z", id:"de_c" },
+    { d:"M218,105 L215,115 L218,130 L225,140 L238,145 L252,140 L260,130 L258,118 L250,108 L238,105 L228,102 Z", id:"pl_c" },
+    { d:"M200,138 L198,145 L205,152 L215,155 L225,152 L228,145 L222,138 L210,136 Z", id:"cz_c" },
+    { d:"M228,142 L225,148 L230,155 L242,155 L250,150 L248,142 L238,140 Z", id:"sk_c" },
+    { d:"M195,155 L192,162 L198,170 L210,172 L222,168 L228,160 L222,155 L210,153 Z", id:"at_c" },
+    { d:"M235,155 L230,162 L235,172 L248,175 L258,170 L260,160 L252,155 L242,153 Z", id:"hu_c" },
+    { d:"M162,108 L160,115 L165,120 L175,118 L178,112 L175,108 Z", id:"nl_c" },
+    { d:"M155,122 L152,130 L158,135 L168,133 L172,128 L168,122 Z", id:"be_c" },
+    { d:"M178,85 L175,92 L178,100 L188,102 L195,98 L192,90 L185,85 Z", id:"dk_c" },
+    { d:"M190,175 L185,190 L188,205 L195,218 L205,225 L215,220 L218,208 L215,195 L210,182 L205,175 L198,172 Z", id:"it_c" },
+    { d:"M200,228 L195,232 L200,238 L210,236 L212,230 L208,226 Z", id:"it_si" },
+    { d:"M218,170 L215,178 L220,185 L230,188 L238,182 L235,175 L228,170 Z", id:"hr_c" },
+    { d:"M255,175 L252,182 L255,192 L265,195 L272,190 L270,180 L265,175 Z", id:"rs_c" },
+    { d:"M268,158 L265,168 L270,178 L280,182 L295,180 L302,172 L298,162 L288,158 L278,155 Z", id:"ro_c" },
+    { d:"M280,185 L278,195 L285,202 L298,200 L305,193 L302,185 L292,182 Z", id:"bg_c" },
+    { d:"M272,205 L268,215 L272,228 L282,235 L292,230 L295,218 L290,208 L282,205 Z", id:"gr_c" },
+    { d:"M305,195 L300,205 L305,215 L320,220 L340,218 L358,212 L370,205 L365,195 L350,192 L335,195 L318,198 Z", id:"tr_c" },
+  ];
   return (
     <div style={{ background:"#060e1c",border:"1px solid #1e2a3a",borderRadius:"7px",overflow:"hidden" }}>
       <div style={{ padding:"5px 8px 2px",fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",borderBottom:"1px solid rgba(255,255,255,0.05)" }}>{"\u{1F5FA}\uFE0F"} Portfolio Map</div>
-      <svg viewBox="0 0 280 172" style={{ display:"block",width:"100%" }}>
-        <rect width="280" height="172" fill="#060e1c" />
-        <polygon points="22,118 24,150 55,160 78,163 108,152 140,149 158,163 175,158 198,160 228,145 240,108 222,78 245,28 200,5 175,5 140,20 115,55 135,62 148,68 112,73 92,84 70,95 65,128 45,125 Z" fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8" />
-        <polygon points="42,95 44,72 52,55 62,58 60,70 72,95 68,106 50,106 Z" fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8" />
-        <polygon points="115,55 130,20 155,5 200,5 210,25 195,50 175,60 155,65 140,70 Z" fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8" />
-        <polygon points="220,120 235,115 260,120 270,135 255,145 235,148 215,140 210,130 Z" fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8" />
-        <polygon points="30,72 38,68 46,74 44,84 36,88 28,82 Z" fill="#1a2a18" stroke="#2d4028" strokeWidth="0.8" />
+      <svg viewBox="50 5 340 260" style={{ display:"block",width:"100%" }}>
+        <rect x="50" y="5" width="340" height="260" fill="#060e1c" />
+        <ellipse cx="130" cy="130" rx="25" ry="15" fill="#0a1628" opacity="0.5" />
+        <ellipse cx="300" cy="215" rx="30" ry="18" fill="#0a1628" opacity="0.4" />
+        {countries.map(c => (
+          <path key={c.id} d={c.d} fill="#141e14" stroke="#2a3a28" strokeWidth="0.6" opacity="0.9" />
+        ))}
         {MARKETS.map((mkt, mktIdx) => {
           const pos = MAP_CITY_POS[mkt.id];
           if (!pos) return null;
           const assets = assetsByMkt[mkt.id] || [];
           const hasAssets = assets.length > 0;
-          const r = hasAssets ? 10 : 6;
-          const activeColors = ["#22d3ee","#34d399","#fbbf24","#a78bfa","#f472b6","#60a5fa","#fb923c","#4ade80","#f87171","#e879f9","#38bdf8","#facc15","#f97316","#a3e635","#c084fc","#fb7185","#67e8f9","#86efac","#fde047","#d946ef","#2dd4bf","#818cf8","#f43f5e","#84cc16"];
+          const r = hasAssets ? 10 : 5;
+          const activeColors = ["#22d3ee","#34d399","#a78bfa","#f472b6","#60a5fa","#4ade80","#f87171","#e879f9","#38bdf8","#86efac","#d946ef","#2dd4bf","#818cf8","#f43f5e","#84cc16","#fb7185","#67e8f9","#c084fc","#22d3ee","#34d399","#a78bfa","#60a5fa","#4ade80","#38bdf8"];
           const ac = activeColors[mktIdx % activeColors.length];
           return (
             <g key={mkt.id}>
               {hasAssets && <polygon points={hexPts(pos.x, pos.y, r + 5)} fill={ac + "22"} stroke={ac + "55"} strokeWidth="0.5" />}
               <polygon points={hexPts(pos.x, pos.y, r)} fill={hasAssets ? ac + "33" : "#1a2030"} stroke={hasAssets ? ac : "#3a4a5a"} strokeWidth={hasAssets ? 2 : 0.5} />
-              <text x={pos.x} y={pos.y + 2.8} textAnchor="middle" fontSize={hasAssets ? 7 : 5.5} fill={hasAssets ? ac : "#4a5a6a"} fontWeight="800" fontFamily="'Inter', sans-serif">{mkt.id.toUpperCase()}</text>
+              <text x={pos.x} y={pos.y + 2.8} textAnchor="middle" fontSize={hasAssets ? 7 : 5} fill={hasAssets ? ac : "#4a5a6a"} fontWeight="800" fontFamily="'Inter', sans-serif">{mkt.id.toUpperCase()}</text>
               {hasAssets && (
                 <>
                   <circle cx={pos.x} cy={pos.y - r - 6} r="5" fill={ac} />
                   <line x1={pos.x} y1={pos.y - r - 1} x2={pos.x} y2={pos.y - r - 5} stroke={ac} strokeWidth="2" />
                   <text x={pos.x} y={pos.y - r - 3.8} textAnchor="middle" fontSize="5.5" fill="#000" fontWeight="800">{assets.length}</text>
-                  <text x={pos.x} y={pos.y + r + 8} textAnchor="middle" fontSize="5" fill={ac} fontFamily="'Inter', sans-serif" fontWeight="600">{mkt.city}</text>
+                  <text x={pos.x} y={pos.y + r + 8} textAnchor="middle" fontSize="4.5" fill={ac} fontFamily="'Inter', sans-serif" fontWeight="600">{mkt.city}</text>
                 </>
               )}
             </g>
@@ -437,7 +446,7 @@ function NewsFeed({ items }) {
   return (
     <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"7px",overflow:"hidden",maxHeight:"96px" }}>
       <div style={{ padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:"5px",borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
-        <span style={{ fontSize:"9px",fontWeight:700,color:T.amb,letterSpacing:"0.1em" }}>{"\u{1F4F0}"} NEWS</span>
+        <span style={{ fontSize:"9px",fontWeight:700,color:"#22d3ee",letterSpacing:"0.1em" }}>{"\u{1F4F0}"} NEWS</span>
         <span style={{ fontSize:"8px",color:T.txtM }}>{items.length}</span>
       </div>
       <div ref={ref} style={{ overflowY:"auto",maxHeight:"70px",padding:"3px 10px" }}>
@@ -451,32 +460,381 @@ function NewsFeed({ items }) {
   );
 }
 
-/* ===== TENANT MODAL ===== */
-function TenantModal({ candidates, assetName, onSelect, onClose }) {
+/* ===== TENANT NEGOTIATION MODAL ===== */
+function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
+  const [selected, setSelected] = useState(null);
+  const [mode, setMode] = useState("list"); // list | negotiate | result
+  const [counter, setCounter] = useState({ rent:"", term:"", rentFree:"", capContr:"" });
+  const [result, setResult] = useState(null);
+
+  const startNegotiate = (c) => {
+    setSelected(c);
+    setCounter({ rent:c.rentPsm.toFixed(1), term:String(c.term), rentFree:String(c.rentFreeMonths), capContr:String(c.capContribution) });
+    setMode("negotiate");
+  };
+
+  const submitCounter = () => {
+    const c = selected;
+    const offeredRent = parseFloat(counter.rent) || c.rentPsm;
+    const offeredTerm = parseInt(counter.term) || c.term;
+    const offeredRF = parseInt(counter.rentFree) || 0;
+    const offeredCap = parseInt(counter.capContr) || 0;
+
+    // Evaluate counter-offer
+    const rentDelta = (offeredRent - c.rentPsm) / c.rentPsm;
+    const termDelta = (offeredTerm - c.term) / Math.max(1, c.term);
+    const rfDelta = c.rentFreeMonths > 0 ? (offeredRF - c.rentFreeMonths) / c.rentFreeMonths : (offeredRF > 0 ? 1 : 0);
+    const capDelta = c.capContribution > 0 ? (offeredCap - c.capContribution) / c.capContribution : (offeredCap > 0 ? 1 : 0);
+
+    // Landlord-favorable moves: higher rent, longer term, less rent-free, less cap contribution
+    const favorability = rentDelta * 2.0 + termDelta * 0.5 - rfDelta * 0.3 - capDelta * 0.3;
+
+    let outcome;
+    if (favorability <= c.flexOnRent * 0.5) {
+      // Within acceptable range — accepted
+      outcome = "accepted";
+    } else if (favorability <= c.flexOnRent * 1.5 && Math.random() < c.patience) {
+      // Stretch but possible — they compromise
+      const meetRent = c.rentPsm + (offeredRent - c.rentPsm) * rBetween(0.4, 0.7);
+      const meetTerm = Math.round(c.term + (offeredTerm - c.term) * rBetween(0.3, 0.6));
+      const meetRF = Math.max(0, Math.round(c.rentFreeMonths + (offeredRF - c.rentFreeMonths) * rBetween(0.3, 0.6)));
+      outcome = "compromise";
+      setSelected({ ...c, rentPsm: meetRent, term: Math.max(1, meetTerm), rentFreeMonths: meetRF, capContribution: offeredCap > 0 ? Math.round(c.capContribution + (offeredCap - c.capContribution) * 0.5) : 0, _compromised: true });
+    } else {
+      outcome = "rejected";
+    }
+    setResult(outcome);
+    if (outcome === "accepted") {
+      setSelected({ ...c, rentPsm: offeredRent, term: offeredTerm, rentFreeMonths: offeredRF, capContribution: offeredCap });
+    }
+    setMode("result");
+  };
+
+  const acceptDeal = () => {
+    onSelect({
+      name: selected.name,
+      term: selected.term,
+      rentPsm: selected.rentPsm,
+      rentFreeMonths: selected.rentFreeMonths || 0,
+      capContribution: (selected.capContribution || 0) * (assetGla || 0),
+    });
+  };
+
+  const gla = assetGla || 10000;
+  const ti = selected ? getTI(selected.name) : null;
+
   return (
-    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
-      <div style={{ background:"#111827",border:"1px solid #3b82f6",borderRadius:"10px",padding:"20px",maxWidth:"520px",width:"92%",maxHeight:"80vh",overflowY:"auto" }}>
-        <div style={{ fontSize:"15px",fontWeight:800,color:"#fff",marginBottom:"4px" }}>{"\u{1F3E2}"} Tenant Interest - {assetName}</div>
-        <div style={{ fontSize:"10px",color:"#94a3b8",marginBottom:"16px" }}>Multiple tenants interested. Choose based on credit quality and risk.</div>
-        {candidates.map((c, i) => {
-          const info = getTI(c.name);
-          return (
-            <div key={i} onClick={() => onSelect(c)} style={{ background:"#1a2234",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"7px",padding:"11px 13px",marginBottom:"7px",cursor:"pointer" }}>
-              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
-                <span style={{ fontSize:"13px",fontWeight:700,color:"#fff" }}>{c.name}</span>
-                <span style={{ fontSize:"11px",fontWeight:700,color:credCol(info.credit),background:"rgba(0,0,0,0.3)",padding:"2px 8px",borderRadius:"4px" }}>{info.credit}</span>
+    <div style={{ position:"fixed",inset:0,background:"rgba(4,8,16,0.88)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif",backdropFilter:"blur(4px)" }}>
+      <div style={{ background:"#0c1120",border:"1px solid #1e2a3a",borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",maxHeight:"88vh",overflowY:"auto",boxShadow:"0 24px 64px rgba(0,0,0,0.8)" }}>
+        {/* Header */}
+        <div style={{ background:"#0f172a",padding:"6px 20px",borderBottom:"1px solid #1e2a3a",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+          <span style={{ fontSize:"8px",color:"#475569",fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Lease Negotiation</span>
+          <span style={{ fontSize:"8px",color:"#475569" }}>{assetName}</span>
+        </div>
+
+        <div style={{ padding:"16px 20px" }}>
+          {mode === "list" && (
+            <>
+              <div style={{ fontSize:"11px",color:"#94a3b8",marginBottom:"14px",lineHeight:1.5 }}>
+                {candidates.length} prospective tenant{candidates.length !== 1 ? "s" : ""} have expressed interest. Review terms and negotiate or accept directly.
               </div>
-              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"5px",fontSize:"9px" }}>
-                <div><div style={{ color:"#64748b" }}>Sector</div><div style={{ color:"#e2e8f0",fontWeight:600 }}>{info.sector}</div></div>
-                <div><div style={{ color:"#64748b" }}>Revenue</div><div style={{ color:"#e2e8f0",fontWeight:600 }}>{info.revenue}</div></div>
-                <div><div style={{ color:"#64748b" }}>Lease</div><div style={{ color:"#e2e8f0",fontWeight:600 }}>{c.term}yr</div></div>
-                <div><div style={{ color:"#64748b" }}>Risk</div><div style={{ color:info.insolvencyRisk > 0.10 ? "#ef4444" : info.insolvencyRisk > 0.05 ? "#f59e0b" : "#10b981",fontWeight:700 }}>{info.insolvencyRisk > 0.10 ? "HIGH" : info.insolvencyRisk > 0.05 ? "MED" : "LOW"}</div></div>
+              {candidates.map((c, i) => {
+                const info = getTI(c.name);
+                const annualRent = c.rentPsm * gla;
+                const rfCost = c.rentFreeMonths > 0 ? (annualRent / 12) * c.rentFreeMonths : 0;
+                const capCost = c.capContribution * gla;
+                const effectiveRent = annualRent > 0 ? (annualRent * c.term - rfCost) / c.term : 0;
+                return (
+                  <div key={i} style={{ background:"#0f172a",border:"1px solid #1e2a3a",borderRadius:"4px",padding:"12px 14px",marginBottom:"8px" }}>
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px" }}>
+                      <div>
+                        <span style={{ fontSize:"13px",fontWeight:700,color:"#e2e8f0" }}>{c.name}</span>
+                        <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(info.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px" }}>{info.credit}</span>
+                      </div>
+                      <span style={{ fontSize:"9px",color:"#64748b" }}>{info.sector}</span>
+                    </div>
+                    {/* Terms grid */}
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"1px",background:"#1e2a3a",borderRadius:"3px",overflow:"hidden",marginBottom:"8px" }}>
+                      <div style={{ background:"#0c1120",padding:"6px 8px",textAlign:"center" }}>
+                        <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Rent /sqm</div>
+                        <div style={{ fontSize:"13px",fontWeight:800,color:"#e2e8f0" }}>{"\u20AC"}{c.rentPsm.toFixed(1)}</div>
+                      </div>
+                      <div style={{ background:"#0c1120",padding:"6px 8px",textAlign:"center" }}>
+                        <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Term</div>
+                        <div style={{ fontSize:"13px",fontWeight:800,color:"#e2e8f0" }}>{c.term}yr</div>
+                      </div>
+                      <div style={{ background:"#0c1120",padding:"6px 8px",textAlign:"center" }}>
+                        <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Rent Free</div>
+                        <div style={{ fontSize:"13px",fontWeight:800,color:c.rentFreeMonths > 0 ? "#f59e0b" : "#334155" }}>{c.rentFreeMonths > 0 ? c.rentFreeMonths + "mo" : "\u2014"}</div>
+                      </div>
+                      <div style={{ background:"#0c1120",padding:"6px 8px",textAlign:"center" }}>
+                        <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Cap Contr</div>
+                        <div style={{ fontSize:"13px",fontWeight:800,color:c.capContribution > 0 ? "#f59e0b" : "#334155" }}>{c.capContribution > 0 ? "\u20AC"+c.capContribution+"/sqm" : "\u2014"}</div>
+                      </div>
+                    </div>
+                    {/* Financial summary */}
+                    <div style={{ display:"flex",justifyContent:"space-between",fontSize:"9px",color:"#64748b",marginBottom:"8px",padding:"0 2px" }}>
+                      <span>Annual rent: {fmtM(annualRent)}</span>
+                      {rfCost > 0 && <span style={{ color:"#f59e0b" }}>RF cost: {fmtK(rfCost)}</span>}
+                      {capCost > 0 && <span style={{ color:"#f59e0b" }}>Cap cost: {fmtK(capCost)}</span>}
+                      <span>Effective: {fmtM(effectiveRent)}/yr</span>
+                    </div>
+                    {c.breakOption > 0 && <div style={{ fontSize:"9px",color:"#64748b",marginBottom:"6px" }}>Break option at year {c.breakOption}</div>}
+                    <div style={{ display:"flex",gap:"6px" }}>
+                      <button onClick={() => { setSelected(c); setResult(null); setMode("result"); setResult("accepted"); setSelected({ ...c }); }} style={{ flex:1,padding:"7px",background:"#064e3b",color:"#10b981",border:"1px solid #10b981",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit" }}>Accept Terms</button>
+                      <button onClick={() => startNegotiate(c)} style={{ flex:1,padding:"7px",background:"#1e3a5f",color:"#60a5fa",border:"1px solid #3b82f6",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit" }}>Counter-Offer</button>
+                    </div>
+                  </div>
+                );
+              })}
+              <button onClick={onClose} style={{ marginTop:"4px",padding:"8px 16px",background:"transparent",border:"1px solid #1e2a3a",borderRadius:"3px",color:"#64748b",cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit",width:"100%" }}>Decline All Offers</button>
+            </>
+          )}
+
+          {mode === "negotiate" && selected && (
+            <>
+              <div style={{ marginBottom:"14px" }}>
+                <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
+                  <div>
+                    <span style={{ fontSize:"14px",fontWeight:700,color:"#e2e8f0" }}>{selected.name}</span>
+                    <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(ti.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px" }}>{ti.credit}</span>
+                  </div>
+                  <button onClick={() => setMode("list")} style={{ padding:"3px 8px",background:"transparent",border:"1px solid #1e2a3a",borderRadius:"3px",color:"#64748b",cursor:"pointer",fontSize:"9px",fontFamily:"inherit" }}>Back</button>
+                </div>
+                <div style={{ fontSize:"10px",color:"#64748b",lineHeight:1.5 }}>
+                  {ti.sector} | Revenue {ti.revenue} | {ti.employees} employees | Risk: {ti.insolvencyRisk > 0.10 ? "High" : ti.insolvencyRisk > 0.05 ? "Medium" : "Low"}
+                </div>
               </div>
-              <div style={{ marginTop:"5px",fontSize:"9px",color:"#7c8ba3" }}>{"\u20AC"}{c.rentPsm.toFixed(1)}/sqm | {info.employees} staff</div>
+
+              {/* Their offer vs your counter */}
+              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1px",background:"#1e2a3a",borderRadius:"4px",overflow:"hidden",marginBottom:"14px" }}>
+                <div style={{ background:"#0f172a",padding:"10px 12px" }}>
+                  <div style={{ fontSize:"8px",color:"#475569",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Their Offer</div>
+                  <div style={{ fontSize:"10px",color:"#94a3b8",marginBottom:"4px" }}>Rent: <span style={{ color:"#e2e8f0",fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
+                  <div style={{ fontSize:"10px",color:"#94a3b8",marginBottom:"4px" }}>Term: <span style={{ color:"#e2e8f0",fontWeight:700 }}>{selected.term} years</span></div>
+                  <div style={{ fontSize:"10px",color:"#94a3b8",marginBottom:"4px" }}>Rent free: <span style={{ color:selected.rentFreeMonths > 0 ? "#f59e0b" : "#334155",fontWeight:700 }}>{selected.rentFreeMonths > 0 ? selected.rentFreeMonths + " months" : "None"}</span></div>
+                  <div style={{ fontSize:"10px",color:"#94a3b8" }}>Cap contribution: <span style={{ color:selected.capContribution > 0 ? "#f59e0b" : "#334155",fontWeight:700 }}>{selected.capContribution > 0 ? "\u20AC"+selected.capContribution+"/sqm" : "None"}</span></div>
+                </div>
+                <div style={{ background:"#0c1625",padding:"10px 12px" }}>
+                  <div style={{ fontSize:"8px",color:"#3b82f6",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Your Counter</div>
+                  {[
+                    { label:"Rent (\u20AC/sqm)", key:"rent", type:"number", step:"0.1" },
+                    { label:"Term (years)", key:"term", type:"number", step:"1" },
+                    { label:"Rent free (months)", key:"rentFree", type:"number", step:"1" },
+                    { label:"Cap contribution (\u20AC/sqm)", key:"capContr", type:"number", step:"1" },
+                  ].map(f => (
+                    <div key={f.key} style={{ marginBottom:"6px" }}>
+                      <div style={{ fontSize:"9px",color:"#64748b",marginBottom:"2px" }}>{f.label}</div>
+                      <input type={f.type} step={f.step} value={counter[f.key]} onChange={e => setCounter(p => ({...p, [f.key]: e.target.value}))} style={{ width:"100%",padding:"4px 6px",background:"#0a0f1a",border:"1px solid #1e2a3a",borderRadius:"3px",color:"#e2e8f0",fontSize:"11px",fontFamily:"inherit",boxSizing:"border-box" }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick financial comparison */}
+              {(() => {
+                const theirAnnual = selected.rentPsm * gla;
+                const theirRFCost = selected.rentFreeMonths > 0 ? (theirAnnual / 12) * selected.rentFreeMonths : 0;
+                const theirCapCost = selected.capContribution * gla;
+                const theirEffective = selected.term > 0 ? (theirAnnual * selected.term - theirRFCost) / selected.term : 0;
+                const yourRent = (parseFloat(counter.rent) || 0) * gla;
+                const yourRF = parseInt(counter.rentFree) || 0;
+                const yourRFCost = yourRF > 0 ? (yourRent / 12) * yourRF : 0;
+                const yourCapCost = (parseInt(counter.capContr) || 0) * gla;
+                const yourTerm = parseInt(counter.term) || 1;
+                const yourEffective = yourTerm > 0 ? (yourRent * yourTerm - yourRFCost) / yourTerm : 0;
+                const delta = yourEffective - theirEffective;
+                return (
+                  <div style={{ background:"#0f172a",borderRadius:"4px",padding:"10px 12px",marginBottom:"14px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",textAlign:"center" }}>
+                    <div>
+                      <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Their Effective</div>
+                      <div style={{ fontSize:"12px",fontWeight:700,color:"#e2e8f0" }}>{fmtM(theirEffective)}/yr</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Your Counter</div>
+                      <div style={{ fontSize:"12px",fontWeight:700,color:"#60a5fa" }}>{fmtM(yourEffective)}/yr</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:"8px",color:"#475569",fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Delta</div>
+                      <div style={{ fontSize:"12px",fontWeight:700,color:delta > 0 ? "#34d399" : delta < 0 ? "#f87171" : "#64748b" }}>{delta >= 0 ? "+" : ""}{fmtK(delta)}</div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <button onClick={submitCounter} style={{ width:"100%",padding:"10px",background:"#1e3a5f",color:"#e2e8f0",border:"1px solid #3b82f6",borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" }}>Submit Counter-Offer</button>
+              <div style={{ textAlign:"center",marginTop:"6px",fontSize:"8px",color:"#334155" }}>The tenant may accept, reject, or propose a compromise.</div>
+            </>
+          )}
+
+          {mode === "result" && selected && (
+            <>
+              {result === "accepted" && (
+                <div style={{ textAlign:"center",padding:"12px 0 16px" }}>
+                  <div style={{ fontSize:"9px",color:"#10b981",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Terms Accepted</div>
+                  <div style={{ fontSize:"16px",fontWeight:800,color:"#e2e8f0",marginBottom:"4px" }}>{selected.name}</div>
+                  <div style={{ fontSize:"10px",color:"#64748b",marginBottom:"14px" }}>has accepted the proposed lease terms.</div>
+                  <div style={{ background:"#0f172a",borderRadius:"4px",padding:"12px",textAlign:"left",marginBottom:"14px" }}>
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"10px" }}>
+                      <div><span style={{ color:"#64748b" }}>Headline rent:</span> <span style={{ color:"#e2e8f0",fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
+                      <div><span style={{ color:"#64748b" }}>Term:</span> <span style={{ color:"#e2e8f0",fontWeight:700 }}>{selected.term} years</span></div>
+                      <div><span style={{ color:"#64748b" }}>Rent free:</span> <span style={{ color:selected.rentFreeMonths > 0 ? "#f59e0b" : "#64748b",fontWeight:700 }}>{selected.rentFreeMonths > 0 ? selected.rentFreeMonths + " months" : "None"}</span></div>
+                      <div><span style={{ color:"#64748b" }}>Cap contribution:</span> <span style={{ color:selected.capContribution > 0 ? "#f59e0b" : "#64748b",fontWeight:700 }}>{selected.capContribution > 0 ? fmtK(selected.capContribution * gla) : "None"}</span></div>
+                      <div><span style={{ color:"#64748b" }}>Annual rent:</span> <span style={{ color:"#34d399",fontWeight:700 }}>{fmtM(selected.rentPsm * gla)}</span></div>
+                    </div>
+                  </div>
+                  <button onClick={acceptDeal} style={{ width:"100%",padding:"10px",background:"#064e3b",color:"#10b981",border:"1px solid #10b981",borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" }}>Execute Lease</button>
+                </div>
+              )}
+              {result === "compromise" && (
+                <div style={{ textAlign:"center",padding:"12px 0 16px" }}>
+                  <div style={{ fontSize:"9px",color:"#f59e0b",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Compromise Proposed</div>
+                  <div style={{ fontSize:"16px",fontWeight:800,color:"#e2e8f0",marginBottom:"4px" }}>{selected.name}</div>
+                  <div style={{ fontSize:"10px",color:"#64748b",marginBottom:"14px" }}>has come back with revised terms. This is their final position.</div>
+                  <div style={{ background:"#0f172a",borderRadius:"4px",padding:"12px",textAlign:"left",marginBottom:"14px" }}>
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"10px" }}>
+                      <div><span style={{ color:"#64748b" }}>Headline rent:</span> <span style={{ color:"#e2e8f0",fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
+                      <div><span style={{ color:"#64748b" }}>Term:</span> <span style={{ color:"#e2e8f0",fontWeight:700 }}>{selected.term} years</span></div>
+                      <div><span style={{ color:"#64748b" }}>Rent free:</span> <span style={{ color:selected.rentFreeMonths > 0 ? "#f59e0b" : "#64748b",fontWeight:700 }}>{selected.rentFreeMonths > 0 ? selected.rentFreeMonths + " months" : "None"}</span></div>
+                      <div><span style={{ color:"#64748b" }}>Cap contribution:</span> <span style={{ color:selected.capContribution > 0 ? "#f59e0b" : "#64748b",fontWeight:700 }}>{selected.capContribution > 0 ? fmtK(selected.capContribution * gla) : "None"}</span></div>
+                      <div><span style={{ color:"#64748b" }}>Annual rent:</span> <span style={{ color:"#34d399",fontWeight:700 }}>{fmtM(selected.rentPsm * gla)}</span></div>
+                    </div>
+                  </div>
+                  <div style={{ display:"flex",gap:"6px" }}>
+                    <button onClick={acceptDeal} style={{ flex:1,padding:"10px",background:"#064e3b",color:"#10b981",border:"1px solid #10b981",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Accept Compromise</button>
+                    <button onClick={() => setMode("list")} style={{ flex:1,padding:"10px",background:"transparent",color:"#64748b",border:"1px solid #1e2a3a",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Back to Offers</button>
+                  </div>
+                </div>
+              )}
+              {result === "rejected" && (
+                <div style={{ textAlign:"center",padding:"12px 0 16px" }}>
+                  <div style={{ fontSize:"9px",color:"#ef4444",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Counter-Offer Rejected</div>
+                  <div style={{ fontSize:"16px",fontWeight:800,color:"#e2e8f0",marginBottom:"4px" }}>{selected.name}</div>
+                  <div style={{ fontSize:"10px",color:"#64748b",marginBottom:"14px",lineHeight:1.6 }}>has rejected your counter-offer. The terms were too far from their position. You may negotiate with other interested parties.</div>
+                  <button onClick={() => { setMode("list"); setSelected(null); setResult(null); }} style={{ width:"100%",padding:"10px",background:"transparent",color:"#64748b",border:"1px solid #1e2a3a",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Back to Offers</button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== WELCOME MODAL ===== */
+function WelcomeModal({ companyName, cash, startMarkets, difficulty, portfolio, onClose }) {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 300);
+    const t2 = setTimeout(() => setPhase(2), 700);
+    const t3 = setTimeout(() => setPhase(3), 1100);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+  const mktNames = startMarkets.map(id => MARKETS.find(m => m.id === id)).filter(Boolean);
+  const seedAssets = portfolio.length;
+  const seedGAV = portfolio.reduce((a, x) => a + (x.value || 0), 0);
+  const seedGRI = portfolio.reduce((a, x) => a + (x.gri || 0), 0);
+  const avgOcc = seedAssets > 0 ? portfolio.reduce((a, x) => a + x.occupancy, 0) / seedAssets : 0;
+  const dateStr = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+  return (
+    <div style={{ position:"fixed",inset:0,background:"rgba(4,8,16,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif",backdropFilter:"blur(6px)" }}>
+      <div style={{ background:"#0c1120",border:"1px solid #1e2a3a",borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,0.8)" }}>
+        {/* Confidential header strip */}
+        <div style={{ background:"#0f172a",padding:"6px 28px",borderBottom:"1px solid #1e2a3a",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+          <span style={{ fontSize:"8px",color:"#475569",fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Confidential — Board Use Only</span>
+          <span style={{ fontSize:"8px",color:"#475569",fontWeight:500 }}>{dateStr}</span>
+        </div>
+
+        {/* Title block */}
+        <div style={{ padding:"32px 28px 20px",borderBottom:"1px solid #1e2a3a" }}>
+          <div style={{ display:"flex",alignItems:"flex-start",gap:"16px" }}>
+            <Logo size={38} />
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:"9px",color:"#64748b",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"6px" }}>Investment Committee Briefing</div>
+              <div style={{ fontSize:"24px",fontWeight:800,color:"#ffffff",letterSpacing:"0.02em",lineHeight:1.15,marginBottom:"4px" }}>{companyName}</div>
+              <div style={{ fontSize:"11px",color:"#94a3b8",lineHeight:1.5 }}>
+                European logistics real estate platform. You have been appointed CEO with a mandate to deploy {fmtM(cash)} of committed equity across {mktNames.length} target market{mktNames.length !== 1 ? "s" : ""}.
+              </div>
             </div>
-          );
-        })}
-        <button onClick={onClose} style={{ marginTop:"8px",padding:"8px 16px",background:"transparent",border:"1px solid #334155",borderRadius:"5px",color:"#94a3b8",cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit" }}>Decline All</button>
+          </div>
+        </div>
+
+        <div style={{ padding:"20px 28px" }}>
+          {/* LP Return Targets */}
+          <div style={{ opacity:phase>=1?1:0, transform:phase>=1?"translateY(0)":"translateY(8px)", transition:"all 0.4s ease", marginBottom:"18px" }}>
+            <div style={{ fontSize:"9px",fontWeight:700,color:"#64748b",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid #1e2a3a" }}>LP Return Targets</div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"1px",background:"#1e2a3a",borderRadius:"4px",overflow:"hidden" }}>
+              {[
+                { label:"Net IRR", value:"10\u201312%", sub:"5-year horizon" },
+                { label:"Portfolio GAV", value:"\u20AC500m+", sub:"Institutional scale" },
+                { label:"Occupancy", value:">90%", sub:"Weighted by GLA" },
+                { label:"NOI Yield", value:">5.0%", sub:"On portfolio GAV" },
+              ].map((t, i) => (
+                <div key={i} style={{ background:"#0f172a",padding:"12px 10px",textAlign:"center" }}>
+                  <div style={{ fontSize:"8px",color:"#64748b",fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"5px" }}>{t.label}</div>
+                  <div style={{ fontSize:"18px",fontWeight:800,color:"#e2e8f0",lineHeight:1 }}>{t.value}</div>
+                  <div style={{ fontSize:"8px",color:"#475569",marginTop:"4px" }}>{t.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Opening Position */}
+          <div style={{ opacity:phase>=2?1:0, transform:phase>=2?"translateY(0)":"translateY(8px)", transition:"all 0.4s ease", marginBottom:"18px" }}>
+            <div style={{ fontSize:"9px",fontWeight:700,color:"#64748b",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid #1e2a3a" }}>Opening Position</div>
+            <div style={{ background:"#0f172a",borderRadius:"4px",padding:"14px 16px" }}>
+              <table style={{ width:"100%",borderCollapse:"collapse" }}>
+                <tbody>
+                  {[
+                    ["Committed Equity", fmtM(cash)],
+                    ["Target Markets", mktNames.map(m => m.name).join(", ")],
+                    ...(seedAssets > 0 ? [
+                      ["Seed Assets", seedAssets + " properties"],
+                      ["Opening GAV", fmtM(seedGAV)],
+                      ["Gross Rental Income", fmtM(seedGRI) + " p.a."],
+                      ["Avg Occupancy", fmtP(avgOcc)],
+                    ] : [
+                      ["Strategy", "Blank slate \u2014 no seed portfolio"],
+                    ]),
+                  ].map(([l, v], i) => (
+                    <tr key={i} style={{ borderBottom:i < (seedAssets > 0 ? 5 : 2) ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                      <td style={{ padding:"5px 0",fontSize:"10px",color:"#64748b",fontWeight:500 }}>{l}</td>
+                      <td style={{ padding:"5px 0",fontSize:"10px",color:"#e2e8f0",fontWeight:700,textAlign:"right" }}>{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Risk Factors */}
+          <div style={{ opacity:phase>=3?1:0, transform:phase>=3?"translateY(0)":"translateY(8px)", transition:"all 0.4s ease", marginBottom:"22px" }}>
+            <div style={{ fontSize:"9px",fontWeight:700,color:"#64748b",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid #1e2a3a" }}>Key Risk Factors</div>
+            <div style={{ background:"#0f172a",borderRadius:"4px",padding:"14px 16px",borderLeft:"3px solid #b45309" }}>
+              {[
+                ["Void cost exposure", "Empty space incurs rates, insurance, and irrecoverable service charge. These costs erode NOI and can turn your portfolio cash-negative."],
+                ["Condition deterioration", "Assets that are not maintained will degrade over time, increasing operating costs by up to 1.5x and triggering tenant departures."],
+                ["Negative NOI risk", "If irrecoverable property costs and G&A exceed rental income, the platform burns cash every quarter. The board will intervene."],
+                ["Quarterly board review", "The Investment Committee reviews portfolio performance each quarter. Persistent underperformance against the mandate will result in a strategic review."],
+              ].map(([title, desc], i) => (
+                <div key={i} style={{ marginBottom:i < 3 ? "10px" : 0 }}>
+                  <div style={{ fontSize:"10px",color:"#e2e8f0",fontWeight:700,marginBottom:"2px" }}>{title}</div>
+                  <div style={{ fontSize:"9px",color:"#64748b",lineHeight:1.55 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <button onClick={onClose} style={{
+            width:"100%",padding:"13px",background:"#1e3a5f",color:"#e2e8f0",border:"1px solid #3b82f6",borderRadius:"4px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.06em",textTransform:"uppercase",
+            opacity:phase>=3?1:0.3, transition:"all 0.4s ease",
+          }}>
+            Acknowledge &amp; Proceed
+          </button>
+          <div style={{ textAlign:"center",marginTop:"8px",fontSize:"8px",color:"#334155",letterSpacing:"0.06em" }}>By proceeding you accept the terms of the Investment Committee mandate.</div>
+        </div>
       </div>
     </div>
   );
@@ -485,7 +843,8 @@ function TenantModal({ candidates, assetName, onSelect, onClose }) {
 /* ===== GAME ENGINE ===== */
 let aCtr = 0, usedN = new Set();
 
-function genAsset(mkt, acId) {
+function genAsset(mkt, acId, opts) {
+  const { isSeed = false } = opts || {};
   aCtr++;
   const ac = ASSET_CLASSES.find(a => a.id === acId) || ASSET_CLASSES[0];
   let name; do { name = rFrom(ASSET_NAMES); } while (usedN.has(mkt.id + name) && usedN.size < 800);
@@ -494,7 +853,7 @@ function genAsset(mkt, acId) {
   const rentPsm = mkt.baseRent * ac.rentMult * rBetween(0.85, 1.2);
   const occ = Math.min(1, Math.max(0, mkt.demand * ac.demandMult * rBetween(0.7, 1.1)));
   const tenant = occ > 0.5 ? rFrom(TENANT_POOL[ac.id] || TENANT_POOL.bigbox) : null;
-  const walt = occ > 0.5 ? Math.round(rBetween(1, 12)) : 0;
+  const walt = isSeed ? (occ > 0.5 ? rFrom([0.25, 0.5, 0.75, 1.0]) : 0) : (occ > 0.5 ? Math.round(rBetween(1, 12)) : 0);
   const gri = gla * rentPsm * occ;
   const val = gri / (mkt.capRate * ac.capRateMult / 100);
   const age = Math.round(rBetween(2, 25));
@@ -528,13 +887,33 @@ const GREEN_TENANT_BOOST = {
   crossdock:["DHL Express","UPS","FedEx"],
 };
 
-function genTenantCandidates(acId, rentPsm, epcRating, esgCount) {
+function genTenantCandidates(acId, rentPsm, epcRating, esgCount, marketNER) {
   const pool = [...(TENANT_POOL[acId] || TENANT_POOL.bigbox)];
   const isGreen = (esgCount || 0) > 0 && (epcRating === "A" || epcRating === "B");
   if (isGreen) { const prems = GREEN_TENANT_BOOST[acId] || GREEN_TENANT_BOOST.bigbox; const pick = [...prems].sort(() => Math.random()-0.5).slice(0, 2); pick.forEach(t => { if (!pool.includes(t)) pool.unshift(t); }); }
   const count = 2 + Math.floor(Math.random() * 2);
   const candidates = pool.sort(() => Math.random()-0.5).slice(0, count);
-  return candidates.map(name => ({ name, term: Math.round(rBetween(isGreen ? 5 : 3, isGreen ? 12 : 10)), rentPsm: rentPsm * rBetween(isGreen ? 1.0 : 0.92, isGreen ? 1.18 : 1.12) }));
+  const baseRef = marketNER || rentPsm;
+  return candidates.map(name => {
+    const ti = getTI(name);
+    const creditMult = ti.insolvencyRisk < 0.03 ? 0.95 : ti.insolvencyRisk < 0.08 ? 1.0 : 1.06;
+    const offerRent = baseRef * creditMult * rBetween(isGreen ? 0.96 : 0.88, isGreen ? 1.12 : 1.06);
+    const termYrs = Math.round(rBetween(isGreen ? 5 : 3, isGreen ? 12 : 10));
+    const wantsRentFree = Math.random() < (ti.insolvencyRisk > 0.08 ? 0.6 : 0.25);
+    const wantsCapContr = Math.random() < (ti.insolvencyRisk > 0.08 ? 0.15 : 0.35);
+    return {
+      name,
+      term: termYrs,
+      rentPsm: offerRent,
+      rentFreeMonths: wantsRentFree ? Math.round(rBetween(2, 6)) : 0,
+      capContribution: wantsCapContr ? Math.round(rBetween(8, 25)) : 0, // per sqm
+      breakOption: termYrs > 5 && Math.random() < 0.4 ? Math.round(termYrs * rBetween(0.4, 0.6)) : 0,
+      flexOnRent: rBetween(0.03, 0.10), // how much they'll move on counter
+      flexOnTerm: Math.round(rBetween(0, 2)),
+      maxRentFreeAccept: Math.round(rBetween(3, 9)),
+      patience: rBetween(0.3, 0.9), // likelihood of accepting counter
+    };
+  });
 }
 
 function initMarketData() {
@@ -568,7 +947,6 @@ function calcBoardScore(m, state) {
   const irr = calcIRR(state.initialCash||state.cash, m.totalGAV, state.cash, state.quarter);
   if (irr !== null) score += Math.min(28, Math.max(-10, (irr / 0.12) * 28)); else score += 10;
   score += Math.min(24, m.avgOcc * 24);
-  // NOI yield can be negative — punish hard
   if (m.noiYield < 0) score += Math.max(-20, m.noiYield / 0.02 * 10);
   else score += Math.min(20, (m.noiYield / 0.05) * 20);
   const esg = calcESG(state.portfolio||[]);
@@ -577,7 +955,6 @@ function calcBoardScore(m, state) {
   const totalDebt = (state.debtDrawdowns||[]).reduce((a, d) => a + d.amount, 0);
   const ltv = m.totalGAV > 0 ? totalDebt / m.totalGAV : 0;
   if (ltv > 0.7) score -= 10; else if (ltv > 0.55) score -= 4;
-  // Extra penalty if NOI is negative
   if (m.noi < 0) score -= 15;
   return Math.round(Math.min(100, Math.max(0, score)));
 }
@@ -601,14 +978,14 @@ function initGame(cfg = {}) {
   const { companyName="NewCo", cash=150e6, startMarkets:sm=["uk","de","pl"], difficulty="guided" } = cfg;
   usedN = new Set(); aCtr = 0;
   const portfolio = [];
-  if (difficulty === "guided") { const cls = ["bigbox","fulfilment","lastmile"]; sm.forEach((mId, i) => { const m = MARKETS.find(x => x.id === mId); if (m) portfolio.push(genAsset(m, cls[i % cls.length])); }); }
+  if (difficulty === "guided") { const cls = ["bigbox","fulfilment","lastmile"]; sm.forEach((mId, i) => { const m = MARKETS.find(x => x.id === mId); if (m) portfolio.push(genAsset(m, cls[i % cls.length], { isSeed: true })); }); }
   const team = { transactions:1, assetMgmt:1, portfolioMgmt:1, bi:0, treasury:0, esg:0 };
   const acqM = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 16);
   const devM = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 8);
   const megaMkts = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 3);
   const megaAcq = megaMkts.map(m => genMegaAcquisition(m, 1));
   const marketData = initMarketData();
-  return { companyName, quarter:1, year:2026, cash, portfolio, team, acquisitions:[...acqM.map(m => genMktAsset(m, 1)), ...megaAcq], devSites:devM.map(m => genDev(m)), history:[], events:[], newsLog:[], initialCash:cash, tenantSelection:null, marketData, debtDrawdowns:[] };
+  return { companyName, quarter:1, year:2026, cash, portfolio, team, acquisitions:[...acqM.map(m => genMktAsset(m, 1)), ...megaAcq], devSites:devM.map(m => genDev(m)), history:[], events:[], newsLog:[], initialCash:cash, tenantSelection:null, marketData, debtDrawdowns:[], _startMarkets:sm, _difficulty:difficulty };
 }
 
 function getQL(q, y) { return "Q" + (((q-1)%4)+1) + " " + (y + Math.floor((q-1)/4)); }
@@ -625,15 +1002,7 @@ function calcMetrics(st) {
   const avgOcc = glaOp > 0 ? op.reduce((acc, a) => acc + a.occupancy * a.gla, 0) / glaOp : 0;
   const griWalt = op.reduce((acc, a) => acc + (a.leaseRemaining > 0 ? a.gri : 0), 0);
   const avgWALT = griWalt > 0 ? op.reduce((acc, a) => acc + a.leaseRemaining * a.gri, 0) / griWalt : 0;
-  
-  // Proper property cost calculation
-  let totalPropCosts = 0;
-  let totalNPI = 0;
-  let totalVoidCost = 0;
-  let totalInsurance = 0;
-  let totalMaintDrag = 0;
-  let totalMgmtFee = 0;
-  let totalRecoveredSC = 0;
+  let totalPropCosts = 0, totalNPI = 0, totalVoidCost = 0, totalInsurance = 0, totalMaintDrag = 0, totalMgmtFee = 0, totalRecoveredSC = 0;
   op.forEach(a => {
     const costs = calcAssetCosts(a);
     totalPropCosts += costs.totalIrrecoverable;
@@ -644,35 +1013,21 @@ function calcMetrics(st) {
     totalMgmtFee += costs.mgmtFee;
     totalRecoveredSC += costs.recoveredSC;
   });
-  
-  // Other income: recovered service charge, surrender premiums (small random), dilapidations
   const scRecoveryIncome = totalRecoveredSC;
-  const sundryIncome = totalGRI * 0.008; // signage, telecom masts, parking etc
+  const sundryIncome = totalGRI * 0.008;
   const totalOtherIncome = scRecoveryIncome + sundryIncome;
   const grossRevenue = totalGRI + totalOtherIncome;
-  
-  // Property operating expenses (recoverable + irrecoverable)
-  const totalPropertyOpex = totalPropCosts + totalRecoveredSC; // gross SC + insurance + rates + maint + mgmt
-  const netPropertyOpex = totalPropCosts; // irrecoverable portion only (net of SC recovery)
-  
+  const netPropertyOpex = totalPropCosts;
   const gaExp = teamQCost(team||{}) * 4;
-  
-  // Depreciation: ~2% of GAV p.a. for buildings (straight-line ~50yr life, excluding land ~40% of GAV)
-  const buildingValue = totalGAV * 0.60; // assume 60% buildings, 40% land
+  const buildingValue = totalGAV * 0.60;
   const depreciation = buildingValue * 0.02;
-  
-  const noi = totalNPI - gaExp; // NPI minus G&A
-  const ebitda = noi + depreciation; // add back depreciation (NOI already deducts it implicitly via maint, but depreciation is non-cash)
-  // Actually for RE: EBITDA = NOI (since NOI is already before depreciation and interest)
-  // So: EBITDA = GRI + Other Income - Property Opex (irrecoverable) - G&A
+  const noi = totalNPI - gaExp;
   const ebitdaCalc = grossRevenue - netPropertyOpex - gaExp;
-  
   const debtInt = (st.debtDrawdowns||[]).reduce((acc, d) => acc + d.amount * d.rate / 100, 0);
-  const ebt = ebitdaCalc - depreciation - debtInt; // earnings before tax
+  const ebt = ebitdaCalc - depreciation - debtInt;
   const taxRate = 0.20;
   const tax = ebt > 0 ? ebt * taxRate : 0;
   const netIncome = ebt - tax;
-  
   const noiYield = totalGAV > 0 ? noi / totalGAV : 0;
   return { totalGAV, totalGRI, avgOcc, avgWALT, noi, noiYield, assetCount:portfolio.length, totalGLA, totalPropCosts, totalNPI, totalVoidCost, totalInsurance, totalMaintDrag, totalMgmtFee, totalOtherIncome, scRecoveryIncome, sundryIncome, grossRevenue, gaExp, depreciation, ebitda:ebitdaCalc, debtInterest:debtInt, ebt, tax, netIncome, totalRecoveredSC };
 }
@@ -691,8 +1046,6 @@ function advanceQ(state) {
   if (tc > 0) ev.push(ql + ": Team salaries (" + fmtK(tc) + ")");
   const debtInt = (debtDrawdowns||[]).reduce((acc, d) => acc + d.amount * d.rate / 4 / 100, 0);
   if (debtInt > 0) { cash -= debtInt; ev.push(ql + ": Debt interest (" + fmtK(debtInt) + ")"); }
-  
-  // Quarterly rent collection and property costs
   const op = portfolio.filter(a => !a.developing);
   let qRent = 0, qPropCosts = 0, qVoidCost = 0;
   op.forEach(a => {
@@ -704,25 +1057,17 @@ function advanceQ(state) {
   });
   const qNetPropIncome = qRent - qPropCosts;
   cash += qNetPropIncome;
-  
   ev.push(ql + ": Rent " + fmtK(qRent) + ", prop costs " + fmtK(qPropCosts) + ", net " + fmtK(qNetPropIncome));
-  if (qVoidCost > 50000) {
-    news.push({ icon:"\u{1F4B8}", text:"Void costs: "+fmtK(qVoidCost)+" this quarter (rates + irrecoverable SC)", color:T.red });
-  }
-  if (qNetPropIncome < 0) {
-    news.push({ icon:"\u{1F6A8}", text:"NET PROPERTY INCOME NEGATIVE this quarter: "+fmtK(qNetPropIncome), color:T.red });
-  }
-  
+  if (qVoidCost > 50000) news.push({ icon:"\u{1F4B8}", text:"Void costs: "+fmtK(qVoidCost)+" this quarter (rates + irrecoverable SC)", color:T.red });
+  if (qNetPropIncome < 0) news.push({ icon:"\u{1F6A8}", text:"NET PROPERTY INCOME NEGATIVE this quarter: "+fmtK(qNetPropIncome), color:T.red });
   const am = Math.min(5, team.assetMgmt||0);
   const tx = Math.min(5, team.transactions||0);
   const opAssetsCount = portfolio.filter(a => !a.developing).length;
   const amRatio = am > 0 ? opAssetsCount / am : (opAssetsCount > 0 ? 99 : 0);
   const amStrained = amRatio > 4;
-  const amPenalty = amStrained ? Math.min(0.25, (amRatio - 4) * 0.04) : 0; // occupancy drift penalty
-  const amIssueMult = amStrained ? Math.min(3.0, 1 + (amRatio - 4) * 0.25) : 1.0; // issue frequency multiplier
-  if (amStrained) {
-    news.push({ icon:"\u26A0\uFE0F", text:"Asset Mgmt overstretched ("+amRatio.toFixed(1)+" assets/AM) — occupancy & condition at risk", color:T.amb });
-  }
+  const amPenalty = amStrained ? Math.min(0.25, (amRatio - 4) * 0.04) : 0;
+  const amIssueMult = amStrained ? Math.min(3.0, 1 + (amRatio - 4) * 0.25) : 1.0;
+  if (amStrained) news.push({ icon:"\u26A0\uFE0F", text:"Asset Mgmt overstretched ("+amRatio.toFixed(1)+" assets/AM) — occupancy & condition at risk", color:T.amb });
   let pendTS = null;
 
   portfolio.forEach(a => {
@@ -764,10 +1109,10 @@ function advanceQ(state) {
           a.tenant = null;
         }
       }
-    } else if (a.occupancy < 0.7 && Math.random() < 0.25 + am * 0.05) {
+    } else if (a.occupancy < 0.7 && Math.random() < 0.25 + am * 0.05 + (quarter <= 4 ? 0.15 : 0)) {
       const ds = (mkt?.demand||0.5) * (ac?.demandMult||1);
-      if (ds > 0.85 && !pendTS) {
-        pendTS = { assetId:a.id, assetName:a.flag+" "+a.name, candidates:genTenantCandidates(a.assetClass, a.rentPsm, a.epcRating, team.esg||0) };
+      if ((ds > 0.85 || quarter <= 4) && !pendTS) {
+        pendTS = { assetId:a.id, assetName:a.flag+" "+a.name, assetGla:a.gla, candidates:genTenantCandidates(a.assetClass, a.rentPsm, a.epcRating, team.esg||0, marketNER) };
         news.push({ icon:"\u{1F4CB}", text:"Tenant offers for " + a.name, color:T.acc });
       } else {
         a.occupancy = Math.min(1, a.occupancy + rBetween(0.15, 0.4));
@@ -793,13 +1138,8 @@ function advanceQ(state) {
     megaMkts.forEach(m => acquisitions.push(genMegaAcquisition(m, tx)));
   }
   devSites = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 5+Math.floor(Math.random()*5)).map(m => genDev(m));
-  
-  // Check NOI for the quarter
   const postMetrics = calcMetrics({ portfolio, team });
-  if (postMetrics.noi < 0) {
-    news.push({ icon:"\u{1F534}", text:"NOI IS NEGATIVE: "+fmtM(postMetrics.noi)+" p.a. — portfolio burning cash", color:"#ff3333" });
-  }
-  
+  if (postMetrics.noi < 0) news.push({ icon:"\u{1F534}", text:"NOI IS NEGATIVE: "+fmtM(postMetrics.noi)+" p.a. — portfolio burning cash", color:"#ff3333" });
   if (!news.length) news.push({ icon:"\u{1F4CA}", text:"Board reviewed quarterly pack — check updated commentary", color:T.txtD });
   const metrics = calcMetrics({ portfolio, team });
   history.push({ quarter, ...metrics, cash });
@@ -815,17 +1155,10 @@ function genSentiment(met, hist, state) {
 
   sArr.push(met.totalGAV > 5e8 ? { metric:"GAV",mood:"positive",label:"Strong",comment:"Institutional-grade scale." } : met.totalGAV > 2e8 ? { metric:"GAV",mood:"neutral",label:"Growing",comment:"Need faster deployment." } : { metric:"GAV",mood:"negative",label:"Thin",comment:"Under-scaled. Accelerate acquisitions." });
   sArr.push(met.avgOcc > 0.9 ? { metric:"Occupancy",mood:"positive",label:"Excellent",comment:"Best-in-class. Push rents on reversions." } : met.avgOcc > 0.75 ? { metric:"Occupancy",mood:"neutral",label:"Acceptable",comment:"Vacancy costing "+fmtM(met.totalVoidCost)+" p.a. in void rates & SC." } : { metric:"Occupancy",mood:"negative",label:"Concerning",comment:"Void costs at "+fmtM(met.totalVoidCost)+" p.a. — bleeding cash on empty space." });
-  
-  // NOI sentiment — can now be negative
-  if (met.noi < 0) {
-    sArr.push({ metric:"NOI",mood:"negative",label:"NEGATIVE",comment:"Portfolio is cash-negative at "+fmtM(met.noi)+" p.a. Property costs exceed rental income. Immediate action required." });
-  } else if (met.noiYield > 0.05) {
-    sArr.push({ metric:"NOI Yield",mood:"positive",label:"Outperforming",comment:"Ahead of 5% benchmark at "+fmtP(met.noiYield)+"." });
-  } else if (met.noiYield > 0.035) {
-    sArr.push({ metric:"NOI Yield",mood:"neutral",label:"In-line",comment:"NOI yield "+fmtP(met.noiYield)+". Prop costs at "+fmtM(met.totalPropCosts)+" p.a." });
-  } else {
-    sArr.push({ metric:"NOI Yield",mood:"negative",label:"Below Target",comment:"NOI yield only "+fmtP(met.noiYield)+". Property costs "+fmtM(met.totalPropCosts)+" eating into returns." });
-  }
+  if (met.noi < 0) sArr.push({ metric:"NOI",mood:"negative",label:"NEGATIVE",comment:"Portfolio is cash-negative at "+fmtM(met.noi)+" p.a. Property costs exceed rental income. Immediate action required." });
+  else if (met.noiYield > 0.05) sArr.push({ metric:"NOI Yield",mood:"positive",label:"Outperforming",comment:"Ahead of 5% benchmark at "+fmtP(met.noiYield)+"." });
+  else if (met.noiYield > 0.035) sArr.push({ metric:"NOI Yield",mood:"neutral",label:"In-line",comment:"NOI yield "+fmtP(met.noiYield)+". Prop costs at "+fmtM(met.totalPropCosts)+" p.a." });
+  else sArr.push({ metric:"NOI Yield",mood:"negative",label:"Below Target",comment:"NOI yield only "+fmtP(met.noiYield)+". Property costs "+fmtM(met.totalPropCosts)+" eating into returns." });
 
   const esg = calcESG(state?.portfolio || []);
   sArr.push(esg > 80 ? { metric:"ESG / EPC",mood:"positive",label:"Leader",comment:"Score "+esg.toFixed(0)+"/100. Green financing advantage." } : esg > 50 ? { metric:"ESG / EPC",mood:"neutral",label:"Compliant",comment:"Score "+esg.toFixed(0)+"/100. Need net-zero pathways." } : { metric:"ESG / EPC",mood:"negative",label:"At Risk",comment:"Score "+esg.toFixed(0)+"/100. Stranding risk. Upgrade EPCs." });
@@ -833,11 +1166,8 @@ function genSentiment(met, hist, state) {
   const gaExp = TEAM_ROLES.reduce((acc, r) => acc + ((state?.team||{})[r.id]||0)*r.salaryCost, 0);
   const gaR = met.totalGRI > 0 ? gaExp / met.totalGRI : 0;
   sArr.push(gaR < 0.05 ? { metric:"Recurring G&A",mood:"positive",label:"Lean",comment:"G&A at "+fmtP(gaR)+" of GRI." } : gaR < 0.12 ? { metric:"Recurring G&A",mood:"neutral",label:"Manageable",comment:"G&A at "+fmtP(gaR)+" of GRI." } : { metric:"Recurring G&A",mood:"negative",label:"Elevated",comment:"G&A at "+fmtP(gaR)+" of GRI. Scale or cut." });
-  
-  // Property cost ratio sentiment
   const costRatio = met.totalGRI > 0 ? met.totalPropCosts / met.totalGRI : 0;
   sArr.push(costRatio < 0.15 ? { metric:"Cost Ratio",mood:"positive",label:"Efficient",comment:"Prop costs at "+fmtP(costRatio)+" of GRI. Well-managed estate." } : costRatio < 0.30 ? { metric:"Cost Ratio",mood:"neutral",label:"Watchlist",comment:"Prop costs at "+fmtP(costRatio)+" of GRI. Vacancy driving irrecoverables." } : { metric:"Cost Ratio",mood:"negative",label:"Unsustainable",comment:"Prop costs at "+(costRatio > 1 ? ">100%" : fmtP(costRatio))+" of GRI. Void costs are destroying value." });
-  
   sArr.push(met.avgWALT > 5 ? { metric:"Lease Duration",mood:"positive",label:"Secure",comment:"WALT "+met.avgWALT.toFixed(1)+"yr. Strong visibility." } : met.avgWALT > 2.5 ? { metric:"Lease Duration",mood:"neutral",label:"Adequate",comment:"WALT "+met.avgWALT.toFixed(1)+"yr." } : { metric:"Lease Duration",mood:"negative",label:"Short",comment:"WALT "+met.avgWALT.toFixed(1)+"yr. High rollover risk." });
 
   if (prev) {
@@ -877,11 +1207,7 @@ function genSentiment(met, hist, state) {
   if (ltv > 0.65) bc.push({ member:"CFO", text:"Portfolio LTV at "+fmtP(ltv)+" — approaching covenant limits." });
   else if (totalDebt > 0 && ltv < 0.4) bc.push({ member:"CFO", text:"Leverage at "+fmtP(ltv)+" LTV — headroom available." });
   if ((state?.team?.treasury||0) === 0 && metGAV > 100e6) bc.push({ member:"CFO", text:"Portfolio at "+fmtM(metGAV)+" with no treasury function — missing debt opportunity." });
-
-  // Void cost specific commentary
   if (met.totalVoidCost > met.totalGRI * 0.20) bc.push({ member:"COO", text:"Void costs at "+fmtM(met.totalVoidCost)+" p.a. — that's "+fmtP(met.totalGRI > 0 ? met.totalVoidCost/met.totalGRI : 0)+" of GRI being lost to empty space. Lease up or dispose." });
-  
-  // Maintenance drag commentary
   const grCAssets = (state?.portfolio||[]).filter(a => !a.developing && a.condition === "C");
   if (grCAssets.length >= 2) bc.push({ member:"Head of Asset Mgmt", text:grCAssets.length+" assets at Grade C condition. Maintenance drag is 1.5x normal — refurbish or sell." });
 
@@ -895,7 +1221,7 @@ function genSentiment(met, hist, state) {
 }
 
 function SentBadge({ mood, label }) {
-  const m = { positive:{bg:"#064e3b",b:"#10b981",t:"#10b981",i:"\u25B2"}, neutral:{bg:"#78350f",b:"#f59e0b",t:"#f59e0b",i:"\u25CF"}, negative:{bg:"#7f1d1d",b:"#ef4444",t:"#ef4444",i:"\u25BC"} };
+  const m = { positive:{bg:"#064e3b",b:"#10b981",t:"#10b981",i:"\u25B2"}, neutral:{bg:"#0e3a4a",b:"#22d3ee",t:"#22d3ee",i:"\u25CF"}, negative:{bg:"#7f1d1d",b:"#ef4444",t:"#ef4444",i:"\u25BC"} };
   const c = m[mood] || m.neutral;
   return <span style={{ display:"inline-flex",alignItems:"center",gap:"4px",padding:"2px 8px",borderRadius:"4px",fontSize:"10px",fontWeight:700,background:c.bg,color:c.t,border:"1px solid "+c.b }}>{c.i} {label}</span>;
 }
@@ -927,7 +1253,7 @@ const S = {
 
 function tabSt(active) { return { flex:1,padding:"8px 10px",background:active?"rgba(59,130,246,0.15)":"transparent",color:active?"#60a5fa":T.txtD,border:active?"1px solid rgba(59,130,246,0.4)":"1px solid transparent",borderRadius:"5px",cursor:"pointer",fontSize:"10px",fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",fontFamily:"inherit",boxShadow:active?tabGlow:"none" }; }
 function btnSt(v) { const colors = { green:{b:T.grn,bg:T.grnD,c:T.grn}, red:{b:T.red,bg:T.redD,c:T.red}, amber:{b:T.amb,bg:T.ambD,c:T.amb} }; const d = colors[v] || { b:T.acc, bg:T.accD, c:T.acc }; return { padding:"5px 10px",border:"1px solid "+d.b,background:d.bg,color:d.c,borderRadius:"4px",cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit" }; }
-function condSt(c) { return { display:"inline-block",padding:"2px 6px",borderRadius:"4px",fontSize:"9px",fontWeight:700,background:c==="A"?T.grnD:c==="B"?T.ambD:T.redD, color:c==="A"?T.grn:c==="B"?T.amb:T.red }; }
+function condSt(c) { return { display:"inline-block",padding:"2px 6px",borderRadius:"4px",fontSize:"9px",fontWeight:700,background:c==="A"?T.grnD:c==="B"?"#0e3a4a":T.redD, color:c==="A"?T.grn:c==="B"?"#22d3ee":T.red }; }
 
 /* ===== CARD COMPONENTS ===== */
 function MetricCell({ label, value, color, icon }) {
@@ -968,7 +1294,7 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
       {asset.urgentIssue && <div style={{ margin:"6px 0",padding:"6px 10px",background:T.redD,border:"1px solid "+T.red,borderRadius:"5px",fontSize:"10px",color:T.red }}>{"\u{1F6A8}"} {asset.urgentIssue.name} <button style={{ ...btnSt("red"),marginLeft:"6px",padding:"2px 6px",fontSize:"9px" }} onClick={() => onFix(asset.id)}>Fix ({fmtK(asset.gla * asset.urgentIssue.fixCost)})</button></div>}
       <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"6px",marginTop:"8px" }}>
         <div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div>
-        <div><TipLbl label="Occupancy" style={S.stat} /><div style={{ ...S.val, color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red }}>{fmtP(asset.occupancy)}</div></div>
+        <div><TipLbl label="Occupancy" style={S.stat} /><div style={{ ...S.val, color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?"#22d3ee":T.red }}>{fmtP(asset.occupancy)}</div></div>
         <div><TipLbl label="GAV" style={S.stat} /><div style={S.val}>{fmtM(asset.value)}</div></div>
         <div><TipLbl label="Rent p.a." style={S.stat} /><div style={S.val}>{fmtM(asset.gri)}</div></div>
         <div><TipLbl label="Prop Costs" style={S.stat} /><div style={{ ...S.val, color:T.red }}>{fmtK(costs?.totalIrrecoverable||0)}</div></div>
@@ -983,8 +1309,8 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
       )}
       <div style={{ display:"flex",alignItems:"center",gap:"6px",marginTop:"6px" }}>
         <span style={{ fontSize:"8px",color:T.txtM,flexShrink:0,width:"52px" }}>Occupancy</span>
-        <div style={{ width:"140px",height:"4px",background:T.bdr,borderRadius:"2px",flexShrink:0 }}><div style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,borderRadius:"2px" }} /></div>
-        <span style={{ fontSize:"8px",color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,fontWeight:700 }}>{fmtP(asset.occupancy)}</span>
+        <div style={{ width:"140px",height:"4px",background:T.bdr,borderRadius:"2px",flexShrink:0 }}><div style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?"#22d3ee":T.red,borderRadius:"2px" }} /></div>
+        <span style={{ fontSize:"8px",color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?"#22d3ee":T.red,fontWeight:700 }}>{fmtP(asset.occupancy)}</span>
       </div>
       <div style={S.row}>
         {MAINT.map(mt => <button key={mt.id} style={btnSt(mt.id==="refurb"?"amber":mt.id==="esg"?"green":"default")} onClick={() => onMaint(asset.id, mt.id)}>{mt.name} ({fmtK(asset.gla * mt.costPerSqm)})</button>)}
@@ -1010,7 +1336,7 @@ function AcqCard({ asset, onAcquire, ok }) {
       </div>
       <div style={S.grid}>
         <div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div>
-        <div><TipLbl label="Occupancy" style={S.stat} /><div style={{ ...S.val, color:asset.occupancy>0.85?T.grn:T.amb }}>{fmtP(asset.occupancy)}</div></div>
+        <div><TipLbl label="Occupancy" style={S.stat} /><div style={{ ...S.val, color:asset.occupancy>0.85?T.grn:"#22d3ee" }}>{fmtP(asset.occupancy)}</div></div>
         <div><TipLbl label="Asking" style={S.stat} /><div style={{ ...S.val, color:T.wht }}>{fmtM(asset.askPrice)}</div></div>
         <div><TipLbl label="Rent p.a." style={S.stat} /><div style={S.val}>{fmtM(asset.gri)}</div></div>
         <div><TipLbl label="NIY" style={S.stat} /><div style={S.val}>{fmtP((asset.gri*0.85)/asset.askPrice)}</div></div>
@@ -1080,8 +1406,8 @@ function MarketIntelPanel({ marketData }) {
                   <td style={{ padding:"5px 6px",color:"#fff",fontWeight:700 }}>{"\u20AC"}{(d.ner||mkt.baseRent).toFixed(0)}</td>
                   <td style={{ padding:"5px 6px",color:growthColor,fontWeight:700 }}>{growth>=0?"+":""}{(growth*100).toFixed(1)}%</td>
                   <td style={{ padding:"5px 6px",color:T.txtD }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</td>
-                  <td style={{ padding:"5px 6px",color:d.marketVacancy>0.10?"#f87171":d.marketVacancy>0.07?"#fbbf24":"#34d399",fontWeight:600 }}>{fmtP(d.marketVacancy||0.07)}</td>
-                  <td style={{ padding:"5px 6px" }}><div style={{ display:"flex",alignItems:"center",gap:"4px" }}><div style={{ width:"40px",height:"4px",background:"#1e2a3a",borderRadius:"2px" }}><div style={{ height:"100%",width:((d.demandIndex||60)+"%"),background:d.demandIndex>70?"#34d399":d.demandIndex>45?"#fbbf24":"#f87171",borderRadius:"2px" }} /></div><span style={{ color:T.txtD,fontSize:"9px" }}>{d.demandIndex||60}</span></div></td>
+                  <td style={{ padding:"5px 6px",color:d.marketVacancy>0.10?"#f87171":d.marketVacancy>0.07?"#22d3ee":"#34d399",fontWeight:600 }}>{fmtP(d.marketVacancy||0.07)}</td>
+                  <td style={{ padding:"5px 6px" }}><div style={{ display:"flex",alignItems:"center",gap:"4px" }}><div style={{ width:"40px",height:"4px",background:"#1e2a3a",borderRadius:"2px" }}><div style={{ height:"100%",width:((d.demandIndex||60)+"%"),background:d.demandIndex>70?"#34d399":d.demandIndex>45?"#22d3ee":"#f87171",borderRadius:"2px" }} /></div><span style={{ color:T.txtD,fontSize:"9px" }}>{d.demandIndex||60}</span></div></td>
                 </tr>
               );
             })}
@@ -1099,7 +1425,7 @@ function MarketIntelPanel({ marketData }) {
               <div><div style={{ color:T.txtM }}>QoQ Rental Growth</div><div style={{ color:(d.rentalGrowthQoQ||0)>0?"#34d399":"#f87171",fontWeight:700,fontSize:"14px" }}>{(d.rentalGrowthQoQ||0)>=0?"+":""}{((d.rentalGrowthQoQ||0)*100).toFixed(2)}%</div></div>
               <div><div style={{ color:T.txtM }}>Prime Cap Rate</div><div style={{ color:"#fff",fontWeight:700,fontSize:"14px" }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</div></div>
               <div><div style={{ color:T.txtM }}>Market Vacancy</div><div style={{ color:(d.marketVacancy||0.07)>0.10?"#f87171":"#34d399",fontWeight:700,fontSize:"14px" }}>{fmtP(d.marketVacancy||0.07)}</div></div>
-              <div><div style={{ color:T.txtM }}>Demand Index</div><div style={{ color:"#fbbf24",fontWeight:700,fontSize:"14px" }}>{d.demandIndex||60}/100</div></div>
+              <div><div style={{ color:T.txtM }}>Demand Index</div><div style={{ color:"#22d3ee",fontWeight:700,fontSize:"14px" }}>{d.demandIndex||60}/100</div></div>
               <div><div style={{ color:T.txtM }}>Take-up</div><div style={{ color:"#fff",fontWeight:700,fontSize:"14px" }}>{d.absorptionKsqm||100}k sqm</div></div>
             </div>
           </div>
@@ -1125,10 +1451,10 @@ function FinancingPanel({ state, onDrawDebt, onRepayDebt }) {
       <div style={{ ...S.card,background:"rgba(59,130,246,0.07)",border:"1px solid rgba(59,130,246,0.25)",marginBottom:"10px" }}>
         <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",fontSize:"10px" }}>
           <div><div style={{ color:T.txtM }}>Total Debt</div><div style={{ color:"#fff",fontWeight:800,fontSize:"14px" }}>{fmtM(totalDebt)}</div></div>
-          <div><div style={{ color:T.txtM }}>Portfolio LTV</div><div style={{ color:ltv>0.65?"#f87171":ltv>0.50?"#fbbf24":"#34d399",fontWeight:800,fontSize:"14px" }}>{fmtP(ltv)}</div></div>
+          <div><div style={{ color:T.txtM }}>Portfolio LTV</div><div style={{ color:ltv>0.65?"#f87171":ltv>0.50?"#22d3ee":"#34d399",fontWeight:800,fontSize:"14px" }}>{fmtP(ltv)}</div></div>
           <div><div style={{ color:T.txtM }}>Annual Interest</div><div style={{ color:"#f87171",fontWeight:800,fontSize:"14px" }}>{fmtM((state.debtDrawdowns||[]).reduce((a,d)=>a+d.amount*d.rate/100,0))}</div></div>
         </div>
-        <div style={{ marginTop:"7px",height:"4px",background:"#1e2a3a",borderRadius:"2px" }}><div style={{ height:"100%",width:Math.min(100,ltv*100)+"%",background:ltv>0.65?"#f87171":ltv>0.50?"#fbbf24":"#34d399",borderRadius:"2px",transition:"width 0.4s" }} /></div>
+        <div style={{ marginTop:"7px",height:"4px",background:"#1e2a3a",borderRadius:"2px" }}><div style={{ height:"100%",width:Math.min(100,ltv*100)+"%",background:ltv>0.65?"#f87171":ltv>0.50?"#22d3ee":"#34d399",borderRadius:"2px",transition:"width 0.4s" }} /></div>
         <div style={{ fontSize:"8px",color:T.txtM,marginTop:"2px" }}>Covenant limit: 70% LTV</div>
       </div>
       {(state.debtDrawdowns||[]).length > 0 && (
@@ -1225,11 +1551,54 @@ export default function LogisticsRESimulator() {
   const [tab, setTab] = useState("portfolio");
   const [rTab, setRTab] = useState("sentiment");
   const [saved, setSaved] = useState(false);
+  const [portSort, setPortSort] = useState("distressed");
+  const [acqFilter, setAcqFilter] = useState({ market:"all", assetClass:"all" });
+  const [devFilter, setDevFilter] = useState({ market:"all", assetClass:"all" });
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => { if (state && started) saveGame(state); }, [state, started]);
 
-  const onStart = useCallback((cfg) => { if (cfg === "__load__") { const s = loadGame(); if (s) { setState(s); setStarted(true); } } else { delSave(); setState(initGame(cfg)); setStarted(true); } }, []);
-  const onAdvance = useCallback(() => setState(p => p ? advanceQ(p) : p), []);
+  const onStart = useCallback((cfg) => {
+    if (cfg === "__load__") {
+      const s = loadGame();
+      if (s) { setState(s); setStarted(true); setShowWelcome(false); }
+    } else {
+      delSave();
+      const newState = initGame(cfg);
+      setState(newState);
+      setStarted(true);
+      setShowWelcome(true);
+    }
+  }, []);
+  const [qtrModal, setQtrModal] = useState(null);
+  const onAdvance = useCallback(() => {
+    setState(p => {
+      if (!p) return p;
+      const prevM = calcMetrics(p);
+      const next = advanceQ(p);
+      const nextM = calcMetrics(next);
+      const prevDebt = (p.debtDrawdowns||[]).reduce((a,d)=>a+d.amount*d.rate/4/100,0);
+      setQtrModal({
+        quarter: getQL(next.quarter, next.year),
+        rent: next.portfolio.filter(a=>!a.developing).reduce((a,x)=>a+x.gri/4,0),
+        propCosts: nextM.totalPropCosts/4,
+        ga: teamQCost(next.team),
+        debtInt: prevDebt,
+        netCashFlow: next.cash - p.cash,
+        cashBefore: p.cash,
+        cashAfter: next.cash,
+        gavBefore: prevM.totalGAV,
+        gavAfter: nextM.totalGAV,
+        occBefore: prevM.avgOcc,
+        occAfter: nextM.avgOcc,
+        noiBefore: prevM.noi,
+        noiAfter: nextM.noi,
+        issues: next.portfolio.filter(a=>a.urgentIssue && !a.developing).length,
+        newEvents: next.events.slice(p.events.length),
+      });
+      return next;
+    });
+  }, []);
   const onAcquire = useCallback((id) => setState(p => { if (!p) return p; const a = p.acquisitions.find(x => x.id === id); if (!a || p.cash < a.askPrice) return p; const q = { ...a, acquired:true, value:a.askPrice }; delete q.askPrice; return { ...p, cash:p.cash-a.askPrice, portfolio:[...p.portfolio,q], acquisitions:p.acquisitions.filter(x => x.id !== id), events:[...p.events, "\u{1F3E2} Acquired "+a.flag+" "+a.name+" for "+fmtM(a.askPrice)], newsLog:[...(p.newsLog||[]), {icon:"\u{1F3E2}",text:"Acquired "+a.name+" for "+fmtM(a.askPrice),color:T.acc}] }; }), []);
   const onDispose = useCallback((id) => setState(p => { if (!p) return p; const a = p.portfolio.find(x => x.id === id); if (!a) return p; const pr = a.value * 0.97; return { ...p, cash:p.cash+pr, portfolio:p.portfolio.filter(x => x.id !== id), events:[...p.events, "\u{1F4B0} Disposed "+a.flag+" "+a.name+" for "+fmtM(pr)], newsLog:[...(p.newsLog||[]), {icon:"\u{1F4B0}",text:"Disposed "+a.name+" at "+fmtM(pr),color:T.amb}] }; }), []);
   const onMaint = useCallback((aid, mid) => setState(p => { if (!p) return p; const mt = MAINT.find(m => m.id === mid); const a = p.portfolio.find(x => x.id === aid); if (!mt || !a) return p; const cost = a.gla * mt.costPerSqm; if (p.cash < cost) return p; const up = p.portfolio.map(x => { if (x.id !== aid) return x; const n = { ...x, capexSpent:x.capexSpent+cost }; if (mid === "rm") n.lastRM = p.quarter; if (mt.gradeUp && n.condition !== "A") { n.condition = n.condition==="C"?"B":"A"; n.rentPsm *= 1.08; } if (mt.esgBoost) { n.epcRating = n.epcRating==="E"?"D":n.epcRating==="D"?"C":n.epcRating==="C"?"B":"A"; n.occupancy = Math.min(1, n.occupancy+mt.occBoost); } if (mt.occBoost && !mt.esgBoost) n.occupancy = Math.min(1, n.occupancy+mt.occBoost); const mk = MARKETS.find(m => m.id === n.market); const ac = ASSET_CLASSES.find(c => c.id === n.assetClass) || ASSET_CLASSES[0]; n.gri = n.gla * n.rentPsm * n.occupancy; n.value = n.gri > 0 ? n.gri / ((mk?.capRate||5)*(ac?.capRateMult||1)/100) : n.value; return n; }); return { ...p, cash:p.cash-cost, portfolio:up, events:[...p.events, "\u{1F527} "+mt.name+" on "+a.flag+" "+a.name+" ("+fmtK(cost)+")"] }; }), []);
@@ -1237,9 +1606,9 @@ export default function LogisticsRESimulator() {
   const onDev = useCallback((id) => setState(p => { if (!p) return p; const s = p.devSites.find(x => x.id === id); if (!s || p.cash < s.devCost) return p; aCtr++; const d = { id:s.id, name:s.name.replace(" (Dev)",""), market:s.market, marketName:s.marketName, flag:s.flag, assetClass:s.assetClass, assetClassName:s.assetClassName, assetClassIcon:s.assetClassIcon, gla:s.gla, rentPsm:s.estRentPsm, occupancy:0, tenant:null, leaseRemaining:0, gri:0, value:0, age:0, condition:"A", epcRating:"A", capexSpent:0, acquired:true, developing:true, devQuartersLeft:s.quartersToComplete, totalDevQuarters:s.quartersToComplete, totalDevCost:s.devCost, devCostSoFar:0, visualSeed:aCtr, urgentIssue:null, lastRM:0 }; return { ...p, cash:p.cash-s.devCost, portfolio:[...p.portfolio,d], devSites:p.devSites.filter(x => x.id !== id), events:[...p.events, "\u{1F3D7}\uFE0F Started "+s.flag+" "+s.name+" ("+fmtM(s.devCost)+")"], newsLog:[...(p.newsLog||[]), {icon:"\u{1F3D7}\uFE0F",text:"Development: "+s.name,color:T.acc}] }; }), []);
   const onHire = useCallback((r) => setState(p => p ? { ...p, team:{ ...p.team, [r]:(p.team[r]||0)+1 } } : p), []);
   const onFire = useCallback((r) => setState(p => p && (p.team[r]||0) > 0 ? { ...p, team:{ ...p.team, [r]:p.team[r]-1 } } : p), []);
-  const onReset = useCallback(() => { delSave(); setStarted(false); setState(null); setTab("portfolio"); setRTab("sentiment"); }, []);
+  const onReset = useCallback(() => { delSave(); setStarted(false); setState(null); setTab("portfolio"); setRTab("sentiment"); setShowWelcome(false); }, []);
   const onSave = useCallback(() => { if (state) { saveGame(state); setSaved(true); setTimeout(() => setSaved(false), 2000); } }, [state]);
-  const onSelectTenant = useCallback((cand) => { setState(p => { if (!p || !p.tenantSelection) return p; const { assetId } = p.tenantSelection; const updated = p.portfolio.map(a => { if (a.id !== assetId) return a; const n = { ...a, tenant:cand.name, leaseRemaining:cand.term, rentPsm:cand.rentPsm, occupancy:Math.min(1, a.occupancy+rBetween(0.2,0.45)) }; const mkt = MARKETS.find(m => m.id === n.market); const ac = ASSET_CLASSES.find(c => c.id === n.assetClass) || ASSET_CLASSES[0]; n.gri = n.gla * n.rentPsm * n.occupancy; n.value = n.gri > 0 ? n.gri / ((mkt?.capRate||5)*(ac?.capRateMult||1)/100) : n.value; return n; }); return { ...p, portfolio:updated, tenantSelection:null, events:[...p.events, "\u{1F91D} Selected "+cand.name], newsLog:[...(p.newsLog||[]), {icon:"\u{1F91D}",text:cand.name+" signed "+cand.term+"yr lease",color:T.grn}] }; }); }, []);
+  const onSelectTenant = useCallback((cand) => { setState(p => { if (!p || !p.tenantSelection) return p; const { assetId } = p.tenantSelection; const rfCost = cand.rentFreeMonths > 0 ? (cand.rentPsm * (p.portfolio.find(a=>a.id===assetId)?.gla||0) / 12) * cand.rentFreeMonths : 0; const capCost = cand.capContribution || 0; const cashHit = rfCost + capCost; const updated = p.portfolio.map(a => { if (a.id !== assetId) return a; const n = { ...a, tenant:cand.name, leaseRemaining:cand.term, rentPsm:cand.rentPsm, occupancy:Math.min(1, a.occupancy+rBetween(0.2,0.45)) }; const mkt = MARKETS.find(m => m.id === n.market); const ac = ASSET_CLASSES.find(c => c.id === n.assetClass) || ASSET_CLASSES[0]; n.gri = n.gla * n.rentPsm * n.occupancy; n.value = n.gri > 0 ? n.gri / ((mkt?.capRate||5)*(ac?.capRateMult||1)/100) : n.value; return n; }); const rfNote = cand.rentFreeMonths > 0 ? " ("+cand.rentFreeMonths+"mo rent-free)" : ""; const capNote = capCost > 0 ? " (cap contr: "+fmtK(capCost)+")" : ""; return { ...p, cash:p.cash - cashHit, portfolio:updated, tenantSelection:null, events:[...p.events, "\u{1F91D} "+cand.name+" signed "+cand.term+"yr lease @ \u20AC"+cand.rentPsm.toFixed(1)+"/sqm"+rfNote+capNote], newsLog:[...(p.newsLog||[]), {icon:"\u{1F91D}",text:cand.name+" signed "+cand.term+"yr lease"+rfNote,color:T.grn}] }; }); }, []);
   const onDecline = useCallback(() => setState(p => p ? { ...p, tenantSelection:null } : p), []);
   const onDrawDebt = useCallback((typeId, amount, rate) => setState(p => { if (!p) return p; const id = "debt_" + Date.now(); return { ...p, cash: p.cash + amount, debtDrawdowns: [...(p.debtDrawdowns||[]), { id, type:typeId, amount, rate, drawQuarter:p.quarter }], newsLog:[...(p.newsLog||[]), {icon:"\u{1F3E6}",text:"Drew "+fmtM(amount)+" "+typeId+" @ "+rate.toFixed(2)+"%",color:"#60a5fa"}] }; }), []);
   const onRepayDebt = useCallback((debtId) => setState(p => { if (!p) return p; const d = (p.debtDrawdowns||[]).find(x => x.id === debtId); if (!d || p.cash < d.amount) return p; return { ...p, cash: p.cash - d.amount, debtDrawdowns: (p.debtDrawdowns||[]).filter(x => x.id !== debtId), newsLog:[...(p.newsLog||[]), {icon:"\u{1F3E6}",text:"Repaid "+fmtM(d.amount)+" "+d.type,color:"#f87171"}] }; }), []);
@@ -1254,7 +1623,65 @@ export default function LogisticsRESimulator() {
   return (
     <div style={S.app}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-      {state.tenantSelection && <TenantModal candidates={state.tenantSelection.candidates} assetName={state.tenantSelection.assetName} onSelect={onSelectTenant} onClose={onDecline} />}
+      {showWelcome && <WelcomeModal companyName={state.companyName} cash={state.initialCash || state.cash} startMarkets={state._startMarkets || ["uk","de","pl"]} difficulty={state._difficulty || "guided"} portfolio={state.portfolio} onClose={() => setShowWelcome(false)} />}
+      {state.tenantSelection && !showWelcome && <TenantModal candidates={state.tenantSelection.candidates} assetName={state.tenantSelection.assetName} assetGla={state.tenantSelection.assetGla} onSelect={onSelectTenant} onClose={onDecline} />}
+      {qtrModal && !showWelcome && (() => {
+        const q = qtrModal;
+        const gavDelta = q.gavAfter - q.gavBefore;
+        const occDelta = q.occAfter - q.occBefore;
+        const noiDelta = q.noiAfter - q.noiBefore;
+        const deltaCol = (v) => v > 0 ? "#34d399" : v < 0 ? "#f87171" : T.txtD;
+        const deltaStr = (v, fmt) => (v >= 0 ? "+" : "") + fmt(v);
+        return (
+          <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
+            <div style={{ background:"linear-gradient(180deg, #111827, #0a0f1a)",border:"1px solid "+T.acc,borderRadius:"12px",padding:"24px",maxWidth:"480px",width:"92%",boxShadow:"0 8px 40px rgba(59,130,246,0.2)" }}>
+              <div style={{ textAlign:"center",marginBottom:"16px" }}>
+                <div style={{ fontSize:"10px",color:T.acc,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px" }}>Quarter Complete</div>
+                <div style={{ fontSize:"24px",fontWeight:900,color:"#fff" }}>{q.quarter}</div>
+              </div>
+              <div style={{ background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"12px",marginBottom:"12px" }}>
+                <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Quarterly Cash Flow</div>
+                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Rental income</span><span style={{ fontSize:"10px",fontWeight:700,color:"#34d399" }}>{fmtK(q.rent)}</span></div>
+                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Property costs</span><span style={{ fontSize:"10px",fontWeight:700,color:"#f87171" }}>({fmtK(q.propCosts)})</span></div>
+                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Team G&A</span><span style={{ fontSize:"10px",fontWeight:700,color:"#f87171" }}>({fmtK(q.ga)})</span></div>
+                {q.debtInt > 0 && <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Debt interest</span><span style={{ fontSize:"10px",fontWeight:700,color:"#f87171" }}>({fmtK(q.debtInt)})</span></div>}
+                <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.12)",paddingTop:"5px",marginTop:"5px" }}><span style={{ fontSize:"11px",fontWeight:800,color:"#fff" }}>Net Cash Flow</span><span style={{ fontSize:"13px",fontWeight:900,color:q.netCashFlow >= 0 ? "#34d399" : "#ff6b6b" }}>{q.netCashFlow >= 0 ? "+" : ""}{fmtK(q.netCashFlow)}</span></div>
+              </div>
+              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginBottom:"12px" }}>
+                <div style={{ background:"rgba(255,255,255,0.03)",borderRadius:"6px",padding:"8px",textAlign:"center" }}>
+                  <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"2px" }}>GAV</div>
+                  <div style={{ fontSize:"14px",fontWeight:800,color:"#fff" }}>{fmtM(q.gavAfter)}</div>
+                  <div style={{ fontSize:"10px",fontWeight:700,color:deltaCol(gavDelta) }}>{deltaStr(gavDelta, fmtM)}</div>
+                </div>
+                <div style={{ background:"rgba(255,255,255,0.03)",borderRadius:"6px",padding:"8px",textAlign:"center" }}>
+                  <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"2px" }}>Occupancy</div>
+                  <div style={{ fontSize:"14px",fontWeight:800,color:q.occAfter>0.85?"#34d399":q.occAfter>0.6?"#22d3ee":"#f87171" }}>{fmtP(q.occAfter)}</div>
+                  <div style={{ fontSize:"10px",fontWeight:700,color:deltaCol(occDelta) }}>{(occDelta>=0?"+":"")+(occDelta*100).toFixed(1)}pp</div>
+                </div>
+                <div style={{ background:"rgba(255,255,255,0.03)",borderRadius:"6px",padding:"8px",textAlign:"center" }}>
+                  <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"2px" }}>NOI p.a.</div>
+                  <div style={{ fontSize:"14px",fontWeight:800,color:q.noiAfter < 0 ? "#ff6b6b" : "#34d399" }}>{fmtM(q.noiAfter)}</div>
+                  <div style={{ fontSize:"10px",fontWeight:700,color:deltaCol(noiDelta) }}>{deltaStr(noiDelta, fmtM)}</div>
+                </div>
+              </div>
+              {q.issues > 0 && (
+                <div style={{ background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"6px",padding:"8px 10px",marginBottom:"12px",fontSize:"10px",color:"#f87171" }}>
+                  {"\u26A0\uFE0F"} {q.issues} asset{q.issues > 1 ? "s" : ""} with unresolved issues requiring attention
+                </div>
+              )}
+              {q.newEvents.length > 0 && (
+                <div style={{ maxHeight:"100px",overflowY:"auto",marginBottom:"12px" }}>
+                  {q.newEvents.slice(0, 6).map((e, i) => (
+                    <div key={i} style={{ fontSize:"10px",color:T.txtD,lineHeight:1.6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{e}</div>
+                  ))}
+                  {q.newEvents.length > 6 && <div style={{ fontSize:"9px",color:T.txtM }}>+{q.newEvents.length - 6} more events in log</div>}
+                </div>
+              )}
+              <button onClick={() => setQtrModal(null)} style={{ width:"100%",padding:"10px",background:"linear-gradient(135deg,"+T.acc+",#2563eb)",color:"#fff",border:"none",borderRadius:"6px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em" }}>Continue</button>
+            </div>
+          </div>
+        );
+      })()}
 
       <div style={S.hdr}>
         <div style={S.logo}><Logo size={30} /><div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht,letterSpacing:"0.05em" }}>{state.companyName.toUpperCase()}</div><div style={{ fontSize:"9px",color:T.txtD,letterSpacing:"0.1em",textTransform:"uppercase" }}>LOGISIM</div></div></div>
@@ -1282,7 +1709,7 @@ export default function LogisticsRESimulator() {
         <MetricCell label="Portfolio GAV" value={fmtM(m.totalGAV)} icon={"\u{1F48E}"} />
         <MetricCell label="Assets" value={m.assetCount} icon={"\u{1F3E2}"} />
         <MetricCell label="Total GLA" value={(m.totalGLA/1000).toFixed(0)+"k sqm"} icon={"\u{1F4D0}"} />
-        <MetricCell label="Avg Occupancy" value={fmtP(m.avgOcc)} color={m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red} icon={"\u{1F4CA}"} />
+        <MetricCell label="Avg Occupancy" value={fmtP(m.avgOcc)} color={m.avgOcc>0.85?T.grn:m.avgOcc>0.6?"#22d3ee":T.red} icon={"\u{1F4CA}"} />
         <MetricCell label="GRI p.a." value={fmtM(m.totalGRI)} icon={"\u{1F4B6}"} />
         <MetricCell label="NOI p.a." value={fmtM(m.noi)} color={m.noi < 0 ? "#ff6b6b" : T.grn} icon={m.noi < 0 ? "\u{1F534}" : "\u{1F4C8}"} />
         <MetricCell label="NOI Yield" value={fmtP(m.noiYield)} color={m.noiYield < 0 ? "#ff6b6b" : undefined} icon={"\u{1F3AF}"} />
@@ -1304,30 +1731,24 @@ export default function LogisticsRESimulator() {
               <div style={{ display:"flex",gap:"10px",marginBottom:"10px",alignItems:"stretch" }}>
                 <div style={{ flex:1,background:"rgba(255,255,255,0.07)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.18)",borderRadius:"8px",padding:"10px 12px",display:"flex",flexDirection:"column",justifyContent:"center",gap:"8px" }}>
                   <div style={{ fontSize:"9px",fontWeight:700,color:"#ffffff",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"4px" }}>Portfolio P&L</div>
-                  {/* Revenue */}
                   <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>Gross Rental Income</span><span style={{ fontSize:"10px",fontWeight:700,color:"#34d399" }}>{fmtM(m.totalGRI)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.5)" }}>SC recovery</span><span style={{ fontSize:"9px",fontWeight:600,color:"rgba(255,255,255,0.5)" }}>{fmtK(m.scRecoveryIncome||0)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.5)" }}>Sundry / other</span><span style={{ fontSize:"9px",fontWeight:600,color:"rgba(255,255,255,0.5)" }}>{fmtK(m.sundryIncome||0)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"2px",marginTop:"2px" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.8)",fontWeight:700 }}>Gross Revenue</span><span style={{ fontSize:"10px",fontWeight:800,color:"#34d399" }}>{fmtM(m.grossRevenue||0)}</span></div>
-                  {/* Property Opex */}
                   <div style={{ display:"flex",justifyContent:"space-between",marginTop:"4px" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>Property Opex (irrecoverable)</span><span style={{ fontSize:"10px",fontWeight:700,color:"#f87171" }}>({fmtM(m.totalPropCosts)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.45)" }}>Void rates + SC shortfall</span><span style={{ fontSize:"9px",fontWeight:600,color:"#fbbf24" }}>{fmtK(m.totalVoidCost)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.45)" }}>Void rates + SC shortfall</span><span style={{ fontSize:"9px",fontWeight:600,color:"#22d3ee" }}>{fmtK(m.totalVoidCost)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.45)" }}>Insurance</span><span style={{ fontSize:"9px",fontWeight:600,color:"rgba(255,255,255,0.5)" }}>{fmtK(m.totalInsurance||0)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.45)" }}>Maintenance drag</span><span style={{ fontSize:"9px",fontWeight:600,color:"rgba(255,255,255,0.5)" }}>{fmtK(m.totalMaintDrag||0)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:"rgba(255,255,255,0.45)" }}>Property mgmt fee</span><span style={{ fontSize:"9px",fontWeight:600,color:"rgba(255,255,255,0.5)" }}>{fmtK(m.totalMgmtFee||0)}</span></div>
-                  {/* NPI */}
                   <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.12)",paddingTop:"3px",marginTop:"3px" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.8)",fontWeight:700 }}>Net Property Income</span><span style={{ fontSize:"10px",fontWeight:800,color:m.totalNPI < 0 ? "#ff6b6b" : "#34d399" }}>{fmtM(m.totalNPI)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>G&A (team salaries)</span><span style={{ fontSize:"10px",fontWeight:700,color:"#f87171" }}>({fmtK(m.gaExp||0)})</span></div>
-                  {/* EBITDA / NOI */}
                   <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:"3px",marginTop:"3px",background:"rgba(255,255,255,0.03)",margin:"3px -4px 0",padding:"3px 4px",borderRadius:"3px" }}><span style={{ fontSize:"9px",color:"#ffffff",fontWeight:800 }}>EBITDA / NOI</span><span style={{ fontSize:"11px",fontWeight:900,color:m.noi < 0 ? "#ff6b6b" : "#34d399" }}>{fmtM(m.ebitda||0)}</span></div>
-                  {/* Below the line */}
                   <div style={{ display:"flex",justifyContent:"space-between",marginTop:"4px" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.6)",fontWeight:600 }}>Depreciation</span><span style={{ fontSize:"9px",fontWeight:600,color:"#f87171" }}>({fmtK(m.depreciation||0)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.6)",fontWeight:600 }}>Debt interest</span><span style={{ fontSize:"9px",fontWeight:600,color:m.debtInterest > 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>{m.debtInterest > 0 ? "("+fmtK(m.debtInterest)+")" : "—"}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.6)",fontWeight:600 }}>Debt interest</span><span style={{ fontSize:"9px",fontWeight:600,color:m.debtInterest > 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>{m.debtInterest > 0 ? "("+fmtK(m.debtInterest)+")" : "\u2014"}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"2px",marginTop:"2px" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:700 }}>Earnings Before Tax</span><span style={{ fontSize:"10px",fontWeight:800,color:(m.ebt||0) < 0 ? "#ff6b6b" : "#e2e8f0" }}>{fmtM(m.ebt||0)}</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.6)",fontWeight:600 }}>Tax (20%)</span><span style={{ fontSize:"9px",fontWeight:600,color:"rgba(255,255,255,0.5)" }}>({fmtK(m.tax||0)})</span></div>
                   <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.18)",paddingTop:"3px",marginTop:"3px",background:"rgba(255,255,255,0.04)",margin:"3px -4px 0",padding:"4px 4px",borderRadius:"3px" }}><span style={{ fontSize:"9px",color:"#ffffff",fontWeight:900 }}>Net Income</span><span style={{ fontSize:"12px",fontWeight:900,color:(m.netIncome||0) < 0 ? "#ff6b6b" : "#34d399" }}>{fmtM(m.netIncome||0)}</span></div>
-                  {/* Occupancy bar */}
-                  <div style={{ marginTop:"6px" }}><div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>Avg Occupancy</span><span style={{ fontSize:"12px",fontWeight:800,color:m.avgOcc>0.85?"#34d399":m.avgOcc>0.6?"#fbbf24":"#f87171" }}>{fmtP(m.avgOcc)}</span></div><div style={{ width:"100%",height:"5px",background:"rgba(255,255,255,0.12)",borderRadius:"3px",marginTop:"2px" }}><div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?"#34d399":m.avgOcc>0.6?"#fbbf24":"#f87171",borderRadius:"3px",transition:"width 0.4s" }} /></div></div>
+                  <div style={{ marginTop:"6px" }}><div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}><span style={{ fontSize:"9px",color:"rgba(255,255,255,0.7)",fontWeight:600 }}>Avg Occupancy</span><span style={{ fontSize:"12px",fontWeight:800,color:m.avgOcc>0.85?"#34d399":m.avgOcc>0.6?"#22d3ee":"#f87171" }}>{fmtP(m.avgOcc)}</span></div><div style={{ width:"100%",height:"5px",background:"rgba(255,255,255,0.12)",borderRadius:"3px",marginTop:"2px" }}><div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?"#34d399":m.avgOcc>0.6?"#22d3ee":"#f87171",borderRadius:"3px",transition:"width 0.4s" }} /></div></div>
                 </div>
                 <div style={{ width:"220px",flexShrink:0,display:"flex",flexDirection:"column",gap:"6px" }}><EuropeMap portfolio={state.portfolio} />
                   {(() => {
@@ -1349,7 +1770,7 @@ export default function LogisticsRESimulator() {
                             <span style={{ fontSize:"10px",fontWeight:700,color:T.txt }}>{r.count}</span>
                           </div>
                         ))}
-                        {totalHC === 0 && <div style={{ fontSize:"9px",color:T.txtM,textAlign:"center",padding:"2px 0" }}>No team hired</div>}
+                        {totalHC === 0 && <div style={{ fontSize:"9px",color:"#f87171",textAlign:"center",padding:"2px 0" }}>{"\u26A0\uFE0F"} No team — hire via Team tab</div>}
                         {isStrained && (
                           <div style={{ marginTop:"4px",padding:"3px 6px",background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"4px",fontSize:"8px",color:"#f87171",lineHeight:1.4 }}>
                             {"\u26A0\uFE0F"} AMs overstretched ({ratio === Infinity ? "no AMs" : ratio.toFixed(1)+" assets/AM"}) — occupancy &amp; repairs at risk. Hire more AMs for 4:1 ratio.
@@ -1361,11 +1782,115 @@ export default function LogisticsRESimulator() {
                 </div>
               </div>
               {!state.portfolio.length && <div style={S.empty}>No assets yet. Go to Acquire.</div>}
-              {state.portfolio.map(a => <AssetCard key={a.id} asset={a} onMaint={onMaint} onDispose={onDispose} onFix={onFix} />)}
+              {state.portfolio.length > 0 && (
+                <>
+                  <div style={{ display:"flex",alignItems:"center",gap:"6px",marginBottom:"8px",flexWrap:"wrap" }}>
+                    <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Sort by</span>
+                    {[
+                      {id:"distressed",label:"Distressed first"},
+                      {id:"npi",label:"NPI"},
+                      {id:"occupancy",label:"Occupancy"},
+                      {id:"walt",label:"WALT"},
+                      {id:"gav",label:"GAV"},
+                      {id:"condition",label:"Condition"},
+                    ].map(s => (
+                      <button key={s.id} onClick={() => setPortSort(s.id)} style={{ padding:"3px 8px",fontSize:"9px",fontWeight:600,fontFamily:"inherit",borderRadius:"4px",cursor:"pointer",border:portSort===s.id?"1px solid "+T.acc:"1px solid rgba(255,255,255,0.12)",background:portSort===s.id?"rgba(59,130,246,0.15)":"transparent",color:portSort===s.id?"#60a5fa":T.txtD }}>{s.label}</button>
+                    ))}
+                  </div>
+                  {(() => {
+                    const sorted = [...state.portfolio];
+                    const condVal = c => c==="C"?0:c==="B"?1:2;
+                    if (portSort === "distressed") {
+                      sorted.sort((a,b) => {
+                        const aScore = (a.developing?100:0) + (a.urgentIssue?-50:0) + (a.occupancy<0.5?-40:0) + (a.condition==="C"?-30:0) + (a.leaseRemaining<=0&&!a.developing?-20:0);
+                        const bScore = (b.developing?100:0) + (b.urgentIssue?-50:0) + (b.occupancy<0.5?-40:0) + (b.condition==="C"?-30:0) + (b.leaseRemaining<=0&&!b.developing?-20:0);
+                        return aScore - bScore;
+                      });
+                    } else if (portSort === "npi") {
+                      sorted.sort((a,b) => {
+                        if (a.developing && !b.developing) return 1;
+                        if (!a.developing && b.developing) return -1;
+                        const aNpi = a.developing ? 0 : calcAssetCosts(a).netPropertyIncome;
+                        const bNpi = b.developing ? 0 : calcAssetCosts(b).netPropertyIncome;
+                        return aNpi - bNpi;
+                      });
+                    } else if (portSort === "occupancy") {
+                      sorted.sort((a,b) => { if (a.developing&&!b.developing) return 1; if (!a.developing&&b.developing) return -1; return a.occupancy - b.occupancy; });
+                    } else if (portSort === "walt") {
+                      sorted.sort((a,b) => { if (a.developing&&!b.developing) return 1; if (!a.developing&&b.developing) return -1; return a.leaseRemaining - b.leaseRemaining; });
+                    } else if (portSort === "gav") {
+                      sorted.sort((a,b) => (b.developing?b.devCostSoFar||0:b.value) - (a.developing?a.devCostSoFar||0:a.value));
+                    } else if (portSort === "condition") {
+                      sorted.sort((a,b) => { if (a.developing&&!b.developing) return 1; if (!a.developing&&b.developing) return -1; return condVal(a.condition) - condVal(b.condition); });
+                    }
+                    return sorted.map(a => <AssetCard key={a.id} asset={a} onMaint={onMaint} onDispose={onDispose} onFix={onFix} />);
+                  })()}
+                </>
+              )}
             </>
           )}
-          {tab === "acquire" && (<><div style={S.sec}>Available Acquisitions</div>{!state.acquisitions.length && <div style={S.empty}>No assets on market.</div>}{state.acquisitions.map(a => <AcqCard key={a.id} asset={a} onAcquire={onAcquire} ok={state.cash >= a.askPrice} />)}</>)}
-          {tab === "develop" && (<><div style={S.sec}>Development Opportunities</div>{!state.devSites.length && <div style={S.empty}>No sites available.</div>}{state.devSites.map(s => <DevCard key={s.id} site={s} onDev={onDev} ok={state.cash >= s.devCost} />)}</>)}
+          {tab === "acquire" && (() => {
+            const filtered = state.acquisitions.filter(a => {
+              if (acqFilter.market !== "all" && a.market !== acqFilter.market) return false;
+              if (acqFilter.assetClass !== "all" && a.assetClass !== acqFilter.assetClass) return false;
+              return true;
+            });
+            const acqMarkets = [...new Set(state.acquisitions.map(a => a.market))];
+            const acqACs = [...new Set(state.acquisitions.map(a => a.assetClass))];
+            const selSt = { padding:"4px 6px",fontSize:"9px",fontFamily:"inherit",background:"#0a1020",color:T.txt,border:"1px solid rgba(255,255,255,0.15)",borderRadius:"4px",cursor:"pointer" };
+            return (
+              <>
+                <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px",flexWrap:"wrap" }}>
+                  <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Filter</span>
+                  <select value={acqFilter.market} onChange={e => setAcqFilter(p => ({...p, market:e.target.value}))} style={selSt}>
+                    <option value="all">All Markets ({state.acquisitions.length})</option>
+                    {acqMarkets.map(mId => { const mk = MARKETS.find(x=>x.id===mId); return <option key={mId} value={mId}>{mk?.flag} {mk?.name} ({state.acquisitions.filter(a=>a.market===mId).length})</option>; })}
+                  </select>
+                  <select value={acqFilter.assetClass} onChange={e => setAcqFilter(p => ({...p, assetClass:e.target.value}))} style={selSt}>
+                    <option value="all">All Types</option>
+                    {acqACs.map(acId => { const ac = ASSET_CLASSES.find(x=>x.id===acId); return <option key={acId} value={acId}>{ac?.icon} {ac?.name} ({state.acquisitions.filter(a=>a.assetClass===acId).length})</option>; })}
+                  </select>
+                  {(acqFilter.market !== "all" || acqFilter.assetClass !== "all") && (
+                    <button onClick={() => setAcqFilter({market:"all",assetClass:"all"})} style={{ padding:"3px 8px",fontSize:"9px",fontFamily:"inherit",background:"transparent",color:T.txtD,border:"1px solid rgba(255,255,255,0.12)",borderRadius:"4px",cursor:"pointer" }}>Clear</button>
+                  )}
+                  <span style={{ fontSize:"9px",color:T.txtM,marginLeft:"auto" }}>{filtered.length} of {state.acquisitions.length}</span>
+                </div>
+                {!filtered.length && <div style={S.empty}>No assets match filters.</div>}
+                {filtered.map(a => <AcqCard key={a.id} asset={a} onAcquire={onAcquire} ok={state.cash >= a.askPrice} />)}
+              </>
+            );
+          })()}
+          {tab === "develop" && (() => {
+            const filtered = state.devSites.filter(s => {
+              if (devFilter.market !== "all" && s.market !== devFilter.market) return false;
+              if (devFilter.assetClass !== "all" && s.assetClass !== devFilter.assetClass) return false;
+              return true;
+            });
+            const devMarkets = [...new Set(state.devSites.map(s => s.market))];
+            const devACs = [...new Set(state.devSites.map(s => s.assetClass))];
+            const selSt = { padding:"4px 6px",fontSize:"9px",fontFamily:"inherit",background:"#0a1020",color:T.txt,border:"1px solid rgba(255,255,255,0.15)",borderRadius:"4px",cursor:"pointer" };
+            return (
+              <>
+                <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px",flexWrap:"wrap" }}>
+                  <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Filter</span>
+                  <select value={devFilter.market} onChange={e => setDevFilter(p => ({...p, market:e.target.value}))} style={selSt}>
+                    <option value="all">All Markets ({state.devSites.length})</option>
+                    {devMarkets.map(mId => { const mk = MARKETS.find(x=>x.id===mId); return <option key={mId} value={mId}>{mk?.flag} {mk?.name} ({state.devSites.filter(s=>s.market===mId).length})</option>; })}
+                  </select>
+                  <select value={devFilter.assetClass} onChange={e => setDevFilter(p => ({...p, assetClass:e.target.value}))} style={selSt}>
+                    <option value="all">All Types</option>
+                    {devACs.map(acId => { const ac = ASSET_CLASSES.find(x=>x.id===acId); return <option key={acId} value={acId}>{ac?.icon} {ac?.name} ({state.devSites.filter(s=>s.assetClass===acId).length})</option>; })}
+                  </select>
+                  {(devFilter.market !== "all" || devFilter.assetClass !== "all") && (
+                    <button onClick={() => setDevFilter({market:"all",assetClass:"all"})} style={{ padding:"3px 8px",fontSize:"9px",fontFamily:"inherit",background:"transparent",color:T.txtD,border:"1px solid rgba(255,255,255,0.12)",borderRadius:"4px",cursor:"pointer" }}>Clear</button>
+                  )}
+                  <span style={{ fontSize:"9px",color:T.txtM,marginLeft:"auto" }}>{filtered.length} of {state.devSites.length}</span>
+                </div>
+                {!filtered.length && <div style={S.empty}>No sites match filters.</div>}
+                {filtered.map(s => <DevCard key={s.id} site={s} onDev={onDev} ok={state.cash >= s.devCost} />)}
+              </>
+            );
+          })()}
           {tab === "team" && (<><TeamPanel team={state.team} onHire={onHire} onFire={onFire} />{(state.team?.treasury||0) >= 1 && <div style={{ marginTop:"12px" }}><div style={S.sec}>Debt Financing</div><FinancingPanel state={state} onDrawDebt={onDrawDebt} onRepayDebt={onRepayDebt} /></div>}</>)}
           {tab === "markets" && <MarketIntelPanel marketData={state.marketData} />}
         </div>
@@ -1382,7 +1907,7 @@ export default function LogisticsRESimulator() {
           {rTab === "sentiment" && (() => {
             const { sentiments, boardComments } = genSentiment(m, state.history, state);
             const bScore = calcBoardScore(m, state);
-            const scoreColor = bScore >= 65 ? "#34d399" : bScore >= 35 ? "#fbbf24" : "#f87171";
+            const scoreColor = bScore >= 65 ? "#34d399" : bScore >= 35 ? "#22d3ee" : "#f87171";
             const scoreLabel = bScore >= 75 ? "EXCELLENT" : bScore >= 60 ? "STRONG" : bScore >= 45 ? "DEVELOPING" : bScore >= 25 ? "WEAK" : "CRITICAL";
             return (
               <div>
