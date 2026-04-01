@@ -2,7 +2,7 @@
 
 **European Logistics Real Estate Portfolio Simulator**
 
-A browser-based strategy game where you build and manage a pan-European logistics real estate portfolio — acquire assets, negotiate leases, deploy capex, develop new sites, and manage disposals across UK, Germany, Poland, France, and more.
+A web-based strategy simulation where you build and manage a pan-European logistics real estate portfolio — acquire assets, negotiate leases, deploy capex, develop new sites, and manage disposals across UK, Germany, Poland, France, and more.
 
 ## Quick Start
 
