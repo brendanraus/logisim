@@ -205,7 +205,7 @@ function calcAssetCosts(asset, ac) {
 const T = {
   bg:"#0c0e12",card:"#12151a",bdr:"#1e2228",acc:"#7a8a9a",accD:"#1a1e28",
   grn:"#5a9a6a",grnD:"#0e1a12",red:"#a04040",redD:"#1a0e0e",amb:"#6a8a9a",ambD:"#0e1618",
-  txt:"#d0d4dc",txtD:"#7a8090",txtM:"#5a6070",wht:"#f0f2f6",
+  txt:"#e4e8f0",txtD:"#8a92a4",txtM:"#6a7488",wht:"#f0f2f6",
   hiAcc:"#8a9aaa",
 };
 
@@ -262,19 +262,18 @@ function TipLbl({ label, style: st }) {
 }
 
 function Logo({ size = 28 }) {
+  const s = size / 28;
   return (
-    <svg viewBox="0 0 40 40" style={{ width: size, height: size, flexShrink: 0 }}>
-      <rect x="4" y="20" width="24" height="16" rx="1" fill="#6a7a8a" opacity="0.8" />
-      <rect x="4" y="20" width="24" height="3" rx="0.5" fill="#8a9aaa" opacity="0.6" />
-      <rect x="7" y="28" width="5" height="8" rx="0.5" fill="#1a2028" />
-      <rect x="14" y="28" width="5" height="8" rx="0.5" fill="#1a2028" />
-      <rect x="21" y="28" width="5" height="8" rx="0.5" fill="#1a2028" />
-      <rect x="30" y="4" width="2.5" height="32" rx="0.5" fill="#a08040" />
-      <rect x="14" y="4" width="22" height="2" rx="0.5" fill="#b09050" />
-      <line x1="18" y1="6" x2="18" y2="16" stroke="#a08040" strokeWidth="0.8" strokeDasharray="2,1.5" />
-      <path d="M16 15 L18 16 L20 15" stroke="#a08040" strokeWidth="1" fill="none" strokeLinecap="round" />
-      <rect x="33" y="4" width="4" height="4" rx="0.5" fill="#906830" />
-      <line x1="29" y1="36" x2="34" y2="36" stroke="#a08040" strokeWidth="2" strokeLinecap="round" />
+    <svg viewBox="0 0 120 28" style={{ width: 120 * s, height: 28 * s, flexShrink: 0 }}>
+      <defs>
+        <filter id="logoGlow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+          <feFlood floodColor="#4ade80" floodOpacity="0.6" result="color" />
+          <feComposite in="color" in2="blur" operator="in" result="glow" />
+          <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      <text x="60" y="21" textAnchor="middle" fontSize="22" fontWeight="800" fontFamily="'Inter',system-ui,sans-serif" letterSpacing="0.14em" fill="#f0f2f6" filter="url(#logoGlow)">LOGISIM</text>
     </svg>
   );
 }
@@ -358,62 +357,97 @@ function EuropeMap({ portfolio }) {
   const assetsByMkt = {};
   portfolio.forEach(a => { if (a.developing) return; if (!assetsByMkt[a.market]) assetsByMkt[a.market] = []; assetsByMkt[a.market].push(a); });
   const hexPts = (cx, cy, r) => { const pts = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 6; pts.push((cx + r * Math.cos(a)).toFixed(1) + "," + (cy + r * Math.sin(a)).toFixed(1)); } return pts.join(" "); };
+
+  // Simplified but recognisable European country outlines
   const countries = [
-    { d:"M200,20 L195,35 L190,55 L185,70 L192,80 L200,75 L210,60 L220,45 L230,30 L225,20 L215,15 Z", id:"no_c" },
-    { d:"M220,30 L215,45 L210,60 L215,75 L225,85 L235,75 L240,60 L238,45 L230,30 Z", id:"se_c" },
-    { d:"M255,25 L250,40 L252,55 L258,70 L268,75 L278,65 L280,50 L275,35 L265,25 Z", id:"fi_c" },
-    { d:"M85,95 L82,105 L80,115 L83,125 L88,135 L95,140 L102,138 L108,130 L107,120 L105,110 L100,100 L92,95 Z", id:"uk_c" },
-    { d:"M85,85 L82,90 L85,95 L92,95 L100,100 L105,95 L102,88 L95,83 Z", id:"uk_sc" },
-    { d:"M65,105 L62,112 L64,122 L70,128 L78,126 L82,118 L80,110 L75,105 Z", id:"ie_c" },
-    { d:"M120,140 L115,155 L110,170 L108,185 L115,200 L125,210 L140,215 L155,208 L165,195 L168,180 L165,165 L160,150 L150,140 L135,135 Z", id:"fr_c" },
-    { d:"M75,210 L72,225 L78,240 L90,248 L110,250 L130,245 L142,235 L145,220 L140,212 L125,210 L110,208 L95,210 Z", id:"es_c" },
-    { d:"M72,215 L70,225 L72,238 L78,240 L82,232 L80,220 L75,212 Z", id:"pt_c" },
-    { d:"M165,105 L160,115 L158,130 L162,145 L170,155 L180,160 L195,158 L205,148 L210,135 L208,120 L200,110 L190,105 L178,102 Z", id:"de_c" },
-    { d:"M218,105 L215,115 L218,130 L225,140 L238,145 L252,140 L260,130 L258,118 L250,108 L238,105 L228,102 Z", id:"pl_c" },
-    { d:"M200,138 L198,145 L205,152 L215,155 L225,152 L228,145 L222,138 L210,136 Z", id:"cz_c" },
-    { d:"M228,142 L225,148 L230,155 L242,155 L250,150 L248,142 L238,140 Z", id:"sk_c" },
-    { d:"M195,155 L192,162 L198,170 L210,172 L222,168 L228,160 L222,155 L210,153 Z", id:"at_c" },
-    { d:"M235,155 L230,162 L235,172 L248,175 L258,170 L260,160 L252,155 L242,153 Z", id:"hu_c" },
-    { d:"M162,108 L160,115 L165,120 L175,118 L178,112 L175,108 Z", id:"nl_c" },
-    { d:"M155,122 L152,130 L158,135 L168,133 L172,128 L168,122 Z", id:"be_c" },
-    { d:"M178,85 L175,92 L178,100 L188,102 L195,98 L192,90 L185,85 Z", id:"dk_c" },
-    { d:"M190,175 L185,190 L188,205 L195,218 L205,225 L215,220 L218,208 L215,195 L210,182 L205,175 L198,172 Z", id:"it_c" },
-    { d:"M200,228 L195,232 L200,238 L210,236 L212,230 L208,226 Z", id:"it_si" },
-    { d:"M218,170 L215,178 L220,185 L230,188 L238,182 L235,175 L228,170 Z", id:"hr_c" },
-    { d:"M255,175 L252,182 L255,192 L265,195 L272,190 L270,180 L265,175 Z", id:"rs_c" },
-    { d:"M268,158 L265,168 L270,178 L280,182 L295,180 L302,172 L298,162 L288,158 L278,155 Z", id:"ro_c" },
-    { d:"M280,185 L278,195 L285,202 L298,200 L305,193 L302,185 L292,182 Z", id:"bg_c" },
-    { d:"M272,205 L268,215 L272,228 L282,235 L292,230 L295,218 L290,208 L282,205 Z", id:"gr_c" },
-    { d:"M305,195 L300,205 L305,215 L320,220 L340,218 L358,212 L370,205 L365,195 L350,192 L335,195 L318,198 Z", id:"tr_c" },
+    // Norway - long coastline
+    { d:"M188,18 L183,28 L180,42 L178,58 L176,72 L180,82 L186,78 L190,68 L194,55 L198,40 L202,28 L198,18 Z", id:"no" },
+    // Sweden
+    { d:"M198,18 L194,30 L192,45 L190,58 L192,68 L196,78 L202,82 L210,76 L214,65 L216,52 L214,38 L210,25 L204,18 Z", id:"se" },
+    // Finland
+    { d:"M220,20 L216,32 L214,45 L216,58 L220,68 L228,72 L236,65 L238,52 L236,38 L232,26 L226,20 Z", id:"fi" },
+    // Denmark
+    { d:"M172,82 L168,86 L170,92 L175,96 L182,94 L185,88 L182,82 Z", id:"dk" },
+    // UK - Great Britain shape
+    { d:"M108,80 L104,86 L100,95 L96,105 L94,115 L96,122 L100,130 L106,136 L112,134 L116,126 L118,118 L120,110 L118,100 L115,92 L112,84 Z", id:"uk" },
+    // Ireland
+    { d:"M82,96 L78,104 L80,114 L84,120 L90,118 L92,110 L90,102 L86,96 Z", id:"ie" },
+    // Netherlands
+    { d:"M156,98 L152,102 L154,108 L160,110 L164,106 L162,100 Z", id:"nl" },
+    // Belgium
+    { d:"M150,110 L146,114 L148,120 L154,122 L160,118 L158,112 Z", id:"be" },
+    // Germany
+    { d:"M162,90 L156,98 L152,108 L154,120 L158,132 L164,142 L172,148 L182,146 L190,140 L194,130 L192,118 L188,106 L182,96 L174,90 Z", id:"de" },
+    // Poland
+    { d:"M194,94 L190,104 L190,116 L194,128 L200,138 L210,142 L222,140 L230,132 L232,120 L228,108 L222,98 L212,94 L202,92 Z", id:"pl" },
+    // Czech Republic
+    { d:"M182,132 L178,138 L182,144 L190,148 L198,146 L202,140 L198,134 L190,130 Z", id:"cz" },
+    // Slovakia
+    { d:"M202,134 L198,140 L202,146 L212,148 L220,144 L218,138 L210,134 Z", id:"sk" },
+    // Austria
+    { d:"M172,148 L168,154 L172,162 L182,166 L194,164 L200,158 L196,150 L186,148 Z", id:"at" },
+    // Hungary
+    { d:"M200,150 L196,156 L200,164 L210,168 L222,166 L226,158 L222,150 L212,148 Z", id:"hu" },
+    // France
+    { d:"M110,124 L106,136 L104,150 L106,168 L112,182 L122,192 L136,196 L150,190 L158,178 L160,164 L158,148 L154,134 L146,124 L130,120 Z", id:"fr" },
+    // Spain
+    { d:"M88,196 L84,208 L88,222 L98,234 L114,238 L130,234 L142,224 L144,212 L140,200 L130,194 L116,192 L100,194 Z", id:"es" },
+    // Portugal
+    { d:"M76,200 L74,212 L76,226 L82,232 L88,228 L88,214 L86,202 L80,198 Z", id:"pt" },
+    // Italy - boot shape
+    { d:"M168,166 L164,178 L166,192 L172,204 L178,216 L184,224 L188,218 L186,208 L184,196 L186,184 L184,174 L178,166 Z M180,226 L176,232 L180,236 L186,234 L184,228 Z", id:"it" },
+    // Croatia
+    { d:"M192,164 L188,170 L190,178 L196,182 L204,178 L206,172 L202,166 Z", id:"hr" },
+    // Serbia
+    { d:"M216,168 L212,174 L214,182 L220,188 L228,186 L230,178 L226,172 Z", id:"rs" },
+    // Romania
+    { d:"M232,148 L228,158 L230,170 L236,180 L248,182 L258,178 L262,168 L258,156 L250,148 L240,146 Z", id:"ro" },
+    // Bulgaria
+    { d:"M240,182 L236,190 L240,198 L250,202 L260,198 L262,190 L258,184 L248,182 Z", id:"bg" },
+    // Greece
+    { d:"M232,200 L228,210 L232,222 L240,230 L250,228 L254,218 L250,208 L244,200 Z M244,232 L240,236 L244,240 L250,238 L248,234 Z", id:"gr" },
+    // Turkey (European + Anatolian)
+    { d:"M262,190 L258,198 L262,208 L272,214 L290,216 L310,212 L328,208 L340,200 L338,192 L326,190 L310,192 L294,194 L278,192 L268,190 Z", id:"tr" },
+    // Romania extension / Moldova area fills gap
+    // Switzerland (small)
+    { d:"M156,150 L152,154 L156,160 L164,160 L168,156 L164,150 Z", id:"ch" },
   ];
+
+  const CITY_POS = {
+    uk:{x:108,y:110},de:{x:174,y:120},fr:{x:130,y:160},pl:{x:212,y:118},nl:{x:158,y:104},
+    cz:{x:190,y:140},es:{x:114,y:216},se:{x:204,y:50},it:{x:178,y:196},be:{x:154,y:116},
+    at:{x:184,y:158},dk:{x:178,y:88},tr:{x:300,y:202},ro:{x:248,y:166},hu:{x:212,y:158},
+    gr:{x:242,y:216},pt:{x:82,y:216},ie:{x:86,y:108},sk:{x:212,y:142},hr:{x:198,y:174},
+    bg:{x:250,y:192},fi:{x:228,y:46},no:{x:188,y:50},rs:{x:222,y:178},
+  };
+
   return (
     <div style={{ background:"#06080a",border:"1px solid #1a1d24",borderRadius:"4px",overflow:"hidden" }}>
       <div style={{ padding:"5px 8px 2px",fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",borderBottom:"1px solid rgba(255,255,255,0.04)" }}>Portfolio Map</div>
-      <svg viewBox="50 5 340 260" style={{ display:"block",width:"100%" }}>
-        <rect x="50" y="5" width="340" height="260" fill="#06080a" />
+      <svg viewBox="60 5 300 250" style={{ display:"block",width:"100%" }}>
+        <rect x="60" y="5" width="300" height="250" fill="#06080a" />
+        {/* Sea hint */}
+        <ellipse cx="200" cy="140" rx="140" ry="110" fill="rgba(40,60,80,0.06)" />
         {countries.map(c => (
-          <path key={c.id} d={c.d} fill="#0e120e" stroke="#1a2018" strokeWidth="0.6" opacity="0.9" />
+          <path key={c.id} d={c.d} fill="#111816" stroke="#1e2a22" strokeWidth="0.8" opacity="0.9" />
         ))}
-        {MARKETS.map((mkt, mktIdx) => {
-          const pos = MAP_CITY_POS[mkt.id];
+        {MARKETS.map((mkt) => {
+          const pos = CITY_POS[mkt.id];
           if (!pos) return null;
           const assets = assetsByMkt[mkt.id] || [];
           const hasAssets = assets.length > 0;
-          const r = hasAssets ? 10 : 5;
+          const r = hasAssets ? 8 : 3.5;
           const ac = hasAssets ? "#8a9aaa" : "#2a3040";
           return (
             <g key={mkt.id}>
-              {hasAssets && <polygon points={hexPts(pos.x, pos.y, r + 5)} fill={ac + "15"} stroke={ac + "30"} strokeWidth="0.5" />}
-              <polygon points={hexPts(pos.x, pos.y, r)} fill={hasAssets ? ac + "20" : "#10141a"} stroke={hasAssets ? ac : "#2a3040"} strokeWidth={hasAssets ? 1.5 : 0.5} />
-              <text x={pos.x} y={pos.y + 2.8} textAnchor="middle" fontSize={hasAssets ? 7 : 5.5} fill={hasAssets ? "#f0f2f6" : "#6a7080"} fontWeight="700" fontFamily="'Inter', sans-serif">{mkt.id.toUpperCase()}</text>
-              <text x={pos.x} y={pos.y + r + 8} textAnchor="middle" fontSize="4.5" fill={hasAssets ? "#d0d4dc" : "#4a5060"} fontFamily="'Inter', sans-serif" fontWeight="500">{mkt.city}</text>
-              {hasAssets && (
-                <>
-                  <circle cx={pos.x} cy={pos.y - r - 6} r="5" fill={ac} opacity="0.8" />
-                  <line x1={pos.x} y1={pos.y - r - 1} x2={pos.x} y2={pos.y - r - 5} stroke={ac} strokeWidth="1.5" opacity="0.6" />
-                  <text x={pos.x} y={pos.y - r - 3.8} textAnchor="middle" fontSize="5.5" fill="#0c0e12" fontWeight="800">{assets.length}</text>
-                </>
+              {hasAssets && <circle cx={pos.x} cy={pos.y} r={r+4} fill={ac+"10"} stroke={ac+"25"} strokeWidth="0.5" />}
+              <circle cx={pos.x} cy={pos.y} r={r} fill={hasAssets ? ac+"25" : "#10141a"} stroke={hasAssets ? ac : "#2a3040"} strokeWidth={hasAssets ? 1.2 : 0.5} />
+              {hasAssets ? (
+                <text x={pos.x} y={pos.y+3} textAnchor="middle" fontSize="7" fill="#f0f2f6" fontWeight="800" fontFamily="'Inter',sans-serif">{assets.length}</text>
+              ) : (
+                <circle cx={pos.x} cy={pos.y} r="1.5" fill="#3a4050" />
               )}
+              <text x={pos.x} y={pos.y + r + 7} textAnchor="middle" fontSize="4.5" fill={hasAssets ? "#c0c8d4" : "#3a4050"} fontFamily="'Inter',sans-serif" fontWeight="500">{mkt.city}</text>
             </g>
           );
         })}
@@ -447,7 +481,8 @@ function NewsFeed({ items }) {
       </div>
       <div ref={ref} style={{ overflowY:"auto",maxHeight:"70px",padding:"3px 10px" }}>
         {items.slice(-8).reverse().map((n, i) => (
-          <div key={i} style={{ fontSize:"10px",color:n.color||T.txtD,lineHeight:1.6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>
+          <div key={i} style={{ fontSize:"10px",color:n.color||T.txtD,lineHeight:1.6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",display:"flex",alignItems:"center",gap:"5px" }}>
+            <span style={{ width:"5px",height:"5px",borderRadius:"50%",background:n.color||T.txtD,flexShrink:0,boxShadow:"0 0 4px "+(n.color||T.txtD)+"60" }} />
             {n.text}
           </div>
         ))}
@@ -502,7 +537,7 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
   const ti = selected ? getTI(selected.name) : null;
 
   return (
-    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.90)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
+    <div className="logi-modal" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
       <div style={{ background:"#0a0c10",border:"1px solid #1a1d24",borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",maxHeight:"88vh",overflowY:"auto",boxShadow:"0 24px 64px rgba(0,0,0,0.9)" }}>
         <div style={{ background:"#0e1014",padding:"6px 20px",borderBottom:"1px solid #1a1d24",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
           <span style={{ fontSize:"8px",color:T.txtM,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Lease Negotiation</span>
@@ -524,7 +559,7 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
                     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px" }}>
                       <div>
                         <span style={{ fontSize:"13px",fontWeight:700,color:T.txt }}>{c.name}</span>
-                        <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(info.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px" }}>{info.credit}</span>
+                        <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(info.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px",boxShadow:"inset 0 0 6px "+credCol(info.credit)+"40" }}>{info.credit}</span>
                       </div>
                       <span style={{ fontSize:"9px",color:T.txtM }}>{info.sector}</span>
                     </div>
@@ -556,7 +591,7 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
                   <div>
                     <span style={{ fontSize:"14px",fontWeight:700,color:T.txt }}>{selected.name}</span>
-                    <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(ti.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px" }}>{ti.credit}</span>
+                    <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(ti.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px",boxShadow:"inset 0 0 6px "+credCol(ti.credit)+"40" }}>{ti.credit}</span>
                   </div>
                   <button onClick={() => setMode("list")} style={{ padding:"3px 8px",background:"transparent",border:"1px solid #1a1d24",borderRadius:"3px",color:T.txtM,cursor:"pointer",fontSize:"9px",fontFamily:"inherit" }}>Back</button>
                 </div>
@@ -673,7 +708,7 @@ function WelcomeModal({ companyName, cash, startMarkets, difficulty, portfolio, 
   const avgOcc = seedAssets > 0 ? portfolio.reduce((a, x) => a + x.occupancy, 0) / seedAssets : 0;
   const dateStr = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
   return (
-    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
+    <div className="logi-modal" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.78)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
       <div style={{ background:"#0a0c10",border:"1px solid #1a1d24",borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,0.9)" }}>
         <div style={{ background:"#0e1014",padding:"6px 28px",borderBottom:"1px solid #1a1d24",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
           <span style={{ fontSize:"8px",color:T.txtM,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Confidential — Board Use Only</span>
@@ -681,7 +716,7 @@ function WelcomeModal({ companyName, cash, startMarkets, difficulty, portfolio, 
         </div>
         <div style={{ padding:"32px 28px 20px",borderBottom:"1px solid #1a1d24" }}>
           <div style={{ display:"flex",alignItems:"flex-start",gap:"16px" }}>
-            <Logo size={38} />
+            <Logo size={28} />
             <div style={{ flex:1 }}>
               <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"6px" }}>Investment Committee Briefing</div>
               <div style={{ fontSize:"24px",fontWeight:800,color:T.wht,letterSpacing:"0.02em",lineHeight:1.15,marginBottom:"4px" }}>{companyName}</div>
@@ -754,7 +789,7 @@ function genAsset(mkt, acId, opts) {
   const age = Math.round(rBetween(2, 25));
   const cond = age < 5 ? "A" : age < 12 ? "B" : "C";
   const epc = cond === "A" ? rFrom(["A","B"]) : cond === "B" ? rFrom(["B","C"]) : rFrom(["C","D","E"]);
-  return { id:"a"+aCtr, name, market:mkt.id, marketName:mkt.name, flag:"", assetClass:ac.id, assetClassName:ac.name, assetClassIcon:"", gla, rentPsm, occupancy:occ, tenant, leaseRemaining:walt, gri, value:val, age, condition:cond, epcRating:epc, capexSpent:0, acquired:true, developing:false, devQuartersLeft:0, visualSeed:aCtr, urgentIssue:null, lastRM:0 };
+  return { id:"a"+aCtr, name, market:mkt.id, marketName:mkt.name, flag:"", assetClass:ac.id, assetClassName:ac.name, assetClassIcon:"", gla, rentPsm, occupancy:occ, tenant, leaseRemaining:walt, gri, value:val, age, condition:cond, epcRating:epc, capexSpent:0, acquired:true, developing:false, devQuartersLeft:0, visualSeed:aCtr, urgentIssue:null, lastRM:0, histOcc:[occ], histRent:[rentPsm], histVal:[val] };
 }
 
 function genMktAsset(mkt, tx) {
@@ -994,6 +1029,13 @@ function advanceQ(state) {
     const ecr = marketYield * (ac?.capRateMult||1);
     a.gri = a.gla * a.rentPsm * a.occupancy;
     a.value = a.gri > 0 ? a.gri / (ecr/100) : a.gla * (mkt?.baseRent||5) * 0.3 / (ecr/100);
+    if (!a.histOcc) a.histOcc = [];
+    if (!a.histRent) a.histRent = [];
+    if (!a.histVal) a.histVal = [];
+    a.histOcc.push(a.occupancy);
+    a.histRent.push(a.rentPsm);
+    a.histVal.push(a.value);
+    if (a.histOcc.length > 20) { a.histOcc.shift(); a.histRent.shift(); a.histVal.shift(); }
   });
 
   const updatedMarketData = updateMarketData(marketData||{}, quarter, news);
@@ -1056,10 +1098,60 @@ function SentBadge({ mood, label }) {
   return <span style={{ display:"inline-flex",alignItems:"center",gap:"4px",padding:"2px 8px",borderRadius:"3px",fontSize:"10px",fontWeight:700,background:c.bg,color:c.t,border:"1px solid "+c.b }}>{label}</span>;
 }
 
+function InvestorGauge({ score, color, label }) {
+  const [display, setDisplay] = useState(0);
+  const [arcPct, setArcPct] = useState(0);
+  const frameRef = useRef(null);
+  const startRef = useRef(null);
+
+  useEffect(() => {
+    setDisplay(0);
+    setArcPct(0);
+    startRef.current = null;
+    const dur = 800;
+    const animate = (ts) => {
+      if (!startRef.current) startRef.current = ts;
+      const p = Math.min(1, (ts - startRef.current) / dur);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(score * ease));
+      setArcPct(score * ease);
+      if (p < 1) frameRef.current = requestAnimationFrame(animate);
+    };
+    frameRef.current = requestAnimationFrame(animate);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [score]);
+
+  const r = 50, cx = 60, cy = 58, sw = 7;
+  const halfCirc = Math.PI * r;
+  const arcLen = (arcPct / 100) * halfCirc;
+  const gap = halfCirc - arcLen;
+
+  return (
+    <div style={{ textAlign:"center" }}>
+      <div style={{ position:"relative", width:"120px", height:"72px", margin:"0 auto" }}>
+        <svg viewBox="0 0 120 72" style={{ width:"120px",height:"72px",overflow:"visible" }}>
+          <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`}
+            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={sw} strokeLinecap="round" />
+          <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`}
+            fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
+            strokeDasharray={`${arcLen} ${gap}`}
+            style={{ filter:`drop-shadow(0 0 4px ${color}50)`, transition:"stroke 0.3s" }} />
+        </svg>
+        <div style={{ position:"absolute",bottom:"2px",left:0,right:0,textAlign:"center" }}>
+          <div style={{ fontSize:"32px",fontWeight:900,color,lineHeight:1 }}>{display}</div>
+          <div style={{ fontSize:"9px",color:color,opacity:0.5,fontWeight:700,marginTop:"1px" }}>/100</div>
+        </div>
+      </div>
+      <div style={{ fontSize:"12px",fontWeight:800,color,letterSpacing:"0.08em",marginTop:"4px" }}>{label}</div>
+      <div style={{ fontSize:"9px",color:"#9098a8",marginTop:"4px" }}>Based on IRR, occupancy, NOI yield, ESG & scale</div>
+    </div>
+  );
+}
+
 /* ===== STYLES ===== */
 const S = {
-  app:{ minHeight:"100vh",background:T.bg,color:T.txt,fontFamily:"'Inter', sans-serif",fontSize:"13px",lineHeight:1.5 },
-  hdr:{ padding:"10px 18px",borderBottom:"1px solid "+T.bdr,display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap" },
+  app:{ minHeight:"100vh",background:"radial-gradient(ellipse at 50% 30%, #141820 0%, #0c0e12 60%, #08090c 100%)",color:T.txt,fontFamily:"'Inter', sans-serif",fontSize:"13px",lineHeight:1.5 },
+  hdr:{ padding:"10px 18px",borderBottom:"none",display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap",position:"relative" },
   logo:{ display:"flex",alignItems:"center",gap:"10px",flexShrink:0 },
   mBar:{ display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(130px, 1fr))",gap:"1px",background:"#1a1d24",borderBottom:"1px solid #2a2e38" },
   mCell:{ background:"#0a0c10",padding:"14px 16px",textAlign:"center" },
@@ -1068,8 +1160,8 @@ const S = {
   main:{ display:"grid",gridTemplateColumns:"1fr 380px",minHeight:"calc(100vh - 160px)" },
   lp:{ padding:"14px 18px",overflowY:"auto",borderRight:"1px solid "+T.bdr },
   rp:{ padding:"14px 18px",overflowY:"auto",background:"#0e1014" },
-  tabs:{ display:"flex",gap:"2px",marginBottom:"14px",background:T.bdr,borderRadius:"4px",padding:"2px" },
-  card:{ background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",padding:"12px 14px",marginBottom:"8px" },
+  tabs:{ display:"flex",gap:"2px",marginBottom:"14px",background:"rgba(255,255,255,0.04)",borderRadius:"4px",padding:"2px",border:"1px solid rgba(255,255,255,0.06)" },
+  card:{ background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",padding:"12px 14px",marginBottom:"8px",transition:"transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease" },
   grid:{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px",marginTop:"8px" },
   stat:{ fontSize:"10px",color:T.txtD,letterSpacing:"0.04em",textTransform:"uppercase" },
   val:{ fontSize:"14px",fontWeight:700,color:T.txt },
@@ -1080,16 +1172,24 @@ const S = {
   empty:{ padding:"18px",textAlign:"center",color:T.txtD,fontSize:"12px" },
 };
 
-function tabSt(active) { return { flex:1,padding:"8px 10px",background:active?"rgba(138,154,170,0.12)":"rgba(255,255,255,0.04)",color:active?"#f0f2f6":"#b0b8c4",border:active?"1px solid rgba(138,154,170,0.30)":"1px solid transparent",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",fontFamily:"inherit" }; }
+function tabSt(active, accent) { const ac = accent || "rgba(138,154,170,0.6)"; return { flex:1,padding:"8px 10px",background:active?"rgba(138,154,170,0.10)":"rgba(255,255,255,0.03)",color:active?"#f0f2f6":"#8a92a4",border:active?"1px solid rgba(138,154,170,0.25)":"1px solid transparent",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",fontFamily:"inherit",position:"relative",borderBottom:active?"2px solid "+ac:"2px solid transparent",transition:"all 0.15s ease" }; }
 function btnSt(v) { const colors = { green:{b:T.grn,bg:T.grnD,c:T.grn}, red:{b:T.red,bg:T.redD,c:T.red}, amber:{b:"#a08840",bg:"#1a1808",c:"#a08840"} }; const d = colors[v] || { b:T.acc, bg:T.accD, c:T.hiAcc }; return { padding:"5px 10px",border:"1px solid "+d.b,background:d.bg,color:d.c,borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit" }; }
-function condSt(c) { return { display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:c==="A"?T.grnD:c==="B"?T.ambD:T.redD, color:c==="A"?T.grn:c==="B"?T.amb:T.red }; }
+function condSt(c) { return { display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:c==="A"?T.grnD:c==="B"?T.ambD:T.redD, color:c==="A"?T.grn:c==="B"?T.amb:T.red, ...(c==="C" ? { animation:"gradeC_pulse 2s ease-in-out infinite" } : {}) }; }
+function assetHealthCol(a) { if (a.developing) return "#6a8a9a"; if (a.urgentIssue) return "#c04040"; const npi = calcAssetCosts(a).netPropertyIncome; if (npi < 0) return "#c04040"; if (a.occupancy < 0.5 || a.condition === "C") return "#c06040"; if (a.occupancy < 0.75 || a.condition === "B") return "#a08840"; return "#5a9a6a"; }
 
 /* ===== CARD COMPONENTS ===== */
-function MetricCell({ label, value, color }) {
+function MetricCell({ label, value, color, sparkData, sparkColor }) {
   return (
-    <div style={S.mCell}>
-      <div style={S.mLbl}><TipLbl label={label} style={{ fontSize:"10px",color:T.txtD,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase" }} /></div>
-      <div style={{ ...S.mVal, color: color || T.txt }}>{value}</div>
+    <div style={{ ...S.mCell, position:"relative", overflow:"hidden" }}>
+      {sparkData && sparkData.length >= 2 && (
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"100%", opacity:0.12, pointerEvents:"none" }}>
+          <Spark data={sparkData} color={sparkColor || "#6a7a8a"} height={60} />
+        </div>
+      )}
+      <div style={{ position:"relative", zIndex:1 }}>
+        <div style={S.mLbl}><TipLbl label={label} style={{ fontSize:"10px",color:T.txtD,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase" }} /></div>
+        <div style={{ ...S.mVal, color: color || T.txt }}>{value}</div>
+      </div>
     </div>
   );
 }
@@ -1103,19 +1203,19 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
   const thumb = <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.06)" }}><WHouse condition={asset.condition} gla={asset.gla} developing={asset.developing} assetClass={asset.assetClass} seed={asset.visualSeed||0} /></div>;
   if (asset.developing) {
     const pD = ((asset.totalDevQuarters||4) - asset.devQuartersLeft) / (asset.totalDevQuarters||4) * 100;
-    return (<div style={S.card}><div style={{ display:"flex",gap:"12px" }}>{thumb}<div style={{ flex:1 }}><div style={{ display:"flex",justifyContent:"space-between" }}><div><div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.name}</div><div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName} · Dev</div></div><span style={condSt("A")}>DEV</span></div></div></div><div style={S.grid}><div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div><div><TipLbl label="Dev Cost" style={S.stat} /><div style={S.val}>{fmtM(asset.totalDevCost||0)}</div></div><div><TipLbl label="Completion" style={S.stat} /><div style={S.val}>{asset.devQuartersLeft}Q</div></div></div><div style={{ height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"6px" }}><div style={{ height:"100%",width:pD+"%",background:T.acc,borderRadius:"2px" }} /></div></div>);
+    return (<div className="logi-card" style={{ ...S.card, borderLeft:"3px solid "+assetHealthCol(asset) }}><div style={{ display:"flex",gap:"12px" }}>{thumb}<div style={{ flex:1 }}><div style={{ display:"flex",justifyContent:"space-between" }}><div><div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.name}</div><div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName} · Dev</div></div><span style={condSt("A")}>DEV</span></div></div></div><div style={S.grid}><div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div><div><TipLbl label="Dev Cost" style={S.stat} /><div style={S.val}>{fmtM(asset.totalDevCost||0)}</div></div><div><TipLbl label="Completion" style={S.stat} /><div style={S.val}>{asset.devQuartersLeft}Q</div></div></div><div style={{ height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"6px" }}><div style={{ height:"100%",width:pD+"%",background:T.acc,borderRadius:"2px" }} /></div></div>);
   }
   const npi = costs ? costs.netPropertyIncome : 0;
   const npiNeg = npi < 0;
   return (
-    <div style={S.card}>
+    <div className="logi-card" style={{ ...S.card, borderLeft:"3px solid "+assetHealthCol(asset) }}>
       <div style={{ display:"flex",gap:"12px" }}>
         {thumb}
         <div style={{ flex:1 }}>
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
             <div>
               <div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.name}{asset.urgentIssue && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:T.redD,color:T.red,marginLeft:"5px" }}>ISSUE</span>}{npiNeg && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:"#1a0808",color:"#c04040",marginLeft:"5px" }}>NPI NEG</span>}</div>
-              <div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" · "}<span style={{ color:T.hiAcc }}>{asset.tenant}</span>{tInfo && <span style={{ marginLeft:"4px",fontSize:"9px",color:credCol(tInfo.credit),background:"rgba(0,0,0,0.3)",padding:"1px 4px",borderRadius:"3px" }}>{tInfo.credit}</span>}</>}</div>
+              <div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" · "}<span style={{ color:T.hiAcc }}>{asset.tenant}</span>{tInfo && <span style={{ marginLeft:"4px",fontSize:"9px",color:credCol(tInfo.credit),background:"rgba(0,0,0,0.3)",padding:"1px 4px",borderRadius:"3px",boxShadow:"inset 0 0 6px "+credCol(tInfo.credit)+"40" }}>{tInfo.credit}</span>}</>}</div>
             </div>
             <div style={{ display:"flex",gap:"3px" }}><span style={{ fontSize:"9px",color:T.txtD,padding:"2px 5px",background:T.accD,borderRadius:"3px" }}>EPC {asset.epcRating}</span><span style={condSt(asset.condition)}>Gr {asset.condition}</span></div>
           </div>
@@ -1137,9 +1237,25 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
           Void Cost {fmtK(costs.voidRates + costs.irrecoverableSC)}/yr · Insurance {fmtK(costs.insurance)}/yr · Maint {fmtK(costs.maintDrag)}/yr
         </div>
       )}
+      {(asset.histOcc && asset.histOcc.length >= 2) && (
+        <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px",marginTop:"6px" }}>
+          <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:"3px",padding:"4px 6px" }}>
+            <div style={{ fontSize:"7px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>Occupancy</div>
+            <div style={{ height:"20px" }}><Spark data={asset.histOcc} color={asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red} height={20} /></div>
+          </div>
+          <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:"3px",padding:"4px 6px" }}>
+            <div style={{ fontSize:"7px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>Rent/sqm</div>
+            <div style={{ height:"20px" }}><Spark data={asset.histRent||[]} color={T.hiAcc} height={20} /></div>
+          </div>
+          <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:"3px",padding:"4px 6px" }}>
+            <div style={{ fontSize:"7px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>GAV</div>
+            <div style={{ height:"20px" }}><Spark data={asset.histVal||[]} color={T.acc} height={20} /></div>
+          </div>
+        </div>
+      )}
       <div style={{ display:"flex",alignItems:"center",gap:"6px",marginTop:"6px" }}>
         <span style={{ fontSize:"8px",color:T.txtM,flexShrink:0,width:"52px" }}>Occupancy</span>
-        <div style={{ width:"140px",height:"3px",background:T.bdr,borderRadius:"2px",flexShrink:0 }}><div style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,borderRadius:"2px" }} /></div>
+        <div style={{ width:"140px",height:"3px",background:T.bdr,borderRadius:"2px",flexShrink:0 }}><div className="logi-occ-bar" style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,borderRadius:"2px" }} /></div>
         <span style={{ fontSize:"8px",color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,fontWeight:700 }}>{fmtP(asset.occupancy)}</span>
       </div>
       <div style={S.row}>
@@ -1155,7 +1271,7 @@ function AcqCard({ asset, onAcquire, ok }) {
   const mktName = MARKETS.find(m => m.id === asset.market)?.name || "";
   const mktCity = MARKETS.find(m => m.id === asset.market)?.city || "";
   return (
-    <div style={{ ...S.card, opacity:ok?1:0.5 }}>
+    <div className="logi-card" style={{ ...S.card, opacity:ok?1:0.5 }}>
       <div style={{ display:"flex",gap:"12px" }}>
         <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.06)" }}><WHouse condition={asset.condition} gla={asset.gla} assetClass={asset.assetClass} seed={asset.visualSeed||0} /></div>
         <div style={{ flex:1 }}>
@@ -1182,7 +1298,7 @@ function DevCard({ site, onDev, ok }) {
   const ac = ASSET_CLASSES.find(x => x.id === site.assetClass);
   const mktName = MARKETS.find(m => m.id === site.market)?.name || "";
   return (
-    <div style={{ ...S.card, opacity:ok?1:0.5 }}>
+    <div className="logi-card" style={{ ...S.card, opacity:ok?1:0.5 }}>
       <div style={{ display:"flex",gap:"12px" }}>
         <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.06)" }}><WHouse condition="A" gla={site.gla} developing={true} assetClass={site.assetClass} seed={parseInt(site.id.replace(/\D/g,""))||0} /></div>
         <div style={{ flex:1 }}><div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{site.name}</div><div style={{ fontSize:"11px",color:T.txtD }}>{ac?.name} · {mktName}</div></div>
@@ -1332,19 +1448,24 @@ function StartScreen({ onStart }) {
   const [step, setStep] = useState(0);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
+  const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const prevStep = useRef(0);
+  const [stepAnim, setStepAnim] = useState(false);
   const toggle = (id) => setSm(p => p.includes(id) ? p.filter(m => m !== id) : p.length < 4 ? [...p, id] : p);
   const ok = step === 0 ? cn.trim().length > 0 : step === 1 ? true : sm.length > 0;
-  const next = () => { if (step < 2) setStep(step + 1); else onStart({ companyName:cn.trim(), cash:cap, startMarkets:sm, difficulty:diff }); };
+  const next = () => { if (step < 2) { prevStep.current = step; setStepAnim(true); setTimeout(() => { setStep(step + 1); setTimeout(() => setStepAnim(false), 30); }, 150); } else onStart({ companyName:cn.trim(), cash:cap, startMarkets:sm, difficulty:diff }); };
   const saved = hasSave() ? loadGame() : null;
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    let w = canvas.width = window.innerWidth;
-    let h = canvas.height = window.innerHeight;
-    const onResize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    let w = canvas.width = Math.max(window.innerWidth, 1200);
+    let h = canvas.height = Math.max(window.innerHeight, 800);
+    const onResize = () => { w = canvas.width = Math.max(window.innerWidth, 1200); h = canvas.height = Math.max(window.innerHeight, 800); };
     window.addEventListener("resize", onResize);
+    const onMouseMove = (e) => { mouseRef.current = { x: e.clientX / w, y: e.clientY / h }; };
+    window.addEventListener("mousemove", onMouseMove);
 
     // Grid
     const gridSpacing = 60;
@@ -1358,7 +1479,7 @@ function StartScreen({ onStart }) {
     }));
 
     // Warehouse nodes
-    const nodes = Array.from({ length: 8 }, () => ({
+    const nodes = Array.from({ length: 14 }, () => ({
       x: 80 + Math.random() * (w - 160), y: 80 + Math.random() * (h - 160),
       size: 10 + Math.random() * 16, pulse: Math.random() * Math.PI * 2,
     }));
@@ -1415,28 +1536,32 @@ function StartScreen({ onStart }) {
         ctx.fillRect(px - p.size/2, py - p.size/2, p.size, p.size);
       });
 
-      // Warehouse nodes (pulsing)
+      // Warehouse nodes (pulsing with parallax)
+      const mx = mouseRef.current.x, my = mouseRef.current.y;
       nodes.forEach(n => {
         n.pulse += 0.015;
         const pulseR = n.size + Math.sin(n.pulse) * 4;
+        const depth = 0.5 + (n.size / 26) * 0.5;
+        const px = n.x + (mx - 0.5) * 30 * depth;
+        const py = n.y + (my - 0.5) * 20 * depth;
         // Outer glow
-        ctx.beginPath(); ctx.arc(n.x, n.y, pulseR + 8, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(74, 138, 191, 0.03)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(px, py, pulseR + 8, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(90, 154, 106, 0.03)"; ctx.fill();
         // Building shape
-        ctx.fillStyle = "rgba(74, 138, 191, 0.07)";
-        ctx.fillRect(n.x - n.size * 0.7, n.y - n.size * 0.4, n.size * 1.4, n.size * 0.8);
+        ctx.fillStyle = "rgba(90, 154, 106, 0.07)";
+        ctx.fillRect(px - n.size * 0.7, py - n.size * 0.4, n.size * 1.4, n.size * 0.8);
         // Roof
         ctx.beginPath();
-        ctx.moveTo(n.x - n.size * 0.8, n.y - n.size * 0.4);
-        ctx.lineTo(n.x, n.y - n.size * 0.7);
-        ctx.lineTo(n.x + n.size * 0.8, n.y - n.size * 0.4);
-        ctx.fillStyle = "rgba(74, 138, 191, 0.10)"; ctx.fill();
+        ctx.moveTo(px - n.size * 0.8, py - n.size * 0.4);
+        ctx.lineTo(px, py - n.size * 0.7);
+        ctx.lineTo(px + n.size * 0.8, py - n.size * 0.4);
+        ctx.fillStyle = "rgba(90, 154, 106, 0.10)"; ctx.fill();
         // Dock doors
         const doors = Math.max(2, Math.floor(n.size / 6));
         const dw = (n.size * 1.2) / doors;
         for (let d = 0; d < doors; d++) {
-          ctx.fillStyle = "rgba(74, 138, 191, 0.12)";
-          ctx.fillRect(n.x - n.size * 0.55 + d * dw, n.y + n.size * 0.1, dw * 0.7, n.size * 0.3);
+          ctx.fillStyle = "rgba(90, 154, 106, 0.12)";
+          ctx.fillRect(px - n.size * 0.55 + d * dw, py + n.size * 0.1, dw * 0.7, n.size * 0.3);
         }
       });
 
@@ -1449,10 +1574,10 @@ function StartScreen({ onStart }) {
         ctx.translate(t.x, t.y);
         ctx.rotate(Math.atan2(t.vy, t.vx));
         // Cab
-        ctx.fillStyle = `rgba(160, 128, 64, ${t.alpha})`;
+        ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha})`;
         ctx.fillRect(-t.size * 0.4, -t.size * 0.3, t.size * 0.5, t.size * 0.6);
         // Trailer
-        ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha * 0.8})`;
+        ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha * 0.7})`;
         ctx.fillRect(-t.size * 1.5, -t.size * 0.35, t.size * 1.1, t.size * 0.7);
         ctx.restore();
       });
@@ -1460,13 +1585,33 @@ function StartScreen({ onStart }) {
       animRef.current = requestAnimationFrame(draw);
     };
     animRef.current = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(animRef.current); window.removeEventListener("resize", onResize); };
+    return () => { cancelAnimationFrame(animRef.current); window.removeEventListener("resize", onResize); window.removeEventListener("mousemove", onMouseMove); };
   }, []);
 
   const wrap = { minHeight:"100vh",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif",color:T.txt,padding:"20px",position:"relative",overflow:"hidden" };
   const cont = { maxWidth:"540px",width:"100%",position:"relative",zIndex:2 };
   const opt = (sel) => ({ padding:"11px 12px",background:sel?T.accD:T.card,border:"1px solid "+(sel?T.acc:T.bdr),borderRadius:"4px",cursor:"pointer",marginBottom:"6px" });
   const mktSt = (sel) => ({ padding:"9px 10px",background:sel?T.accD:T.card,border:"1px solid "+(sel?T.acc:T.bdr),borderRadius:"4px",cursor:"pointer",textAlign:"center" });
+
+  function MktTile({ m, sel, onToggle }) {
+    const [hov, setHov] = useState(false);
+    const ref = useRef(null);
+    return (
+      <div ref={ref} style={{ padding:"9px 10px", background:sel?T.accD:hov?"rgba(138,154,170,0.06)":T.card, border:"1px solid "+(sel?T.acc:hov?"rgba(138,154,170,0.25)":T.bdr), borderRadius:"4px", cursor:"pointer", textAlign:"center", position:"relative", transition:"all 0.2s ease", boxShadow:hov&&!sel?"0 0 12px rgba(138,154,170,0.08)":"none", transform:hov?"translateY(-1px)":"translateY(0)" }} onClick={onToggle} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+        <div style={{ fontSize:"11px",fontWeight:600,color:sel?T.hiAcc:hov?T.wht:T.txt }}>{m.name}</div>
+        <div style={{ fontSize:"9px",color:T.txtD }}>Cap {m.capRate}% · {"\u20AC"}{m.baseRent}/sqm</div>
+        {hov && (
+          <div style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#181c24", border:"1px solid #2a2e38", borderRadius:"4px", padding:"8px 10px", fontSize:"9px", color:T.txt, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 4px 16px rgba(0,0,0,0.7)", lineHeight:1.6, pointerEvents:"none", textAlign:"left" }}>
+            <div style={{ fontWeight:700, color:T.wht, marginBottom:"2px" }}>{m.name} — {m.city}</div>
+            <div>Base rent: <span style={{ color:T.hiAcc, fontWeight:700 }}>{"\u20AC"}{m.baseRent}/sqm</span></div>
+            <div>Prime yield: <span style={{ color:T.hiAcc, fontWeight:700 }}>{m.capRate}%</span></div>
+            <div>Demand index: <span style={{ color:m.demand>0.8?T.grn:m.demand>0.7?T.amb:T.red, fontWeight:700 }}>{Math.round(m.demand*100)}/100</span></div>
+            <div style={{ position:"absolute", top:"100%", left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"5px solid #2a2e38" }} />
+          </div>
+        )}
+      </div>
+    );
+  }
   const nxtSt = (en) => ({ flex:1,padding:"11px 18px",background:en?T.accD:T.card,color:en?T.wht:T.txtM,border:en?"1px solid "+T.acc:"1px solid "+T.bdr,borderRadius:"4px",cursor:en?"pointer":"default",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" });
   const CAPS = [{l:"\u20AC100m",v:100e6,d:"Scrappy challenger"},{l:"\u20AC150m",v:150e6,d:"Mid-market platform"},{l:"\u20AC250m",v:250e6,d:"Institutional player"},{l:"\u20AC500m",v:500e6,d:"Mega fund"}];
   const DIFFS = [{l:"Guided",v:"guided",d:"Start with 3 seed assets"},{l:"Blank Slate",v:"blank",d:"Cash only"}];
@@ -1475,10 +1620,20 @@ function StartScreen({ onStart }) {
       <canvas ref={canvasRef} style={{ position:"absolute",inset:0,width:"100%",height:"100%",zIndex:1 }} />
       <div style={{ position:"absolute",inset:0,zIndex:1,background:"radial-gradient(ellipse at center, rgba(12,14,18,0.4) 0%, rgba(12,14,18,0.85) 70%, rgba(12,14,18,0.97) 100%)",pointerEvents:"none" }} />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      <style>{`
+        .logi-card:hover { transform: translateY(-2px); border-color: rgba(138,154,170,0.35) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .logi-modal { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .logi-occ-bar { animation: occGrow 0.6s cubic-bezier(0.4,0,0.2,1) forwards; }
+        @keyframes occGrow { from { width: 0%; } }
+        @keyframes gradeC_pulse { 0%,100%{ box-shadow: 0 0 0px rgba(160,64,64,0); } 50%{ box-shadow: 0 0 6px rgba(160,64,64,0.5); } }
+      `}</style>
       <div style={cont}>
         <div style={{ textAlign:"center",marginBottom:"36px" }}>
-          <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:"10px",marginBottom:"4px" }}><Logo size={36} /><div style={{ fontSize:"26px",fontWeight:700,color:T.wht,letterSpacing:"0.06em" }}>LOGISIM</div></div>
+          <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:"10px",marginBottom:"4px" }}><div style={{ position:"relative" }}><Logo size={36} /><span style={{ position:"absolute",inset:0,background:"linear-gradient(90deg, transparent 0%, rgba(138,154,170,0.15) 50%, transparent 100%)",backgroundSize:"200% 100%",animation:"titleSweep 3s ease-in-out infinite",pointerEvents:"none",mixBlendMode:"screen",opacity:0.5,borderRadius:"4px" }} /></div></div>
           <div style={{ fontSize:"10px",color:T.txtD,letterSpacing:"0.12em",textTransform:"uppercase" }}>European Logistics Real Estate Simulator</div>
+          <style>{`
+            @keyframes titleSweep { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+          `}</style>
         </div>
         {saved && step === 0 && (
           <div style={{ marginBottom:"16px" }}>
@@ -1490,9 +1645,9 @@ function StartScreen({ onStart }) {
           </div>
         )}
         <div style={{ display:"flex",gap:"5px",justifyContent:"center",marginBottom:"20px" }}>{[0,1,2].map(i => <div key={i} style={{ width:"7px",height:"7px",borderRadius:"50%",background:step>=i?T.acc:T.bdr }} />)}</div>
-        {step === 0 && (<div><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 1 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Name your platform</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"16px",lineHeight:1.5 }}>You are the CEO of a European logistics real estate platform. Empty buildings cost money — rates, insurance, service charge.</div><input style={{ width:"100%",padding:"11px 12px",background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",color:T.wht,fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box" }} placeholder="e.g. Apex Logistics" value={cn} onChange={e => setCn(e.target.value)} onKeyDown={e => e.key==="Enter"&&ok&&next()} autoFocus /></div>)}
-        {step === 1 && (<div><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 2 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Capital and mode</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"14px" }}>How much equity?</div>{CAPS.map(o => <div key={o.v} style={opt(cap===o.v)} onClick={() => setCap(o.v)}><div style={{ fontSize:"13px",fontWeight:600,color:cap===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"10px",color:T.txtD }}>{o.d}</div></div>)}<div style={{ marginTop:"10px" }}>{DIFFS.map(o => <div key={o.v} style={opt(diff===o.v)} onClick={() => setDiff(o.v)}><div style={{ fontSize:"13px",fontWeight:600,color:diff===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"10px",color:T.txtD }}>{o.d}</div></div>)}</div></div>)}
-        {step === 2 && (<div><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 3 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Starting markets</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"12px" }}>Pick up to 4.</div><div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px" }}>{MARKETS.map(m => (<div key={m.id} style={mktSt(sm.includes(m.id))} onClick={() => toggle(m.id)}><div style={{ fontSize:"11px",fontWeight:600,color:sm.includes(m.id)?T.hiAcc:T.txt }}>{m.name}</div><div style={{ fontSize:"9px",color:T.txtD }}>Cap {m.capRate}% · \u20AC{m.baseRent}/sqm</div></div>))}</div><div style={{ fontSize:"9px",color:T.txtM,marginTop:"5px",textAlign:"center" }}>{sm.length}/4 selected</div></div>)}
+        {step === 0 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 1 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Name your platform</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"16px",lineHeight:1.5 }}>You are the CEO of a European logistics real estate platform. Empty buildings cost money — rates, insurance, service charge.</div><input style={{ width:"100%",padding:"11px 12px",background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",color:T.wht,fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box" }} placeholder="e.g. Apex Logistics" value={cn} onChange={e => setCn(e.target.value)} onKeyDown={e => e.key==="Enter"&&ok&&next()} autoFocus /></div>)}
+        {step === 1 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 2 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Capital and mode</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"14px" }}>How much equity?</div>{CAPS.map(o => <div key={o.v} style={opt(cap===o.v)} onClick={() => setCap(o.v)}><div style={{ fontSize:"13px",fontWeight:600,color:cap===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"10px",color:T.txtD }}>{o.d}</div></div>)}<div style={{ marginTop:"10px" }}>{DIFFS.map(o => <div key={o.v} style={opt(diff===o.v)} onClick={() => setDiff(o.v)}><div style={{ fontSize:"13px",fontWeight:600,color:diff===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"10px",color:T.txtD }}>{o.d}</div></div>)}</div></div>)}
+        {step === 2 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 3 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Starting markets</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"12px" }}>Pick up to 4.</div><div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px" }}>{MARKETS.map(m => (<MktTile key={m.id} m={m} sel={sm.includes(m.id)} onToggle={() => toggle(m.id)} />))}</div><div style={{ fontSize:"9px",color:T.txtM,marginTop:"5px",textAlign:"center" }}>{sm.length}/4 selected</div></div>)}
         <div style={{ display:"flex",gap:"6px",marginTop:"24px" }}>
           {step > 0 && <button style={{ padding:"11px 16px",background:"transparent",color:T.txtD,border:"1px solid "+T.bdr,borderRadius:"4px",cursor:"pointer",fontSize:"11px",fontWeight:600,fontFamily:"inherit" }} onClick={() => setStep(step-1)}>Back</button>}
           <button style={nxtSt(ok)} onClick={() => ok && next()}>{step < 2 ? "Continue" : "Launch Simulator"}</button>
@@ -1513,6 +1668,7 @@ export default function LogisticsRESimulator() {
   const [acqFilter, setAcqFilter] = useState({ market:"all", assetClass:"all" });
   const [devFilter, setDevFilter] = useState({ market:"all", assetClass:"all" });
   const [showWelcome, setShowWelcome] = useState(false);
+  const [qtrModal, setQtrModal] = useState(null);
 
   useEffect(() => { if (state && started) saveGame(state); }, [state, started]);
 
@@ -1520,7 +1676,6 @@ export default function LogisticsRESimulator() {
     if (cfg === "__load__") { const s = loadGame(); if (s) { setState(s); setStarted(true); setShowWelcome(false); } }
     else { delSave(); const newState = initGame(cfg); setState(newState); setStarted(true); setShowWelcome(true); }
   }, []);
-  const [qtrModal, setQtrModal] = useState(null);
   const onAdvance = useCallback(() => {
     setState(p => {
       if (!p) return p;
@@ -1566,7 +1721,7 @@ export default function LogisticsRESimulator() {
         const deltaCol = (v) => v > 0 ? T.grn : v < 0 ? T.red : T.txtD;
         const deltaStr = (v, fmt) => (v >= 0 ? "+" : "") + fmt(v);
         return (
-          <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
+          <div className="logi-modal" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.70)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
             <div style={{ background:"#0a0c10",border:"1px solid #2a2e38",borderRadius:"4px",padding:"24px",maxWidth:"480px",width:"92%",boxShadow:"0 8px 40px rgba(0,0,0,0.6)" }}>
               <div style={{ textAlign:"center",marginBottom:"16px" }}>
                 <div style={{ fontSize:"10px",color:T.hiAcc,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px" }}>Quarter Complete</div>
@@ -1597,8 +1752,12 @@ export default function LogisticsRESimulator() {
         );
       })()}
 
-      <div style={S.hdr}>
-        <div style={S.logo}><Logo size={30} /><div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht,letterSpacing:"0.05em" }}>{state.companyName.toUpperCase()}</div><div style={{ fontSize:"9px",color:"#4a8abf",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700 }}>LOGISIM</div></div></div>
+      {(() => {
+        const healthCol = m.noi < 0 ? "#a04040" : m.avgOcc > 0.85 ? "#5a9a6a" : m.avgOcc > 0.6 ? "#6a8a9a" : "#a08840";
+        return (
+          <div style={{ position:"relative" }}>
+            <div style={S.hdr}>
+        <div style={S.logo}><div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht,letterSpacing:"0.05em",position:"relative",paddingBottom:"3px" }}>{state.companyName.toUpperCase()}<span style={{ position:"absolute",bottom:0,left:0,right:0,height:"1.5px",background:`linear-gradient(90deg, ${m.noi < 0 ? "#a04040" : m.avgOcc > 0.85 ? "#5a9a6a" : "#6a8a9a"}90, transparent)`,borderRadius:"1px" }} /></div><div style={{ marginTop:"2px" }}><Logo size={16} /></div></div></div>
         <NewsFeed items={state.newsLog || []} />
         <div style={{ display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0 }}>
           <div style={{ padding:"5px 12px",background:T.grnD,border:"1px solid rgba(90,154,106,0.3)",borderRadius:"4px" }}><div style={{ fontSize:"9px",color:T.grn,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>CASH</div><div style={{ fontSize:"17px",fontWeight:800,color:T.grn }}>{fmtM(state.cash)}</div></div>
@@ -1608,6 +1767,10 @@ export default function LogisticsRESimulator() {
           <button style={{ ...btnSt("default"),padding:"5px 9px",fontSize:"9px" }} onClick={onReset}>Reset</button>
         </div>
       </div>
+            <div style={{ position:"absolute",bottom:0,left:0,right:0,height:"2px",background:`linear-gradient(90deg, transparent 0%, ${healthCol}40 20%, ${healthCol}80 50%, ${healthCol}40 80%, transparent 100%)` }} />
+          </div>
+        );
+      })()}
 
       {noiNegative && (
         <div style={{ background:"#1a0808",padding:"8px 18px",display:"flex",alignItems:"center",gap:"10px",borderBottom:"1px solid #5a2020" }}>
@@ -1619,22 +1782,28 @@ export default function LogisticsRESimulator() {
       )}
 
       <div style={S.mBar}>
-        <MetricCell label="Portfolio GAV" value={fmtM(m.totalGAV)} />
+        <MetricCell label="Portfolio GAV" value={fmtM(m.totalGAV)} sparkData={state.history.map(h=>h.totalGAV)} sparkColor={T.acc} />
         <MetricCell label="Assets" value={m.assetCount} />
         <MetricCell label="Total GLA" value={(m.totalGLA/1000).toFixed(0)+"k sqm"} />
-        <MetricCell label="Avg Occupancy" value={fmtP(m.avgOcc)} color={m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red} />
-        <MetricCell label="GRI p.a." value={fmtM(m.totalGRI)} />
-        <MetricCell label="NOI p.a." value={fmtM(m.noi)} color={m.noi < 0 ? "#c04040" : T.grn} />
-        <MetricCell label="NOI Yield" value={fmtP(m.noiYield)} color={m.noiYield < 0 ? "#c04040" : undefined} />
-        <MetricCell label="Avg WALT" value={m.avgWALT.toFixed(1)+"yr"} />
+        <MetricCell label="Avg Occupancy" value={fmtP(m.avgOcc)} color={m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red} sparkData={state.history.map(h=>h.avgOcc)} sparkColor={m.avgOcc>0.85?T.grn:T.amb} />
+        <MetricCell label="GRI p.a." value={fmtM(m.totalGRI)} sparkData={state.history.map(h=>h.totalGRI)} sparkColor={T.grn} />
+        <MetricCell label="NOI p.a." value={fmtM(m.noi)} color={m.noi < 0 ? "#c04040" : T.grn} sparkData={state.history.map(h=>h.noi)} sparkColor={m.noi<0?T.red:T.grn} />
+        <MetricCell label="NOI Yield" value={fmtP(m.noiYield)} color={m.noiYield < 0 ? "#c04040" : undefined} sparkData={state.history.map(h=>h.noiYield)} sparkColor={m.noiYield<0?T.red:T.acc} />
+        <MetricCell label="Avg WALT" value={m.avgWALT.toFixed(1)+"yr"} sparkData={state.history.map(h=>h.avgWALT)} sparkColor={T.amb} />
       </div>
 
       <div style={S.main}>
         <div style={S.lp}>
           <div style={S.tabs}>
-            {["portfolio","acquire","develop","team","markets"].map(t => (
-              <button key={t} style={tabSt(tab===t)} onClick={() => setTab(t)}>
-                {t==="portfolio" ? "Portfolio ("+state.portfolio.length+")" : t==="acquire" ? "Acquire ("+state.acquisitions.length+")" : t==="develop" ? "Develop ("+state.devSites.length+")" : t==="markets" ? "Markets" : "Team"}
+            {[
+              {id:"portfolio",label:"Portfolio ("+state.portfolio.length+")",accent:"#8a9aaa"},
+              {id:"acquire",label:"Acquire ("+state.acquisitions.length+")",accent:"#5a9a6a"},
+              {id:"develop",label:"Develop ("+state.devSites.length+")",accent:"#6a8a9a"},
+              {id:"team",label:"Team",accent:"#a08840"},
+              {id:"markets",label:"Markets",accent:"#7a8abf"}
+            ].map(t => (
+              <button key={t.id} style={tabSt(tab===t.id, t.accent)} onClick={() => setTab(t.id)}>
+                {t.label}
               </button>
             ))}
           </div>
@@ -1642,21 +1811,21 @@ export default function LogisticsRESimulator() {
           {tab === "portfolio" && (
             <>
               <div style={{ display:"flex",gap:"10px",marginBottom:"10px",alignItems:"stretch" }}>
-                <div style={{ flex:1,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"4px",padding:"10px 12px",display:"flex",flexDirection:"column",justifyContent:"center",gap:"8px" }}>
-                  <div style={{ fontSize:"9px",fontWeight:700,color:T.wht,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"4px" }}>Portfolio P&L</div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>Gross Rental Income</span><span style={{ fontSize:"10px",fontWeight:700,color:T.grn }}>{fmtM(m.totalGRI)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>Property Opex (irrecoverable)</span><span style={{ fontSize:"10px",fontWeight:700,color:T.red }}>({fmtM(m.totalPropCosts)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:T.txtM }}>Void rates + SC shortfall</span><span style={{ fontSize:"9px",fontWeight:600,color:T.amb }}>{fmtK(m.totalVoidCost)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"8px" }}><span style={{ fontSize:"8px",color:T.txtM }}>Maintenance drag</span><span style={{ fontSize:"9px",fontWeight:600,color:T.txtD }}>{fmtK(m.totalMaintDrag||0)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:"3px",marginTop:"3px" }}><span style={{ fontSize:"9px",color:T.txt,fontWeight:700 }}>Net Property Income</span><span style={{ fontSize:"10px",fontWeight:800,color:m.totalNPI < 0 ? "#c04040" : T.grn }}>{fmtM(m.totalNPI)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>G&A (team salaries)</span><span style={{ fontSize:"10px",fontWeight:700,color:T.red }}>({fmtK(m.gaExp||0)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"3px",marginTop:"3px",background:"rgba(255,255,255,0.02)",margin:"3px -4px 0",padding:"3px 4px",borderRadius:"3px" }}><span style={{ fontSize:"9px",color:T.wht,fontWeight:800 }}>NOI</span><span style={{ fontSize:"11px",fontWeight:900,color:m.noi < 0 ? "#c04040" : T.grn }}>{fmtM(m.ebitda||0)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",marginTop:"4px" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>Depreciation</span><span style={{ fontSize:"9px",fontWeight:600,color:T.red }}>({fmtK(m.depreciation||0)})</span></div>
-                  {m.debtInterest > 0 && <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>Debt interest</span><span style={{ fontSize:"9px",fontWeight:600,color:T.red }}>({fmtK(m.debtInterest)})</span></div>}
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:"2px",marginTop:"2px" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:700 }}>Earnings Before Tax</span><span style={{ fontSize:"10px",fontWeight:800,color:(m.ebt||0) < 0 ? "#c04040" : T.txt }}>{fmtM(m.ebt||0)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>Tax (20%)</span><span style={{ fontSize:"9px",fontWeight:600,color:T.txtD }}>({fmtK(m.tax||0)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"3px",marginTop:"3px",background:"rgba(255,255,255,0.02)",margin:"3px -4px 0",padding:"4px 4px",borderRadius:"3px" }}><span style={{ fontSize:"9px",color:T.wht,fontWeight:900 }}>Net Income</span><span style={{ fontSize:"12px",fontWeight:900,color:(m.netIncome||0) < 0 ? "#c04040" : T.grn }}>{fmtM(m.netIncome||0)}</span></div>
-                  <div style={{ marginTop:"6px" }}><div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}><span style={{ fontSize:"9px",color:T.txtD,fontWeight:600 }}>Avg Occupancy</span><span style={{ fontSize:"12px",fontWeight:800,color:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red }}>{fmtP(m.avgOcc)}</span></div><div style={{ width:"100%",height:"3px",background:T.bdr,borderRadius:"2px",marginTop:"2px" }}><div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red,borderRadius:"2px",transition:"width 0.4s" }} /></div></div>
+                <div style={{ flex:1,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",borderRadius:"4px",padding:"12px 14px",display:"flex",flexDirection:"column",justifyContent:"center",gap:"8px" }}>
+                  <div style={{ fontSize:"10px",fontWeight:800,color:T.wht,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"4px" }}>Portfolio P&L</div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Gross Rental Income</span><span style={{ fontSize:"11px",fontWeight:700,color:T.grn }}>{fmtM(m.totalGRI)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Property Opex (irrecoverable)</span><span style={{ fontSize:"11px",fontWeight:700,color:"#c06060" }}>({fmtM(m.totalPropCosts)})</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"10px" }}><span style={{ fontSize:"9px",color:"#8a90a0" }}>Void rates + SC shortfall</span><span style={{ fontSize:"10px",fontWeight:600,color:"#c09050" }}>{fmtK(m.totalVoidCost)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"10px" }}><span style={{ fontSize:"9px",color:"#8a90a0" }}>Maintenance drag</span><span style={{ fontSize:"10px",fontWeight:600,color:"#9098a8" }}>{fmtK(m.totalMaintDrag||0)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"4px",marginTop:"4px" }}><span style={{ fontSize:"10px",color:T.wht,fontWeight:700 }}>Net Property Income</span><span style={{ fontSize:"11px",fontWeight:800,color:m.totalNPI < 0 ? "#d05050" : "#6aba7a" }}>{fmtM(m.totalNPI)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>G&A (team salaries)</span><span style={{ fontSize:"11px",fontWeight:700,color:"#c06060" }}>({fmtK(m.gaExp||0)})</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"4px",marginTop:"4px",background:"rgba(255,255,255,0.03)",margin:"4px -6px 0",padding:"5px 6px",borderRadius:"3px" }}><span style={{ fontSize:"10px",color:T.wht,fontWeight:800 }}>NOI</span><span style={{ fontSize:"12px",fontWeight:900,color:m.noi < 0 ? "#d05050" : "#6aba7a" }}>{fmtM(m.ebitda||0)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",marginTop:"5px" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Depreciation</span><span style={{ fontSize:"10px",fontWeight:600,color:"#c06060" }}>({fmtK(m.depreciation||0)})</span></div>
+                  {m.debtInterest > 0 && <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Debt interest</span><span style={{ fontSize:"10px",fontWeight:600,color:"#c06060" }}>({fmtK(m.debtInterest)})</span></div>}
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"3px",marginTop:"3px" }}><span style={{ fontSize:"10px",color:"#c0c8d4",fontWeight:700 }}>Earnings Before Tax</span><span style={{ fontSize:"11px",fontWeight:800,color:(m.ebt||0) < 0 ? "#d05050" : "#d0d8e0" }}>{fmtM(m.ebt||0)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Tax (20%)</span><span style={{ fontSize:"10px",fontWeight:600,color:"#9098a8" }}>({fmtK(m.tax||0)})</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"4px",marginTop:"4px",background:"rgba(255,255,255,0.03)",margin:"4px -6px 0",padding:"6px 6px",borderRadius:"3px" }}><span style={{ fontSize:"10px",color:T.wht,fontWeight:900 }}>Net Income</span><span style={{ fontSize:"13px",fontWeight:900,color:(m.netIncome||0) < 0 ? "#d05050" : "#6aba7a" }}>{fmtM(m.netIncome||0)}</span></div>
+                  <div style={{ marginTop:"8px" }}><div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Avg Occupancy</span><span style={{ fontSize:"13px",fontWeight:800,color:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red }}>{fmtP(m.avgOcc)}</span></div><div style={{ width:"100%",height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"3px" }}><div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red,borderRadius:"2px",transition:"width 0.4s" }} /></div></div>
                 </div>
                 <div style={{ width:"220px",flexShrink:0,display:"flex",flexDirection:"column",gap:"6px" }}><EuropeMap portfolio={state.portfolio} />
                   {(() => {
@@ -1749,10 +1918,14 @@ export default function LogisticsRESimulator() {
 
         <div style={S.rp}>
           <div style={S.tabs}>
-            {["sentiment","charts","events"].map(t => {
+            {[
+              {id:"sentiment",accent:"#a08840"},
+              {id:"charts",accent:"#5a9a6a"},
+              {id:"events",accent:"#7a8abf"}
+            ].map(t => {
               const biCount = state.team?.bi || 0;
-              const label = t==="sentiment" ? "Board" : t==="charts" ? (biCount > 0 ? "Charts ("+biCount+")" : "Charts [locked]") : "Events";
-              return <button key={t} style={tabSt(rTab===t)} onClick={() => setRTab(t)}>{label}</button>;
+              const label = t.id==="sentiment" ? "Board" : t.id==="charts" ? (biCount > 0 ? "Charts ("+biCount+")" : "Charts [locked]") : "Events";
+              return <button key={t.id} style={tabSt(rTab===t.id, t.accent)} onClick={() => setRTab(t.id)}>{label}</button>;
             })}
           </div>
 
@@ -1763,11 +1936,8 @@ export default function LogisticsRESimulator() {
             const scoreLabel = bScore >= 75 ? "EXCELLENT" : bScore >= 60 ? "STRONG" : bScore >= 45 ? "DEVELOPING" : bScore >= 25 ? "WEAK" : "CRITICAL";
             return (
               <div>
-                <div style={{ ...S.card, marginBottom:"10px", textAlign:"center", padding:"16px 12px" }}>
-                  <div style={{ fontSize:"9px",fontWeight:700,color:T.txtD,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Investor Satisfaction</div>
-                  <div style={{ fontSize:"42px",fontWeight:900,color:scoreColor,lineHeight:1 }}>{bScore}<span style={{ fontSize:"18px",fontWeight:700,color:T.txtM }}>/100</span></div>
-                  <div style={{ fontSize:"11px",fontWeight:800,color:scoreColor,letterSpacing:"0.08em",marginTop:"6px" }}>{scoreLabel}</div>
-                  <div style={{ fontSize:"9px",color:T.txtD,marginTop:"4px" }}>Based on IRR, occupancy, NOI yield, ESG & scale</div>
+                <div style={{ ...S.card, marginBottom:"10px", padding:"18px 14px", background:scoreColor+"10", border:"1px solid "+scoreColor+"30" }}>
+                  <InvestorGauge score={bScore} color={scoreColor} label={scoreLabel} />
                 </div>
                 {irr !== null && (
                   <div style={{ ...S.card, background:irr>0.10?T.grnD:irr>0.05?T.ambD:T.redD, border:"1px solid "+(irr>0.10?T.grn:irr>0.05?T.amb:T.red), marginBottom:"10px", textAlign:"center" }}>
