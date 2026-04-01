@@ -176,7 +176,41 @@ const fmtM = (n) => n < 0 ? "(\u20AC" + (Math.abs(n) / 1e6).toFixed(1) + "m)" : 
 const fmtK = (n) => n < 0 ? "(\u20AC" + (Math.abs(n) / 1e3).toFixed(0) + "k)" : "\u20AC" + (n / 1e3).toFixed(0) + "k";
 const fmtP = (n) => (n * 100).toFixed(1) + "%";
 const getTI = (n) => TENANT_DB[n] || { credit:"NR",revenue:"N/A",employees:"N/A",sector:"Unknown",insolvencyRisk:0.10 };
-const credCol = (c) => (c.startsWith("AA")||c==="A+"||c==="A") ? "#5a9a6a" : (c.startsWith("BBB")||c==="A-") ? "#a08840" : "#a04040";
+const credCol = (c) => (c.startsWith("AA")||c==="A+"||c==="A") ? "#6abd7a" : (c.startsWith("BBB")||c==="A-") ? "#c0a850" : "#d06060";
+
+/* ===== THEME — BRIGHTENED ===== */
+const T = {
+  bg:"#0c0e12",
+  card:"#1a1e26",       // was #12151a — lifted
+  cardAlt:"#1e2230",    // slightly lighter variant
+  bdr:"#2a3040",        // was #1e2228 — brighter borders
+  acc:"#94a8be",        // was #7a8a9a — brighter accent
+  accD:"#1e2538",       // accent dark bg
+  grn:"#6abd7a",        // was #5a9a6a — brighter green
+  grnD:"#12261a",       // green dark bg
+  red:"#d06060",        // was #a04040 — brighter red
+  redD:"#261212",       // red dark bg
+  amb:"#80b0c8",        // was #6a8a9a — brighter amber/teal
+  ambD:"#101c22",
+  txt:"#e8ecf4",        // primary text — brighter
+  txtD:"#b0b8c8",       // was #8a92a4 — MUCH brighter secondary text
+  txtM:"#8090a8",       // was #6a7488 — brighter muted text
+  wht:"#f4f6fa",        // near-white
+  hiAcc:"#a8bcd0",      // was #8a9aaa — brighter highlight
+};
+
+const GLOSS = {
+  "Portfolio GAV":"Gross Asset Value","Assets":"Number of properties","Total GLA":"Gross Lettable Area (sqm)",
+  "Avg Occupancy":"Weighted avg % leased","GRI p.a.":"Gross Rental Income p.a.","NOI p.a.":"Net Operating Income = GRI minus property costs minus G&A. Can go negative if portfolio is neglected.",
+  "NOI Yield":"NOI as % of GAV — negative means portfolio is cash-burning","Avg WALT":"Weighted Avg Lease Term","GLA":"Gross Lettable Area",
+  "Occupancy":"% leased","GAV":"Market value","Rent p.a.":"Annual rental income","Rent/sqm":"Rent per sqm",
+  "WALT":"Lease years remaining","Asking":"Asking price","NIY":"Net Initial Yield",
+  "Dev Cost":"Development cost","Timeline":"Quarters to complete",
+  "Est. Rent/sqm":"Est. rent on completion","Est. YOC":"Est. Yield on Cost",
+  "Prop Costs":"Irrecoverable property costs: void SC, insurance, rates, maintenance, mgmt fee",
+  "NPI":"Net Property Income = GRI minus irrecoverable property costs",
+  "Void Cost":"Rates + irrecoverable SC on vacant space — the cost of empty buildings",
+};
 
 /* ===== PROPERTY COST MODEL ===== */
 function calcAssetCosts(asset, ac) {
@@ -200,27 +234,6 @@ function calcAssetCosts(asset, ac) {
     netPropertyIncome: asset.gri - totalIrrecoverable,
   };
 }
-
-/* ===== THEME ===== */
-const T = {
-  bg:"#0c0e12",card:"#12151a",bdr:"#1e2228",acc:"#7a8a9a",accD:"#1a1e28",
-  grn:"#5a9a6a",grnD:"#0e1a12",red:"#a04040",redD:"#1a0e0e",amb:"#6a8a9a",ambD:"#0e1618",
-  txt:"#e4e8f0",txtD:"#8a92a4",txtM:"#6a7488",wht:"#f0f2f6",
-  hiAcc:"#8a9aaa",
-};
-
-const GLOSS = {
-  "Portfolio GAV":"Gross Asset Value","Assets":"Number of properties","Total GLA":"Gross Lettable Area (sqm)",
-  "Avg Occupancy":"Weighted avg % leased","GRI p.a.":"Gross Rental Income p.a.","NOI p.a.":"Net Operating Income = GRI minus property costs minus G&A. Can go negative if portfolio is neglected.",
-  "NOI Yield":"NOI as % of GAV — negative means portfolio is cash-burning","Avg WALT":"Weighted Avg Lease Term","GLA":"Gross Lettable Area",
-  "Occupancy":"% leased","GAV":"Market value","Rent p.a.":"Annual rental income","Rent/sqm":"Rent per sqm",
-  "WALT":"Lease years remaining","Asking":"Asking price","NIY":"Net Initial Yield",
-  "Dev Cost":"Development cost","Timeline":"Quarters to complete",
-  "Est. Rent/sqm":"Est. rent on completion","Est. YOC":"Est. Yield on Cost",
-  "Prop Costs":"Irrecoverable property costs: void SC, insurance, rates, maintenance, mgmt fee",
-  "NPI":"Net Property Income = GRI minus irrecoverable property costs",
-  "Void Cost":"Rates + irrecoverable SC on vacant space — the cost of empty buildings",
-};
 
 /* ===== SAVE ===== */
 let _save = null;
@@ -250,7 +263,7 @@ function Tip({ text, children }) {
   return (
     <span ref={ref} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)} onTouchStart={() => setShow(s => !s)} style={{ cursor:"help",borderBottom:"1px dotted "+T.txtM,position:"relative" }}>
       {children}
-      {show && <span style={{ ...style, background:"#181c24",color:T.txt,padding:"8px 12px",borderRadius:"4px",fontSize:"11px",lineHeight:1.5,maxWidth:"220px",zIndex:99999,boxShadow:"0 4px 16px rgba(0,0,0,0.7)",border:"1px solid #2a2e38",pointerEvents:"none",whiteSpace:"normal",letterSpacing:"0",textTransform:"none" }}>{text}</span>}
+      {show && <span style={{ ...style, background:"#222838",color:T.txt,padding:"8px 12px",borderRadius:"4px",fontSize:"11px",lineHeight:1.5,maxWidth:"220px",zIndex:99999,boxShadow:"0 4px 16px rgba(0,0,0,0.7)",border:"1px solid #3a4050",pointerEvents:"none",whiteSpace:"normal",letterSpacing:"0",textTransform:"none" }}>{text}</span>}
     </span>
   );
 }
@@ -288,8 +301,8 @@ function Spark({ data, color = "#6a7a8a", height = 40 }) {
   const gId = "g" + color.replace("#", "") + (hasNeg ? "n" : "");
   return (
     <svg viewBox={"0 0 " + w + " " + h} style={{ width:"100%",height,display:"block" }}>
-      <defs><linearGradient id={gId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.2" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
-      {hasNeg && (() => { const zeroY = h - p - ((0 - mn) / rng) * (h - p * 2); return <line x1={p} y1={zeroY} x2={w-p} y2={zeroY} stroke="#a04040" strokeWidth="0.5" strokeDasharray="3,2" opacity="0.5" />; })()}
+      <defs><linearGradient id={gId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
+      {hasNeg && (() => { const zeroY = h - p - ((0 - mn) / rng) * (h - p * 2); return <line x1={p} y1={zeroY} x2={w-p} y2={zeroY} stroke="#d06060" strokeWidth="0.5" strokeDasharray="3,2" opacity="0.5" />; })()}
       <polygon points={[...pts, (p + (w - p * 2)) + "," + h, p + "," + h].join(" ")} fill={"url(#" + gId + ")"} />
       <polyline points={pts.join(" ")} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
       <circle cx={last[0]} cy={last[1]} r="2.5" fill={color} />
@@ -335,9 +348,9 @@ function WHouse({ condition, gla, developing, assetClass, seed = 0 }) {
           {v===2 && (<><rect x={bx} y={by-3} width={bW} height="3" fill={tileCol} opacity="0.6" /><rect x={bx+bW*0.2} y={by-7} width={bW*0.6} height="4" fill={tileCol} opacity="0.5" /></>)}
           {Array.from({length:dk}).map((_,i) => <rect key={i} x={bx+4+i*dW} y={by+bH-11} width={dW-3} height="11" fill={tileCol} opacity="0.5" rx="1" />)}
           {condition!=="C" && Array.from({length:Math.max(1,Math.floor(bW/18))}).map((_,i) => <rect key={i} x={bx+6+i*18} y={by+5} width={7} height={4} fill={tileCol} opacity={winOpacity} rx="0.8" />)}
-          {condition==="A" && <circle cx={bx+bW-5} cy={by+5} r="2.5" fill="#5a9a6a" opacity="0.7" />}
-          {condition==="B" && <circle cx={bx+bW-5} cy={by+5} r="2.5" fill="#a08840" opacity="0.7" />}
-          {condition==="C" && (<><line x1={bx+bW-8} y1={by+3} x2={bx+bW-5} y2={by+9} stroke="#a04040" strokeWidth="0.8" opacity="0.6" /><line x1={bx+bW-5} y1={by+3} x2={bx+bW-8} y2={by+9} stroke="#a04040" strokeWidth="0.8" opacity="0.6" /></>)}
+          {condition==="A" && <circle cx={bx+bW-5} cy={by+5} r="2.5" fill="#6abd7a" opacity="0.7" />}
+          {condition==="B" && <circle cx={bx+bW-5} cy={by+5} r="2.5" fill="#c0a850" opacity="0.7" />}
+          {condition==="C" && (<><line x1={bx+bW-8} y1={by+3} x2={bx+bW-5} y2={by+9} stroke="#d06060" strokeWidth="0.8" opacity="0.6" /><line x1={bx+bW-5} y1={by+3} x2={bx+bW-8} y2={by+9} stroke="#d06060" strokeWidth="0.8" opacity="0.6" /></>)}
         </>
       )}
     </svg>
@@ -345,71 +358,35 @@ function WHouse({ condition, gla, developing, assetClass, seed = 0 }) {
 }
 
 /* ===== EUROPE MAP ===== */
-const MAP_CITY_POS = {
-  uk:{x:95,y:115},de:{x:185,y:140},fr:{x:140,y:175},pl:{x:240,y:125},nl:{x:170,y:118},
-  cz:{x:215,y:145},es:{x:105,y:225},se:{x:225,y:65},it:{x:200,y:200},be:{x:165,y:135},
-  at:{x:210,y:160},dk:{x:185,y:95},tr:{x:340,y:210},ro:{x:290,y:170},hu:{x:250,y:165},
-  gr:{x:280,y:220},pt:{x:80,y:225},ie:{x:75,y:115},sk:{x:245,y:150},hr:{x:230,y:180},
-  bg:{x:295,y:190},fi:{x:270,y:50},no:{x:200,y:45},rs:{x:265,y:185},
-};
-
 function EuropeMap({ portfolio }) {
   const assetsByMkt = {};
   portfolio.forEach(a => { if (a.developing) return; if (!assetsByMkt[a.market]) assetsByMkt[a.market] = []; assetsByMkt[a.market].push(a); });
-  const hexPts = (cx, cy, r) => { const pts = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 6; pts.push((cx + r * Math.cos(a)).toFixed(1) + "," + (cy + r * Math.sin(a)).toFixed(1)); } return pts.join(" "); };
 
-  // Simplified but recognisable European country outlines
   const countries = [
-    // Norway - long coastline
     { d:"M188,18 L183,28 L180,42 L178,58 L176,72 L180,82 L186,78 L190,68 L194,55 L198,40 L202,28 L198,18 Z", id:"no" },
-    // Sweden
     { d:"M198,18 L194,30 L192,45 L190,58 L192,68 L196,78 L202,82 L210,76 L214,65 L216,52 L214,38 L210,25 L204,18 Z", id:"se" },
-    // Finland
     { d:"M220,20 L216,32 L214,45 L216,58 L220,68 L228,72 L236,65 L238,52 L236,38 L232,26 L226,20 Z", id:"fi" },
-    // Denmark
     { d:"M172,82 L168,86 L170,92 L175,96 L182,94 L185,88 L182,82 Z", id:"dk" },
-    // UK - Great Britain shape
     { d:"M108,80 L104,86 L100,95 L96,105 L94,115 L96,122 L100,130 L106,136 L112,134 L116,126 L118,118 L120,110 L118,100 L115,92 L112,84 Z", id:"uk" },
-    // Ireland
     { d:"M82,96 L78,104 L80,114 L84,120 L90,118 L92,110 L90,102 L86,96 Z", id:"ie" },
-    // Netherlands
     { d:"M156,98 L152,102 L154,108 L160,110 L164,106 L162,100 Z", id:"nl" },
-    // Belgium
     { d:"M150,110 L146,114 L148,120 L154,122 L160,118 L158,112 Z", id:"be" },
-    // Germany
     { d:"M162,90 L156,98 L152,108 L154,120 L158,132 L164,142 L172,148 L182,146 L190,140 L194,130 L192,118 L188,106 L182,96 L174,90 Z", id:"de" },
-    // Poland
     { d:"M194,94 L190,104 L190,116 L194,128 L200,138 L210,142 L222,140 L230,132 L232,120 L228,108 L222,98 L212,94 L202,92 Z", id:"pl" },
-    // Czech Republic
     { d:"M182,132 L178,138 L182,144 L190,148 L198,146 L202,140 L198,134 L190,130 Z", id:"cz" },
-    // Slovakia
     { d:"M202,134 L198,140 L202,146 L212,148 L220,144 L218,138 L210,134 Z", id:"sk" },
-    // Austria
     { d:"M172,148 L168,154 L172,162 L182,166 L194,164 L200,158 L196,150 L186,148 Z", id:"at" },
-    // Hungary
     { d:"M200,150 L196,156 L200,164 L210,168 L222,166 L226,158 L222,150 L212,148 Z", id:"hu" },
-    // France
     { d:"M110,124 L106,136 L104,150 L106,168 L112,182 L122,192 L136,196 L150,190 L158,178 L160,164 L158,148 L154,134 L146,124 L130,120 Z", id:"fr" },
-    // Spain
     { d:"M88,196 L84,208 L88,222 L98,234 L114,238 L130,234 L142,224 L144,212 L140,200 L130,194 L116,192 L100,194 Z", id:"es" },
-    // Portugal
     { d:"M76,200 L74,212 L76,226 L82,232 L88,228 L88,214 L86,202 L80,198 Z", id:"pt" },
-    // Italy - boot shape
     { d:"M168,166 L164,178 L166,192 L172,204 L178,216 L184,224 L188,218 L186,208 L184,196 L186,184 L184,174 L178,166 Z M180,226 L176,232 L180,236 L186,234 L184,228 Z", id:"it" },
-    // Croatia
     { d:"M192,164 L188,170 L190,178 L196,182 L204,178 L206,172 L202,166 Z", id:"hr" },
-    // Serbia
     { d:"M216,168 L212,174 L214,182 L220,188 L228,186 L230,178 L226,172 Z", id:"rs" },
-    // Romania
     { d:"M232,148 L228,158 L230,170 L236,180 L248,182 L258,178 L262,168 L258,156 L250,148 L240,146 Z", id:"ro" },
-    // Bulgaria
     { d:"M240,182 L236,190 L240,198 L250,202 L260,198 L262,190 L258,184 L248,182 Z", id:"bg" },
-    // Greece
     { d:"M232,200 L228,210 L232,222 L240,230 L250,228 L254,218 L250,208 L244,200 Z M244,232 L240,236 L244,240 L250,238 L248,234 Z", id:"gr" },
-    // Turkey (European + Anatolian)
     { d:"M262,190 L258,198 L262,208 L272,214 L290,216 L310,212 L328,208 L340,200 L338,192 L326,190 L310,192 L294,194 L278,192 L268,190 Z", id:"tr" },
-    // Romania extension / Moldova area fills gap
-    // Switzerland (small)
     { d:"M156,150 L152,154 L156,160 L164,160 L168,156 L164,150 Z", id:"ch" },
   ];
 
@@ -422,14 +399,13 @@ function EuropeMap({ portfolio }) {
   };
 
   return (
-    <div style={{ background:"#06080a",border:"1px solid #1a1d24",borderRadius:"4px",overflow:"hidden" }}>
-      <div style={{ padding:"5px 8px 2px",fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",borderBottom:"1px solid rgba(255,255,255,0.04)" }}>Portfolio Map</div>
+    <div style={{ background:"#080a0e",border:"1px solid "+T.bdr,borderRadius:"4px",overflow:"hidden" }}>
+      <div style={{ padding:"5px 8px 2px",fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",borderBottom:"1px solid rgba(255,255,255,0.06)" }}>Portfolio Map</div>
       <svg viewBox="60 5 300 250" style={{ display:"block",width:"100%" }}>
-        <rect x="60" y="5" width="300" height="250" fill="#06080a" />
-        {/* Sea hint */}
+        <rect x="60" y="5" width="300" height="250" fill="#080a0e" />
         <ellipse cx="200" cy="140" rx="140" ry="110" fill="rgba(40,60,80,0.06)" />
         {countries.map(c => (
-          <path key={c.id} d={c.d} fill="#111816" stroke="#1e2a22" strokeWidth="0.8" opacity="0.9" />
+          <path key={c.id} d={c.d} fill="#141a18" stroke="#243028" strokeWidth="0.8" opacity="0.9" />
         ))}
         {MARKETS.map((mkt) => {
           const pos = CITY_POS[mkt.id];
@@ -437,7 +413,7 @@ function EuropeMap({ portfolio }) {
           const assets = assetsByMkt[mkt.id] || [];
           const hasAssets = assets.length > 0;
           const r = hasAssets ? 8 : 3.5;
-          const ac = hasAssets ? "#8a9aaa" : "#2a3040";
+          const ac = hasAssets ? T.hiAcc : "#2a3040";
           return (
             <g key={mkt.id}>
               {hasAssets && <circle cx={pos.x} cy={pos.y} r={r+4} fill={ac+"10"} stroke={ac+"25"} strokeWidth="0.5" />}
@@ -447,7 +423,7 @@ function EuropeMap({ portfolio }) {
               ) : (
                 <circle cx={pos.x} cy={pos.y} r="1.5" fill="#3a4050" />
               )}
-              <text x={pos.x} y={pos.y + r + 7} textAnchor="middle" fontSize="4.5" fill={hasAssets ? "#c0c8d4" : "#3a4050"} fontFamily="'Inter',sans-serif" fontWeight="500">{mkt.city}</text>
+              <text x={pos.x} y={pos.y + r + 7} textAnchor="middle" fontSize="4.5" fill={hasAssets ? "#d0d8e4" : "#3a4050"} fontFamily="'Inter',sans-serif" fontWeight="500">{mkt.city}</text>
             </g>
           );
         })}
@@ -462,21 +438,21 @@ function NewsFeed({ items }) {
   useEffect(() => { if (ref.current) ref.current.scrollTop = 0; }, [items.length]);
   if (!items || !items.length) {
     return (
-      <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"4px",padding:"8px 12px",display:"flex",alignItems:"center",minHeight:"80px" }}>
-        <div style={{ fontSize:"10px",color:T.txtD,lineHeight:1.7 }}>
+      <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"4px",padding:"8px 12px",display:"flex",alignItems:"center",minHeight:"80px" }}>
+        <div style={{ fontSize:"11px",color:T.txtD,lineHeight:1.7 }}>
           <div style={{ fontWeight:700,color:T.hiAcc,marginBottom:"4px" }}>Getting started</div>
-          <div><b>Acquire</b> assets to build your portfolio</div>
-          <div><b>Maintain</b> assets to protect occupancy</div>
-          <div>Vacant space <b>costs money</b> — rates, SC, insurance</div>
-          <div>Press <b>Simulate to next qtr</b> to advance time</div>
+          <div><b style={{color:T.wht}}>Acquire</b> assets to build your portfolio</div>
+          <div><b style={{color:T.wht}}>Maintain</b> assets to protect occupancy</div>
+          <div>Vacant space <b style={{color:"#d08060"}}>costs money</b> — rates, SC, insurance</div>
+          <div>Press <b style={{color:T.wht}}>Simulate to next qtr</b> to advance time</div>
         </div>
       </div>
     );
   }
   return (
-    <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"4px",overflow:"hidden",maxHeight:"96px" }}>
-      <div style={{ padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:"5px",borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
-        <span style={{ fontSize:"9px",fontWeight:700,color:T.txtD,letterSpacing:"0.1em" }}>NEWS</span>
+    <div style={{ flex:1,minWidth:0,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"4px",overflow:"hidden",maxHeight:"96px" }}>
+      <div style={{ padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:"5px",borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+        <span style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em" }}>NEWS</span>
         <span style={{ fontSize:"8px",color:T.txtM }}>{items.length}</span>
       </div>
       <div ref={ref} style={{ overflowY:"auto",maxHeight:"70px",padding:"3px 10px" }}>
@@ -538,15 +514,15 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
 
   return (
     <div className="logi-modal" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
-      <div style={{ background:"#0a0c10",border:"1px solid #1a1d24",borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",maxHeight:"88vh",overflowY:"auto",boxShadow:"0 24px 64px rgba(0,0,0,0.9)" }}>
-        <div style={{ background:"#0e1014",padding:"6px 20px",borderBottom:"1px solid #1a1d24",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-          <span style={{ fontSize:"8px",color:T.txtM,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Lease Negotiation</span>
-          <span style={{ fontSize:"8px",color:T.txtM }}>{assetName}</span>
+      <div style={{ background:"#0e1218",border:"1px solid "+T.bdr,borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",maxHeight:"88vh",overflowY:"auto",boxShadow:"0 24px 64px rgba(0,0,0,0.9)" }}>
+        <div style={{ background:"#141820",padding:"6px 20px",borderBottom:"1px solid "+T.bdr,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+          <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Lease Negotiation</span>
+          <span style={{ fontSize:"9px",color:T.txtD }}>{assetName}</span>
         </div>
         <div style={{ padding:"16px 20px" }}>
           {mode === "list" && (
             <>
-              <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"14px",lineHeight:1.5 }}>
+              <div style={{ fontSize:"12px",color:T.txtD,marginBottom:"14px",lineHeight:1.5 }}>
                 {candidates.length} prospective tenant{candidates.length !== 1 ? "s" : ""} have expressed interest.
               </div>
               {candidates.map((c, i) => {
@@ -555,34 +531,34 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
                 const rfCost = c.rentFreeMonths > 0 ? (annualRent / 12) * c.rentFreeMonths : 0;
                 const effectiveRent = annualRent > 0 ? (annualRent * c.term - rfCost) / c.term : 0;
                 return (
-                  <div key={i} style={{ background:"#0e1014",border:"1px solid #1a1d24",borderRadius:"4px",padding:"12px 14px",marginBottom:"8px" }}>
+                  <div key={i} style={{ background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",padding:"12px 14px",marginBottom:"8px" }}>
                     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px" }}>
                       <div>
-                        <span style={{ fontSize:"13px",fontWeight:700,color:T.txt }}>{c.name}</span>
-                        <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(info.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px",boxShadow:"inset 0 0 6px "+credCol(info.credit)+"40" }}>{info.credit}</span>
+                        <span style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{c.name}</span>
+                        <span style={{ marginLeft:"8px",fontSize:"10px",fontWeight:700,color:credCol(info.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px",boxShadow:"inset 0 0 6px "+credCol(info.credit)+"40" }}>{info.credit}</span>
                       </div>
-                      <span style={{ fontSize:"9px",color:T.txtM }}>{info.sector}</span>
+                      <span style={{ fontSize:"10px",color:T.txtD }}>{info.sector}</span>
                     </div>
-                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"1px",background:"#1a1d24",borderRadius:"3px",overflow:"hidden",marginBottom:"8px" }}>
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"1px",background:T.bdr,borderRadius:"3px",overflow:"hidden",marginBottom:"8px" }}>
                       {[{l:"Rent /sqm",v:"\u20AC"+c.rentPsm.toFixed(1)},{l:"Term",v:c.term+"yr"},{l:"Rent Free",v:c.rentFreeMonths>0?c.rentFreeMonths+"mo":"\u2014"},{l:"Cap Contr",v:c.capContribution>0?"\u20AC"+c.capContribution+"/sqm":"\u2014"}].map((x,j)=>(
-                        <div key={j} style={{ background:"#0a0c10",padding:"6px 8px",textAlign:"center" }}>
-                          <div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>{x.l}</div>
-                          <div style={{ fontSize:"13px",fontWeight:800,color:T.txt }}>{x.v}</div>
+                        <div key={j} style={{ background:"#0e1218",padding:"6px 8px",textAlign:"center" }}>
+                          <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>{x.l}</div>
+                          <div style={{ fontSize:"14px",fontWeight:800,color:T.wht }}>{x.v}</div>
                         </div>
                       ))}
                     </div>
-                    <div style={{ display:"flex",justifyContent:"space-between",fontSize:"9px",color:T.txtM,marginBottom:"8px",padding:"0 2px" }}>
+                    <div style={{ display:"flex",justifyContent:"space-between",fontSize:"10px",color:T.txtD,marginBottom:"8px",padding:"0 2px" }}>
                       <span>Annual: {fmtM(annualRent)}</span>
                       <span>Effective: {fmtM(effectiveRent)}/yr</span>
                     </div>
                     <div style={{ display:"flex",gap:"6px" }}>
-                      <button onClick={() => { setSelected(c); setResult(null); setMode("result"); setResult("accepted"); setSelected({ ...c }); }} style={{ flex:1,padding:"7px",background:T.grnD,color:T.grn,border:"1px solid "+T.grn,borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit" }}>Accept Terms</button>
-                      <button onClick={() => startNegotiate(c)} style={{ flex:1,padding:"7px",background:T.accD,color:T.hiAcc,border:"1px solid "+T.acc,borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit" }}>Counter-Offer</button>
+                      <button onClick={() => { setSelected(c); setResult(null); setMode("result"); setResult("accepted"); setSelected({ ...c }); }} style={{ flex:1,padding:"7px",background:T.grnD,color:T.grn,border:"1px solid "+T.grn,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit" }}>Accept Terms</button>
+                      <button onClick={() => startNegotiate(c)} style={{ flex:1,padding:"7px",background:T.accD,color:T.hiAcc,border:"1px solid "+T.acc,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit" }}>Counter-Offer</button>
                     </div>
                   </div>
                 );
               })}
-              <button onClick={onClose} style={{ marginTop:"4px",padding:"8px 16px",background:"transparent",border:"1px solid #1a1d24",borderRadius:"3px",color:T.txtM,cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit",width:"100%" }}>Decline All Offers</button>
+              <button onClick={onClose} style={{ marginTop:"4px",padding:"8px 16px",background:"transparent",border:"1px solid "+T.bdr,borderRadius:"3px",color:T.txtD,cursor:"pointer",fontSize:"11px",fontWeight:600,fontFamily:"inherit",width:"100%" }}>Decline All Offers</button>
             </>
           )}
           {mode === "negotiate" && selected && (
@@ -590,29 +566,29 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
               <div style={{ marginBottom:"14px" }}>
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px" }}>
                   <div>
-                    <span style={{ fontSize:"14px",fontWeight:700,color:T.txt }}>{selected.name}</span>
-                    <span style={{ marginLeft:"8px",fontSize:"9px",fontWeight:700,color:credCol(ti.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px",boxShadow:"inset 0 0 6px "+credCol(ti.credit)+"40" }}>{ti.credit}</span>
+                    <span style={{ fontSize:"15px",fontWeight:700,color:T.wht }}>{selected.name}</span>
+                    <span style={{ marginLeft:"8px",fontSize:"10px",fontWeight:700,color:credCol(ti.credit),background:"rgba(0,0,0,0.4)",padding:"2px 6px",borderRadius:"2px",boxShadow:"inset 0 0 6px "+credCol(ti.credit)+"40" }}>{ti.credit}</span>
                   </div>
-                  <button onClick={() => setMode("list")} style={{ padding:"3px 8px",background:"transparent",border:"1px solid #1a1d24",borderRadius:"3px",color:T.txtM,cursor:"pointer",fontSize:"9px",fontFamily:"inherit" }}>Back</button>
+                  <button onClick={() => setMode("list")} style={{ padding:"3px 8px",background:"transparent",border:"1px solid "+T.bdr,borderRadius:"3px",color:T.txtD,cursor:"pointer",fontSize:"10px",fontFamily:"inherit" }}>Back</button>
                 </div>
-                <div style={{ fontSize:"10px",color:T.txtM,lineHeight:1.5 }}>
+                <div style={{ fontSize:"11px",color:T.txtD,lineHeight:1.5 }}>
                   {ti.sector} | Revenue {ti.revenue} | {ti.employees} employees
                 </div>
               </div>
-              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1px",background:"#1a1d24",borderRadius:"4px",overflow:"hidden",marginBottom:"14px" }}>
-                <div style={{ background:"#0e1014",padding:"10px 12px" }}>
-                  <div style={{ fontSize:"8px",color:T.txtM,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Their Offer</div>
-                  <div style={{ fontSize:"10px",color:T.txtD,marginBottom:"4px" }}>Rent: <span style={{ color:T.txt,fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
-                  <div style={{ fontSize:"10px",color:T.txtD,marginBottom:"4px" }}>Term: <span style={{ color:T.txt,fontWeight:700 }}>{selected.term} years</span></div>
-                  <div style={{ fontSize:"10px",color:T.txtD,marginBottom:"4px" }}>Rent free: <span style={{ color:selected.rentFreeMonths>0?"#a08840":T.txtM,fontWeight:700 }}>{selected.rentFreeMonths>0?selected.rentFreeMonths+" months":"None"}</span></div>
-                  <div style={{ fontSize:"10px",color:T.txtD }}>Cap contribution: <span style={{ color:selected.capContribution>0?"#a08840":T.txtM,fontWeight:700 }}>{selected.capContribution>0?"\u20AC"+selected.capContribution+"/sqm":"None"}</span></div>
+              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1px",background:T.bdr,borderRadius:"4px",overflow:"hidden",marginBottom:"14px" }}>
+                <div style={{ background:T.card,padding:"10px 12px" }}>
+                  <div style={{ fontSize:"9px",color:T.txtM,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Their Offer</div>
+                  <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"4px" }}>Rent: <span style={{ color:T.wht,fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
+                  <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"4px" }}>Term: <span style={{ color:T.wht,fontWeight:700 }}>{selected.term} years</span></div>
+                  <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"4px" }}>Rent free: <span style={{ color:selected.rentFreeMonths>0?"#c0a850":T.txtM,fontWeight:700 }}>{selected.rentFreeMonths>0?selected.rentFreeMonths+" months":"None"}</span></div>
+                  <div style={{ fontSize:"11px",color:T.txtD }}>Cap contribution: <span style={{ color:selected.capContribution>0?"#c0a850":T.txtM,fontWeight:700 }}>{selected.capContribution>0?"\u20AC"+selected.capContribution+"/sqm":"None"}</span></div>
                 </div>
-                <div style={{ background:"#0a0e14",padding:"10px 12px" }}>
-                  <div style={{ fontSize:"8px",color:T.hiAcc,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Your Counter</div>
+                <div style={{ background:"#141a24",padding:"10px 12px" }}>
+                  <div style={{ fontSize:"9px",color:T.hiAcc,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Your Counter</div>
                   {[{label:"Rent (\u20AC/sqm)",key:"rent",type:"number",step:"0.1"},{label:"Term (years)",key:"term",type:"number",step:"1"},{label:"Rent free (months)",key:"rentFree",type:"number",step:"1"},{label:"Cap contribution (\u20AC/sqm)",key:"capContr",type:"number",step:"1"}].map(f => (
                     <div key={f.key} style={{ marginBottom:"6px" }}>
-                      <div style={{ fontSize:"9px",color:T.txtM,marginBottom:"2px" }}>{f.label}</div>
-                      <input type={f.type} step={f.step} value={counter[f.key]} onChange={e => setCounter(p => ({...p, [f.key]: e.target.value}))} style={{ width:"100%",padding:"4px 6px",background:"#06080a",border:"1px solid #1a1d24",borderRadius:"3px",color:T.txt,fontSize:"11px",fontFamily:"inherit",boxSizing:"border-box" }} />
+                      <div style={{ fontSize:"10px",color:T.txtD,marginBottom:"2px" }}>{f.label}</div>
+                      <input type={f.type} step={f.step} value={counter[f.key]} onChange={e => setCounter(p => ({...p, [f.key]: e.target.value}))} style={{ width:"100%",padding:"4px 6px",background:"#0a0e14",border:"1px solid "+T.bdr,borderRadius:"3px",color:T.wht,fontSize:"12px",fontFamily:"inherit",boxSizing:"border-box" }} />
                     </div>
                   ))}
                 </div>
@@ -628,60 +604,60 @@ function TenantModal({ candidates, assetName, assetGla, onSelect, onClose }) {
                 const yourEffective = yourTerm > 0 ? (yourRent * yourTerm - yourRFCost) / yourTerm : 0;
                 const delta = yourEffective - theirEffective;
                 return (
-                  <div style={{ background:"#0e1014",borderRadius:"4px",padding:"10px 12px",marginBottom:"14px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",textAlign:"center" }}>
-                    <div><div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Their Effective</div><div style={{ fontSize:"12px",fontWeight:700,color:T.txt }}>{fmtM(theirEffective)}/yr</div></div>
-                    <div><div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Your Counter</div><div style={{ fontSize:"12px",fontWeight:700,color:T.hiAcc }}>{fmtM(yourEffective)}/yr</div></div>
-                    <div><div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Delta</div><div style={{ fontSize:"12px",fontWeight:700,color:delta>0?T.grn:delta<0?T.red:T.txtM }}>{delta>=0?"+":""}{fmtK(delta)}</div></div>
+                  <div style={{ background:T.card,borderRadius:"4px",padding:"10px 12px",marginBottom:"14px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",textAlign:"center" }}>
+                    <div><div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Their Effective</div><div style={{ fontSize:"13px",fontWeight:700,color:T.wht }}>{fmtM(theirEffective)}/yr</div></div>
+                    <div><div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Your Counter</div><div style={{ fontSize:"13px",fontWeight:700,color:T.hiAcc }}>{fmtM(yourEffective)}/yr</div></div>
+                    <div><div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,textTransform:"uppercase",marginBottom:"2px" }}>Delta</div><div style={{ fontSize:"13px",fontWeight:700,color:delta>0?T.grn:delta<0?T.red:T.txtM }}>{delta>=0?"+":""}{fmtK(delta)}</div></div>
                   </div>
                 );
               })()}
-              <button onClick={submitCounter} style={{ width:"100%",padding:"10px",background:T.accD,color:T.txt,border:"1px solid "+T.acc,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" }}>Submit Counter-Offer</button>
-              <div style={{ textAlign:"center",marginTop:"6px",fontSize:"8px",color:T.txtM }}>The tenant may accept, reject, or propose a compromise.</div>
+              <button onClick={submitCounter} style={{ width:"100%",padding:"10px",background:T.accD,color:T.wht,border:"1px solid "+T.acc,borderRadius:"3px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" }}>Submit Counter-Offer</button>
+              <div style={{ textAlign:"center",marginTop:"6px",fontSize:"9px",color:T.txtM }}>The tenant may accept, reject, or propose a compromise.</div>
             </>
           )}
           {mode === "result" && selected && (
             <>
               {result === "accepted" && (
                 <div style={{ textAlign:"center",padding:"12px 0 16px" }}>
-                  <div style={{ fontSize:"9px",color:T.grn,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Terms Accepted</div>
-                  <div style={{ fontSize:"16px",fontWeight:800,color:T.txt,marginBottom:"4px" }}>{selected.name}</div>
-                  <div style={{ fontSize:"10px",color:T.txtM,marginBottom:"14px" }}>has accepted the proposed lease terms.</div>
-                  <div style={{ background:"#0e1014",borderRadius:"4px",padding:"12px",textAlign:"left",marginBottom:"14px" }}>
-                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"10px" }}>
-                      <div><span style={{ color:T.txtM }}>Headline rent:</span> <span style={{ color:T.txt,fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
-                      <div><span style={{ color:T.txtM }}>Term:</span> <span style={{ color:T.txt,fontWeight:700 }}>{selected.term} years</span></div>
-                      <div><span style={{ color:T.txtM }}>Rent free:</span> <span style={{ color:selected.rentFreeMonths>0?"#a08840":T.txtM,fontWeight:700 }}>{selected.rentFreeMonths>0?selected.rentFreeMonths+" months":"None"}</span></div>
-                      <div><span style={{ color:T.txtM }}>Annual rent:</span> <span style={{ color:T.grn,fontWeight:700 }}>{fmtM(selected.rentPsm * gla)}</span></div>
+                  <div style={{ fontSize:"10px",color:T.grn,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Terms Accepted</div>
+                  <div style={{ fontSize:"18px",fontWeight:800,color:T.wht,marginBottom:"4px" }}>{selected.name}</div>
+                  <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"14px" }}>has accepted the proposed lease terms.</div>
+                  <div style={{ background:T.card,borderRadius:"4px",padding:"12px",textAlign:"left",marginBottom:"14px" }}>
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"11px" }}>
+                      <div><span style={{ color:T.txtD }}>Headline rent:</span> <span style={{ color:T.wht,fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
+                      <div><span style={{ color:T.txtD }}>Term:</span> <span style={{ color:T.wht,fontWeight:700 }}>{selected.term} years</span></div>
+                      <div><span style={{ color:T.txtD }}>Rent free:</span> <span style={{ color:selected.rentFreeMonths>0?"#c0a850":T.txtM,fontWeight:700 }}>{selected.rentFreeMonths>0?selected.rentFreeMonths+" months":"None"}</span></div>
+                      <div><span style={{ color:T.txtD }}>Annual rent:</span> <span style={{ color:T.grn,fontWeight:700 }}>{fmtM(selected.rentPsm * gla)}</span></div>
                     </div>
                   </div>
-                  <button onClick={acceptDeal} style={{ width:"100%",padding:"10px",background:T.grnD,color:T.grn,border:"1px solid "+T.grn,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" }}>Execute Lease</button>
+                  <button onClick={acceptDeal} style={{ width:"100%",padding:"10px",background:T.grnD,color:T.grn,border:"1px solid "+T.grn,borderRadius:"3px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em",textTransform:"uppercase" }}>Execute Lease</button>
                 </div>
               )}
               {result === "compromise" && (
                 <div style={{ textAlign:"center",padding:"12px 0 16px" }}>
-                  <div style={{ fontSize:"9px",color:"#a08840",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Compromise Proposed</div>
-                  <div style={{ fontSize:"16px",fontWeight:800,color:T.txt,marginBottom:"4px" }}>{selected.name}</div>
-                  <div style={{ fontSize:"10px",color:T.txtM,marginBottom:"14px" }}>has come back with revised terms. This is their final position.</div>
-                  <div style={{ background:"#0e1014",borderRadius:"4px",padding:"12px",textAlign:"left",marginBottom:"14px" }}>
-                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"10px" }}>
-                      <div><span style={{ color:T.txtM }}>Headline rent:</span> <span style={{ color:T.txt,fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
-                      <div><span style={{ color:T.txtM }}>Term:</span> <span style={{ color:T.txt,fontWeight:700 }}>{selected.term} years</span></div>
-                      <div><span style={{ color:T.txtM }}>Rent free:</span> <span style={{ color:selected.rentFreeMonths>0?"#a08840":T.txtM,fontWeight:700 }}>{selected.rentFreeMonths>0?selected.rentFreeMonths+" months":"None"}</span></div>
-                      <div><span style={{ color:T.txtM }}>Annual rent:</span> <span style={{ color:T.grn,fontWeight:700 }}>{fmtM(selected.rentPsm * gla)}</span></div>
+                  <div style={{ fontSize:"10px",color:"#c0a850",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Compromise Proposed</div>
+                  <div style={{ fontSize:"18px",fontWeight:800,color:T.wht,marginBottom:"4px" }}>{selected.name}</div>
+                  <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"14px" }}>has come back with revised terms. This is their final position.</div>
+                  <div style={{ background:T.card,borderRadius:"4px",padding:"12px",textAlign:"left",marginBottom:"14px" }}>
+                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"11px" }}>
+                      <div><span style={{ color:T.txtD }}>Headline rent:</span> <span style={{ color:T.wht,fontWeight:700 }}>{"\u20AC"}{selected.rentPsm.toFixed(1)}/sqm</span></div>
+                      <div><span style={{ color:T.txtD }}>Term:</span> <span style={{ color:T.wht,fontWeight:700 }}>{selected.term} years</span></div>
+                      <div><span style={{ color:T.txtD }}>Rent free:</span> <span style={{ color:selected.rentFreeMonths>0?"#c0a850":T.txtM,fontWeight:700 }}>{selected.rentFreeMonths>0?selected.rentFreeMonths+" months":"None"}</span></div>
+                      <div><span style={{ color:T.txtD }}>Annual rent:</span> <span style={{ color:T.grn,fontWeight:700 }}>{fmtM(selected.rentPsm * gla)}</span></div>
                     </div>
                   </div>
                   <div style={{ display:"flex",gap:"6px" }}>
-                    <button onClick={acceptDeal} style={{ flex:1,padding:"10px",background:T.grnD,color:T.grn,border:"1px solid "+T.grn,borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Accept Compromise</button>
-                    <button onClick={() => setMode("list")} style={{ flex:1,padding:"10px",background:"transparent",color:T.txtM,border:"1px solid #1a1d24",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Back to Offers</button>
+                    <button onClick={acceptDeal} style={{ flex:1,padding:"10px",background:T.grnD,color:T.grn,border:"1px solid "+T.grn,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Accept Compromise</button>
+                    <button onClick={() => setMode("list")} style={{ flex:1,padding:"10px",background:"transparent",color:T.txtD,border:"1px solid "+T.bdr,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Back to Offers</button>
                   </div>
                 </div>
               )}
               {result === "rejected" && (
                 <div style={{ textAlign:"center",padding:"12px 0 16px" }}>
-                  <div style={{ fontSize:"9px",color:T.red,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Counter-Offer Rejected</div>
-                  <div style={{ fontSize:"16px",fontWeight:800,color:T.txt,marginBottom:"4px" }}>{selected.name}</div>
-                  <div style={{ fontSize:"10px",color:T.txtM,marginBottom:"14px",lineHeight:1.6 }}>has rejected your counter-offer.</div>
-                  <button onClick={() => { setMode("list"); setSelected(null); setResult(null); }} style={{ width:"100%",padding:"10px",background:"transparent",color:T.txtM,border:"1px solid #1a1d24",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Back to Offers</button>
+                  <div style={{ fontSize:"10px",color:T.red,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Counter-Offer Rejected</div>
+                  <div style={{ fontSize:"18px",fontWeight:800,color:T.wht,marginBottom:"4px" }}>{selected.name}</div>
+                  <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"14px",lineHeight:1.6 }}>has rejected your counter-offer.</div>
+                  <button onClick={() => { setMode("list"); setSelected(null); setResult(null); }} style={{ width:"100%",padding:"10px",background:"transparent",color:T.txtD,border:"1px solid "+T.bdr,borderRadius:"3px",cursor:"pointer",fontSize:"11px",fontWeight:700,fontFamily:"inherit",textTransform:"uppercase" }}>Back to Offers</button>
                 </div>
               )}
             </>
@@ -709,18 +685,18 @@ function WelcomeModal({ companyName, cash, startMarkets, difficulty, portfolio, 
   const dateStr = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
   return (
     <div className="logi-modal" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.78)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
-      <div style={{ background:"#0a0c10",border:"1px solid #1a1d24",borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,0.9)" }}>
-        <div style={{ background:"#0e1014",padding:"6px 28px",borderBottom:"1px solid #1a1d24",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-          <span style={{ fontSize:"8px",color:T.txtM,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Confidential — Board Use Only</span>
-          <span style={{ fontSize:"8px",color:T.txtM,fontWeight:500 }}>{dateStr}</span>
+      <div style={{ background:"#0e1218",border:"1px solid "+T.bdr,borderRadius:"2px",padding:"0",maxWidth:"580px",width:"94%",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,0.9)" }}>
+        <div style={{ background:"#141820",padding:"6px 28px",borderBottom:"1px solid "+T.bdr,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+          <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase" }}>Confidential — Board Use Only</span>
+          <span style={{ fontSize:"9px",color:T.txtM,fontWeight:500 }}>{dateStr}</span>
         </div>
-        <div style={{ padding:"32px 28px 20px",borderBottom:"1px solid #1a1d24" }}>
+        <div style={{ padding:"32px 28px 20px",borderBottom:"1px solid "+T.bdr }}>
           <div style={{ display:"flex",alignItems:"flex-start",gap:"16px" }}>
             <Logo size={28} />
             <div style={{ flex:1 }}>
-              <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"6px" }}>Investment Committee Briefing</div>
+              <div style={{ fontSize:"10px",color:T.txtM,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"6px" }}>Investment Committee Briefing</div>
               <div style={{ fontSize:"24px",fontWeight:800,color:T.wht,letterSpacing:"0.02em",lineHeight:1.15,marginBottom:"4px" }}>{companyName}</div>
-              <div style={{ fontSize:"11px",color:T.txtD,lineHeight:1.5 }}>
+              <div style={{ fontSize:"12px",color:T.txtD,lineHeight:1.5 }}>
                 European logistics real estate platform. You have been appointed CEO with a mandate to deploy {fmtM(cash)} of committed equity across {mktNames.length} target market{mktNames.length !== 1 ? "s" : ""}.
               </div>
             </div>
@@ -728,42 +704,42 @@ function WelcomeModal({ companyName, cash, startMarkets, difficulty, portfolio, 
         </div>
         <div style={{ padding:"20px 28px" }}>
           <div style={{ opacity:phase>=1?1:0, transform:phase>=1?"translateY(0)":"translateY(8px)", transition:"all 0.4s ease", marginBottom:"18px" }}>
-            <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid #1a1d24" }}>LP Return Targets</div>
-            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"1px",background:"#1a1d24",borderRadius:"4px",overflow:"hidden" }}>
+            <div style={{ fontSize:"10px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid "+T.bdr }}>LP Return Targets</div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"1px",background:T.bdr,borderRadius:"4px",overflow:"hidden" }}>
               {[{label:"Net IRR",value:"10\u201312%",sub:"5-year horizon"},{label:"Portfolio GAV",value:"\u20AC500m+",sub:"Institutional scale"},{label:"Occupancy",value:">90%",sub:"Weighted by GLA"},{label:"NOI Yield",value:">5.0%",sub:"On portfolio GAV"}].map((t, i) => (
-                <div key={i} style={{ background:"#0e1014",padding:"12px 10px",textAlign:"center" }}>
-                  <div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"5px" }}>{t.label}</div>
-                  <div style={{ fontSize:"18px",fontWeight:800,color:T.txt,lineHeight:1 }}>{t.value}</div>
-                  <div style={{ fontSize:"8px",color:T.txtM,marginTop:"4px" }}>{t.sub}</div>
+                <div key={i} style={{ background:T.card,padding:"12px 10px",textAlign:"center" }}>
+                  <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"5px" }}>{t.label}</div>
+                  <div style={{ fontSize:"18px",fontWeight:800,color:T.wht,lineHeight:1 }}>{t.value}</div>
+                  <div style={{ fontSize:"9px",color:T.txtM,marginTop:"4px" }}>{t.sub}</div>
                 </div>
               ))}
             </div>
           </div>
           <div style={{ opacity:phase>=2?1:0, transform:phase>=2?"translateY(0)":"translateY(8px)", transition:"all 0.4s ease", marginBottom:"18px" }}>
-            <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid #1a1d24" }}>Opening Position</div>
-            <div style={{ background:"#0e1014",borderRadius:"4px",padding:"14px 16px" }}>
+            <div style={{ fontSize:"10px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid "+T.bdr }}>Opening Position</div>
+            <div style={{ background:T.card,borderRadius:"4px",padding:"14px 16px" }}>
               <table style={{ width:"100%",borderCollapse:"collapse" }}><tbody>
                 {[["Committed Equity",fmtM(cash)],["Target Markets",mktNames.map(m => m.name).join(", ")],...(seedAssets > 0 ? [["Seed Assets",seedAssets+" properties"],["Opening GAV",fmtM(seedGAV)],["Gross Rental Income",fmtM(seedGRI)+" p.a."],["Avg Occupancy",fmtP(avgOcc)]] : [["Strategy","Blank slate — no seed portfolio"]])].map(([l, v], i) => (
-                  <tr key={i} style={{ borderBottom:"1px solid rgba(255,255,255,0.03)" }}><td style={{ padding:"5px 0",fontSize:"10px",color:T.txtM,fontWeight:500 }}>{l}</td><td style={{ padding:"5px 0",fontSize:"10px",color:T.txt,fontWeight:700,textAlign:"right" }}>{v}</td></tr>
+                  <tr key={i} style={{ borderBottom:"1px solid rgba(255,255,255,0.05)" }}><td style={{ padding:"5px 0",fontSize:"11px",color:T.txtD,fontWeight:500 }}>{l}</td><td style={{ padding:"5px 0",fontSize:"11px",color:T.wht,fontWeight:700,textAlign:"right" }}>{v}</td></tr>
                 ))}
               </tbody></table>
             </div>
           </div>
           <div style={{ opacity:phase>=3?1:0, transform:phase>=3?"translateY(0)":"translateY(8px)", transition:"all 0.4s ease", marginBottom:"22px" }}>
-            <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid #1a1d24" }}>Key Risk Factors</div>
-            <div style={{ background:"#0e1014",borderRadius:"4px",padding:"14px 16px",borderLeft:"3px solid #6a5020" }}>
+            <div style={{ fontSize:"10px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px",paddingBottom:"4px",borderBottom:"1px solid "+T.bdr }}>Key Risk Factors</div>
+            <div style={{ background:T.card,borderRadius:"4px",padding:"14px 16px",borderLeft:"3px solid #8a7030" }}>
               {[["Void cost exposure","Empty space incurs rates, insurance, and irrecoverable service charge."],["Condition deterioration","Assets not maintained will degrade, increasing costs by up to 1.5x."],["Negative NOI risk","If costs exceed rental income, the platform burns cash every quarter."],["Quarterly board review","Persistent underperformance will result in a strategic review."]].map(([title, desc], i) => (
                 <div key={i} style={{ marginBottom:i < 3 ? "10px" : 0 }}>
-                  <div style={{ fontSize:"10px",color:T.txt,fontWeight:700,marginBottom:"2px" }}>{title}</div>
-                  <div style={{ fontSize:"9px",color:T.txtM,lineHeight:1.55 }}>{desc}</div>
+                  <div style={{ fontSize:"11px",color:T.wht,fontWeight:700,marginBottom:"2px" }}>{title}</div>
+                  <div style={{ fontSize:"10px",color:T.txtD,lineHeight:1.55 }}>{desc}</div>
                 </div>
               ))}
             </div>
           </div>
-          <button onClick={onClose} style={{ width:"100%",padding:"13px",background:T.accD,color:T.txt,border:"1px solid "+T.acc,borderRadius:"4px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.06em",textTransform:"uppercase",opacity:phase>=3?1:0.3,transition:"all 0.4s ease" }}>
+          <button onClick={onClose} style={{ width:"100%",padding:"13px",background:T.accD,color:T.wht,border:"1px solid "+T.acc,borderRadius:"4px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.06em",textTransform:"uppercase",opacity:phase>=3?1:0.3,transition:"all 0.4s ease" }}>
             Acknowledge & Proceed
           </button>
-          <div style={{ textAlign:"center",marginTop:"8px",fontSize:"8px",color:T.txtM,letterSpacing:"0.06em" }}>By proceeding you accept the terms of the Investment Committee mandate.</div>
+          <div style={{ textAlign:"center",marginTop:"8px",fontSize:"9px",color:T.txtM,letterSpacing:"0.06em" }}>By proceeding you accept the terms of the Investment Committee mandate.</div>
         </div>
       </div>
     </div>
@@ -854,8 +830,8 @@ function updateMarketData(data, quarter, newsOut) {
     const dem = Math.max(0, Math.min(100, (prev.demandIndex || 60) + Math.round(rBetween(-4, 4))));
     const absorption = Math.max(10, Math.round((prev.absorptionKsqm || 100) * rBetween(0.85, 1.18)));
     const supply = Math.max(20, Math.round((prev.supplyPipelineKsqm || 200) * rBetween(0.90, 1.12)));
-    if (Math.abs(growth) > 0.025) { const dir = growth > 0 ? "UP" : "DOWN"; newsOut.push({ text:m.name+" rents "+dir.toLowerCase()+" "+(Math.abs(growth)*100).toFixed(1)+"% to \u20AC"+ner.toFixed(0)+"/sqm", color:growth>0?"#5aaa6a":"#c05050" }); }
-    if (Math.abs(yShock) > 0.05) { newsOut.push({ text:m.name+" prime yield "+(yShock>0?"expanded":"compressed")+" to "+primeYield.toFixed(2)+"%", color:yShock>0?"#c07030":"#5aaa6a" }); }
+    if (Math.abs(growth) > 0.025) { const dir = growth > 0 ? "UP" : "DOWN"; newsOut.push({ text:m.name+" rents "+dir.toLowerCase()+" "+(Math.abs(growth)*100).toFixed(1)+"% to \u20AC"+ner.toFixed(0)+"/sqm", color:growth>0?"#6abd7a":"#d06060" }); }
+    if (Math.abs(yShock) > 0.05) { newsOut.push({ text:m.name+" prime yield "+(yShock>0?"expanded":"compressed")+" to "+primeYield.toFixed(2)+"%", color:yShock>0?"#d08040":"#6abd7a" }); }
     updated[m.id] = { ner, nerPrev:prev.ner||ner, primeYield, marketVacancy:vac, demandIndex:dem, rentalGrowthQoQ:growth, absorptionKsqm:absorption, supplyPipelineKsqm:supply };
   });
   return updated;
@@ -959,8 +935,8 @@ function advanceQ(state) {
   const qNetPropIncome = qRent - qPropCosts;
   cash += qNetPropIncome;
   ev.push(ql + ": Rent " + fmtK(qRent) + ", prop costs " + fmtK(qPropCosts) + ", net " + fmtK(qNetPropIncome));
-      if (qVoidCost > 50000) news.push({ text:"Void costs: "+fmtK(qVoidCost)+" this quarter", color:"#c06040" });
-  if (qNetPropIncome < 0) news.push({ text:"NET PROPERTY INCOME NEGATIVE: "+fmtK(qNetPropIncome), color:"#d04040" });
+  if (qVoidCost > 50000) news.push({ text:"Void costs: "+fmtK(qVoidCost)+" this quarter", color:"#d08050" });
+  if (qNetPropIncome < 0) news.push({ text:"NET PROPERTY INCOME NEGATIVE: "+fmtK(qNetPropIncome), color:"#d06060" });
   const am = Math.min(5, team.assetMgmt||0);
   const tx = Math.min(5, team.transactions||0);
   const opAssetsCount = portfolio.filter(a => !a.developing).length;
@@ -968,7 +944,7 @@ function advanceQ(state) {
   const amStrained = amRatio > 4;
   const amPenalty = amStrained ? Math.min(0.25, (amRatio - 4) * 0.04) : 0;
   const amIssueMult = amStrained ? Math.min(3.0, 1 + (amRatio - 4) * 0.25) : 1.0;
-  if (amStrained) news.push({ text:"Asset Mgmt overstretched ("+amRatio.toFixed(1)+" assets/AM)", color:"#c0903a" });
+  if (amStrained) news.push({ text:"Asset Mgmt overstretched ("+amRatio.toFixed(1)+" assets/AM)", color:"#d0a040" });
   let pendTS = null;
 
   portfolio.forEach(a => {
@@ -981,14 +957,14 @@ function advanceQ(state) {
         const ac = ASSET_CLASSES.find(x => x.id === a.assetClass) || ASSET_CLASSES[0];
         a.gri = 0; a.value = a.gla * a.rentPsm / ((m?.capRate||5) * (ac?.capRateMult||1) / 100);
         ev.push(a.name + " completed!");
-        news.push({ text:a.name + " completed — now costing void rates until leased", color:"#c0903a" });
+        news.push({ text:a.name + " completed — now costing void rates until leased", color:"#d0a040" });
       }
       return;
     }
     const mkt = MARKETS.find(m => m.id === a.market);
     const ac = ASSET_CLASSES.find(x => x.id === a.assetClass) || ASSET_CLASSES[0];
-    if (a.tenant && a.leaseRemaining > 0) { const ti = getTI(a.tenant); if (Math.random() < ti.insolvencyRisk * 0.15) { ev.push(a.name+": "+a.tenant+" INSOLVENT"); news.push({ text:a.tenant+" insolvent at "+a.name, color:"#d04040" }); a.occupancy = Math.max(0, a.occupancy - rBetween(0.4, 0.7)); a.tenant = null; a.leaseRemaining = 0; } }
-    if (!a.urgentIssue && Math.random() < (0.06 + ac.riskFactor * 0.3) * amIssueMult) { a.urgentIssue = { ...rFrom(ISSUES) }; ev.push(a.name+": "+a.urgentIssue.name); news.push({ text:a.name+": "+a.urgentIssue.name, color:"#c05050" }); }
+    if (a.tenant && a.leaseRemaining > 0) { const ti = getTI(a.tenant); if (Math.random() < ti.insolvencyRisk * 0.15) { ev.push(a.name+": "+a.tenant+" INSOLVENT"); news.push({ text:a.tenant+" insolvent at "+a.name, color:"#d06060" }); a.occupancy = Math.max(0, a.occupancy - rBetween(0.4, 0.7)); a.tenant = null; a.leaseRemaining = 0; } }
+    if (!a.urgentIssue && Math.random() < (0.06 + ac.riskFactor * 0.3) * amIssueMult) { a.urgentIssue = { ...rFrom(ISSUES) }; ev.push(a.name+": "+a.urgentIssue.name); news.push({ text:a.name+": "+a.urgentIssue.name, color:"#d06060" }); }
     if (a.urgentIssue) a.occupancy = Math.max(0, a.occupancy - a.urgentIssue.severity * 0.3);
     const dr = 0.08 - am * 0.008 + amPenalty;
     a.occupancy = Math.min(1, Math.max(0, a.occupancy + rBetween(-dr, dr + am*0.005)));
@@ -1002,11 +978,11 @@ function advanceQ(state) {
           const reversion = marketNER * rBetween(0.97, 1.08);
           a.rentPsm = Math.max(a.rentPsm * 0.96, Math.min(reversion, a.rentPsm * 1.12));
           ev.push(a.name+": "+a.tenant+" renewed");
-          news.push({ text:a.tenant+" renewed at "+a.name, color:"#5aaa6a" });
+          news.push({ text:a.tenant+" renewed at "+a.name, color:"#6abd7a" });
         } else {
           a.occupancy = Math.max(0, a.occupancy - rBetween(0.2, 0.5));
           ev.push(a.name+": "+a.tenant+" vacated");
-          news.push({ text:a.tenant+" vacated "+a.name, color:"#c0903a" });
+          news.push({ text:a.tenant+" vacated "+a.name, color:"#d0a040" });
           a.tenant = null;
         }
       }
@@ -1014,17 +990,17 @@ function advanceQ(state) {
       const ds = (mkt?.demand||0.5) * (ac?.demandMult||1);
       if ((ds > 0.85 || quarter <= 4) && !pendTS) {
         pendTS = { assetId:a.id, assetName:a.name, assetGla:a.gla, candidates:genTenantCandidates(a.assetClass, a.rentPsm, a.epcRating, team.esg||0, marketNER) };
-        news.push({ text:"Tenant offers for " + a.name, color:"#6a9ac0" });
+        news.push({ text:"Tenant offers for " + a.name, color:"#80b0d0" });
       } else {
         a.occupancy = Math.min(1, a.occupancy + rBetween(0.15, 0.4));
         a.tenant = rFrom(TENANT_POOL[a.assetClass]||TENANT_POOL.bigbox);
         a.leaseRemaining = Math.round(rBetween(3,7));
         ev.push(a.name+": Lease with "+a.tenant);
-        news.push({ text:a.tenant+" signed at "+a.name, color:"#5aaa6a" });
+        news.push({ text:a.tenant+" signed at "+a.name, color:"#6abd7a" });
       }
     }
     const rmGap = quarter - (a.lastRM||0);
-    if (rmGap > 4 && Math.random() < 0.08 && a.condition !== "C") { a.condition = a.condition === "A" ? "B" : "C"; a.rentPsm *= 0.95; ev.push(a.name+": Degraded to "+a.condition); news.push({ text:a.name+" degraded to Grade "+a.condition, color:"#c07030" }); }
+    if (rmGap > 4 && Math.random() < 0.08 && a.condition !== "C") { a.condition = a.condition === "A" ? "B" : "C"; a.rentPsm *= 0.95; ev.push(a.name+": Degraded to "+a.condition); news.push({ text:a.name+" degraded to Grade "+a.condition, color:"#d08040" }); }
     const marketYield = mktD.primeYield || (mkt?.capRate||5);
     const ecr = marketYield * (ac?.capRateMult||1);
     a.gri = a.gla * a.rentPsm * a.occupancy;
@@ -1044,7 +1020,7 @@ function advanceQ(state) {
   if (quarter % 2 === 0 || Math.random() < 0.5) { const megaMkts = [...MARKETS].sort(() => Math.random()-0.5).slice(0, Math.random() < 0.4 ? 2 : 3); megaMkts.forEach(m => acquisitions.push(genMegaAcquisition(m, tx))); }
   devSites = [...MARKETS].sort(() => Math.random()-0.5).slice(0, 5+Math.floor(Math.random()*5)).map(m => genDev(m));
   const postMetrics = calcMetrics({ portfolio, team });
-  if (postMetrics.noi < 0) news.push({ text:"NOI IS NEGATIVE: "+fmtM(postMetrics.noi)+" p.a.", color:"#c04040" });
+  if (postMetrics.noi < 0) news.push({ text:"NOI IS NEGATIVE: "+fmtM(postMetrics.noi)+" p.a.", color:"#d06060" });
   if (!news.length) news.push({ text:"Board reviewed quarterly pack", color:T.txtD });
   const metrics = calcMetrics({ portfolio, team });
   history.push({ quarter, ...metrics, cash });
@@ -1105,9 +1081,7 @@ function InvestorGauge({ score, color, label }) {
   const startRef = useRef(null);
 
   useEffect(() => {
-    setDisplay(0);
-    setArcPct(0);
-    startRef.current = null;
+    setDisplay(0); setArcPct(0); startRef.current = null;
     const dur = 800;
     const animate = (ts) => {
       if (!startRef.current) startRef.current = ts;
@@ -1130,20 +1104,16 @@ function InvestorGauge({ score, color, label }) {
     <div style={{ textAlign:"center" }}>
       <div style={{ position:"relative", width:"120px", height:"72px", margin:"0 auto" }}>
         <svg viewBox="0 0 120 72" style={{ width:"120px",height:"72px",overflow:"visible" }}>
-          <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`}
-            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={sw} strokeLinecap="round" />
-          <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`}
-            fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
-            strokeDasharray={`${arcLen} ${gap}`}
-            style={{ filter:`drop-shadow(0 0 4px ${color}50)`, transition:"stroke 0.3s" }} />
+          <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={sw} strokeLinecap="round" />
+          <path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeDasharray={`${arcLen} ${gap}`} style={{ filter:`drop-shadow(0 0 4px ${color}50)`, transition:"stroke 0.3s" }} />
         </svg>
         <div style={{ position:"absolute",bottom:"2px",left:0,right:0,textAlign:"center" }}>
           <div style={{ fontSize:"32px",fontWeight:900,color,lineHeight:1 }}>{display}</div>
-          <div style={{ fontSize:"9px",color:color,opacity:0.5,fontWeight:700,marginTop:"1px" }}>/100</div>
+          <div style={{ fontSize:"9px",color:color,opacity:0.6,fontWeight:700,marginTop:"1px" }}>/100</div>
         </div>
       </div>
       <div style={{ fontSize:"12px",fontWeight:800,color,letterSpacing:"0.08em",marginTop:"4px" }}>{label}</div>
-      <div style={{ fontSize:"9px",color:"#9098a8",marginTop:"4px" }}>Based on IRR, occupancy, NOI yield, ESG & scale</div>
+      <div style={{ fontSize:"10px",color:T.txtD,marginTop:"4px" }}>Based on IRR, occupancy, NOI yield, ESG & scale</div>
     </div>
   );
 }
@@ -1153,42 +1123,42 @@ const S = {
   app:{ minHeight:"100vh",background:"radial-gradient(ellipse at 50% 30%, #141820 0%, #0c0e12 60%, #08090c 100%)",color:T.txt,fontFamily:"'Inter', sans-serif",fontSize:"13px",lineHeight:1.5 },
   hdr:{ padding:"10px 18px",borderBottom:"none",display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap",position:"relative" },
   logo:{ display:"flex",alignItems:"center",gap:"10px",flexShrink:0 },
-  mBar:{ display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(130px, 1fr))",gap:"1px",background:"#1a1d24",borderBottom:"1px solid #2a2e38" },
-  mCell:{ background:"#0a0c10",padding:"14px 16px",textAlign:"center" },
+  mBar:{ display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(130px, 1fr))",gap:"1px",background:T.bdr,borderBottom:"1px solid "+T.bdr },
+  mCell:{ background:"#101420",padding:"14px 16px",textAlign:"center" },
   mLbl:{ fontSize:"10px",color:T.txtD,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px",display:"flex",alignItems:"center",justifyContent:"center",gap:"4px" },
-  mVal:{ fontSize:"20px",fontWeight:800,color:T.txt },
+  mVal:{ fontSize:"20px",fontWeight:800,color:T.wht },
   main:{ display:"grid",gridTemplateColumns:"1fr 380px",minHeight:"calc(100vh - 160px)" },
   lp:{ padding:"14px 18px",overflowY:"auto",borderRight:"1px solid "+T.bdr },
-  rp:{ padding:"14px 18px",overflowY:"auto",background:"#0e1014" },
-  tabs:{ display:"flex",gap:"2px",marginBottom:"14px",background:"rgba(255,255,255,0.04)",borderRadius:"4px",padding:"2px",border:"1px solid rgba(255,255,255,0.06)" },
+  rp:{ padding:"14px 18px",overflowY:"auto",background:"#111620" },
+  tabs:{ display:"flex",gap:"2px",marginBottom:"14px",background:"rgba(255,255,255,0.05)",borderRadius:"4px",padding:"2px",border:"1px solid rgba(255,255,255,0.08)" },
   card:{ background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",padding:"12px 14px",marginBottom:"8px",transition:"transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease" },
   grid:{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px",marginTop:"8px" },
   stat:{ fontSize:"10px",color:T.txtD,letterSpacing:"0.04em",textTransform:"uppercase" },
-  val:{ fontSize:"14px",fontWeight:700,color:T.txt },
+  val:{ fontSize:"15px",fontWeight:700,color:T.wht },
   row:{ display:"flex",gap:"4px",marginTop:"7px",flexWrap:"wrap" },
   sec:{ fontSize:"10px",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:T.txtD,marginBottom:"8px",marginTop:"4px" },
-  evLog:{ fontSize:"11px",lineHeight:1.7,color:T.txtD },
+  evLog:{ fontSize:"12px",lineHeight:1.7,color:T.txtD },
   evItem:{ padding:"4px 0",borderBottom:"1px solid "+T.bdr },
-  empty:{ padding:"18px",textAlign:"center",color:T.txtD,fontSize:"12px" },
+  empty:{ padding:"18px",textAlign:"center",color:T.txtD,fontSize:"13px" },
 };
 
-function tabSt(active, accent) { const ac = accent || "rgba(138,154,170,0.6)"; return { flex:1,padding:"8px 10px",background:active?"rgba(138,154,170,0.10)":"rgba(255,255,255,0.03)",color:active?"#f0f2f6":"#8a92a4",border:active?"1px solid rgba(138,154,170,0.25)":"1px solid transparent",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",fontFamily:"inherit",position:"relative",borderBottom:active?"2px solid "+ac:"2px solid transparent",transition:"all 0.15s ease" }; }
-function btnSt(v) { const colors = { green:{b:T.grn,bg:T.grnD,c:T.grn}, red:{b:T.red,bg:T.redD,c:T.red}, amber:{b:"#a08840",bg:"#1a1808",c:"#a08840"} }; const d = colors[v] || { b:T.acc, bg:T.accD, c:T.hiAcc }; return { padding:"5px 10px",border:"1px solid "+d.b,background:d.bg,color:d.c,borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit" }; }
+function tabSt(active, accent) { const ac = accent || "rgba(148,168,190,0.6)"; return { flex:1,padding:"8px 10px",background:active?"rgba(148,168,190,0.12)":"rgba(255,255,255,0.04)",color:active?"#f4f6fa":T.txtD,border:active?"1px solid rgba(148,168,190,0.30)":"1px solid transparent",borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",fontFamily:"inherit",position:"relative",borderBottom:active?"2px solid "+ac:"2px solid transparent",transition:"all 0.15s ease" }; }
+function btnSt(v) { const colors = { green:{b:T.grn,bg:T.grnD,c:T.grn}, red:{b:T.red,bg:T.redD,c:T.red}, amber:{b:"#c0a850",bg:"#1e1c0c",c:"#c0a850"} }; const d = colors[v] || { b:T.acc, bg:T.accD, c:T.hiAcc }; return { padding:"5px 10px",border:"1px solid "+d.b,background:d.bg,color:d.c,borderRadius:"3px",cursor:"pointer",fontSize:"10px",fontWeight:600,fontFamily:"inherit" }; }
 function condSt(c) { return { display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:c==="A"?T.grnD:c==="B"?T.ambD:T.redD, color:c==="A"?T.grn:c==="B"?T.amb:T.red, ...(c==="C" ? { animation:"gradeC_pulse 2s ease-in-out infinite" } : {}) }; }
-function assetHealthCol(a) { if (a.developing) return "#6a8a9a"; if (a.urgentIssue) return "#c04040"; const npi = calcAssetCosts(a).netPropertyIncome; if (npi < 0) return "#c04040"; if (a.occupancy < 0.5 || a.condition === "C") return "#c06040"; if (a.occupancy < 0.75 || a.condition === "B") return "#a08840"; return "#5a9a6a"; }
+function assetHealthCol(a) { if (a.developing) return T.amb; if (a.urgentIssue) return "#d06060"; const npi = calcAssetCosts(a).netPropertyIncome; if (npi < 0) return "#d06060"; if (a.occupancy < 0.5 || a.condition === "C") return "#d08040"; if (a.occupancy < 0.75 || a.condition === "B") return "#c0a850"; return "#6abd7a"; }
 
 /* ===== CARD COMPONENTS ===== */
 function MetricCell({ label, value, color, sparkData, sparkColor }) {
   return (
     <div style={{ ...S.mCell, position:"relative", overflow:"hidden" }}>
       {sparkData && sparkData.length >= 2 && (
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"100%", opacity:0.12, pointerEvents:"none" }}>
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"100%", opacity:0.15, pointerEvents:"none" }}>
           <Spark data={sparkData} color={sparkColor || "#6a7a8a"} height={60} />
         </div>
       )}
       <div style={{ position:"relative", zIndex:1 }}>
         <div style={S.mLbl}><TipLbl label={label} style={{ fontSize:"10px",color:T.txtD,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase" }} /></div>
-        <div style={{ ...S.mVal, color: color || T.txt }}>{value}</div>
+        <div style={{ ...S.mVal, color: color || T.wht }}>{value}</div>
       </div>
     </div>
   );
@@ -1200,10 +1170,10 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
   const mktCity = MARKETS.find(m => m.id === asset.market)?.city || "";
   const mktName = MARKETS.find(m => m.id === asset.market)?.name || "";
   const costs = !asset.developing ? calcAssetCosts(asset, ac) : null;
-  const thumb = <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.06)" }}><WHouse condition={asset.condition} gla={asset.gla} developing={asset.developing} assetClass={asset.assetClass} seed={asset.visualSeed||0} /></div>;
+  const thumb = <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.08)" }}><WHouse condition={asset.condition} gla={asset.gla} developing={asset.developing} assetClass={asset.assetClass} seed={asset.visualSeed||0} /></div>;
   if (asset.developing) {
     const pD = ((asset.totalDevQuarters||4) - asset.devQuartersLeft) / (asset.totalDevQuarters||4) * 100;
-    return (<div className="logi-card" style={{ ...S.card, borderLeft:"3px solid "+assetHealthCol(asset) }}><div style={{ display:"flex",gap:"12px" }}>{thumb}<div style={{ flex:1 }}><div style={{ display:"flex",justifyContent:"space-between" }}><div><div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.name}</div><div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName} · Dev</div></div><span style={condSt("A")}>DEV</span></div></div></div><div style={S.grid}><div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div><div><TipLbl label="Dev Cost" style={S.stat} /><div style={S.val}>{fmtM(asset.totalDevCost||0)}</div></div><div><TipLbl label="Completion" style={S.stat} /><div style={S.val}>{asset.devQuartersLeft}Q</div></div></div><div style={{ height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"6px" }}><div style={{ height:"100%",width:pD+"%",background:T.acc,borderRadius:"2px" }} /></div></div>);
+    return (<div className="logi-card" style={{ ...S.card, borderLeft:"3px solid "+assetHealthCol(asset) }}><div style={{ display:"flex",gap:"12px" }}>{thumb}<div style={{ flex:1 }}><div style={{ display:"flex",justifyContent:"space-between" }}><div><div style={{ fontSize:"15px",fontWeight:700,color:T.wht }}>{asset.name}</div><div style={{ fontSize:"12px",color:T.txtD }}>{asset.assetClassName} · {mktName} · Dev</div></div><span style={condSt("A")}>DEV</span></div></div></div><div style={S.grid}><div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div><div><TipLbl label="Dev Cost" style={S.stat} /><div style={S.val}>{fmtM(asset.totalDevCost||0)}</div></div><div><TipLbl label="Completion" style={S.stat} /><div style={S.val}>{asset.devQuartersLeft}Q</div></div></div><div style={{ height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"6px" }}><div style={{ height:"100%",width:pD+"%",background:T.acc,borderRadius:"2px" }} /></div></div>);
   }
   const npi = costs ? costs.netPropertyIncome : 0;
   const npiNeg = npi < 0;
@@ -1214,49 +1184,49 @@ function AssetCard({ asset, onMaint, onDispose, onFix }) {
         <div style={{ flex:1 }}>
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
             <div>
-              <div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.name}{asset.urgentIssue && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:T.redD,color:T.red,marginLeft:"5px" }}>ISSUE</span>}{npiNeg && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:"#1a0808",color:"#c04040",marginLeft:"5px" }}>NPI NEG</span>}</div>
-              <div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" · "}<span style={{ color:T.hiAcc }}>{asset.tenant}</span>{tInfo && <span style={{ marginLeft:"4px",fontSize:"9px",color:credCol(tInfo.credit),background:"rgba(0,0,0,0.3)",padding:"1px 4px",borderRadius:"3px",boxShadow:"inset 0 0 6px "+credCol(tInfo.credit)+"40" }}>{tInfo.credit}</span>}</>}</div>
+              <div style={{ fontSize:"15px",fontWeight:700,color:T.wht }}>{asset.name}{asset.urgentIssue && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:T.redD,color:T.red,marginLeft:"5px" }}>ISSUE</span>}{npiNeg && <span style={{ display:"inline-block",padding:"2px 6px",borderRadius:"3px",fontSize:"9px",fontWeight:700,background:"#220c0c",color:"#d06060",marginLeft:"5px" }}>NPI NEG</span>}</div>
+              <div style={{ fontSize:"12px",color:T.txtD }}>{asset.assetClassName} · {mktName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" · "}<span style={{ color:T.hiAcc }}>{asset.tenant}</span>{tInfo && <span style={{ marginLeft:"4px",fontSize:"10px",color:credCol(tInfo.credit),background:"rgba(0,0,0,0.3)",padding:"1px 4px",borderRadius:"3px",boxShadow:"inset 0 0 6px "+credCol(tInfo.credit)+"40" }}>{tInfo.credit}</span>}</>}</div>
             </div>
             <div style={{ display:"flex",gap:"3px" }}><span style={{ fontSize:"9px",color:T.txtD,padding:"2px 5px",background:T.accD,borderRadius:"3px" }}>EPC {asset.epcRating}</span><span style={condSt(asset.condition)}>Gr {asset.condition}</span></div>
           </div>
         </div>
       </div>
-      {asset.urgentIssue && <div style={{ margin:"6px 0",padding:"6px 10px",background:T.redD,border:"1px solid "+T.red,borderRadius:"4px",fontSize:"10px",color:T.red }}>{asset.urgentIssue.name} <button style={{ ...btnSt("red"),marginLeft:"6px",padding:"2px 6px",fontSize:"9px" }} onClick={() => onFix(asset.id)}>Fix ({fmtK(asset.gla * asset.urgentIssue.fixCost)})</button></div>}
+      {asset.urgentIssue && <div style={{ margin:"6px 0",padding:"6px 10px",background:T.redD,border:"1px solid "+T.red,borderRadius:"4px",fontSize:"11px",color:T.red }}>{asset.urgentIssue.name} <button style={{ ...btnSt("red"),marginLeft:"6px",padding:"2px 6px",fontSize:"9px" }} onClick={() => onFix(asset.id)}>Fix ({fmtK(asset.gla * asset.urgentIssue.fixCost)})</button></div>}
       <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"6px",marginTop:"8px" }}>
         <div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(asset.gla/1000).toFixed(0)}k</div></div>
         <div><TipLbl label="Occupancy" style={S.stat} /><div style={{ ...S.val, color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red }}>{fmtP(asset.occupancy)}</div></div>
         <div><TipLbl label="GAV" style={S.stat} /><div style={S.val}>{fmtM(asset.value)}</div></div>
         <div><TipLbl label="Rent p.a." style={S.stat} /><div style={S.val}>{fmtM(asset.gri)}</div></div>
         <div><TipLbl label="Prop Costs" style={S.stat} /><div style={{ ...S.val, color:T.red }}>{fmtK(costs?.totalIrrecoverable||0)}</div></div>
-        <div><TipLbl label="NPI" style={S.stat} /><div style={{ ...S.val, color:npiNeg?"#c04040":T.grn }}>{fmtM(npi)}</div></div>
+        <div><TipLbl label="NPI" style={S.stat} /><div style={{ ...S.val, color:npiNeg?"#d06060":T.grn }}>{fmtM(npi)}</div></div>
         <div><TipLbl label="Rent/sqm" style={S.stat} /><div style={S.val}>{"\u20AC"}{asset.rentPsm.toFixed(1)}</div></div>
         <div><TipLbl label="WALT" style={S.stat} /><div style={S.val}>{asset.leaseRemaining > 0 ? asset.leaseRemaining.toFixed(1)+"yr" : "Vacant"}</div></div>
       </div>
       {costs && (asset.occupancy < 0.8) && (
-        <div style={{ marginTop:"6px",padding:"5px 8px",background:"rgba(160,64,64,0.06)",border:"1px solid rgba(160,64,64,0.15)",borderRadius:"3px",fontSize:"9px",color:T.red,lineHeight:1.5 }}>
+        <div style={{ marginTop:"6px",padding:"5px 8px",background:"rgba(208,96,96,0.08)",border:"1px solid rgba(208,96,96,0.20)",borderRadius:"3px",fontSize:"10px",color:"#e07070",lineHeight:1.5 }}>
           Void Cost {fmtK(costs.voidRates + costs.irrecoverableSC)}/yr · Insurance {fmtK(costs.insurance)}/yr · Maint {fmtK(costs.maintDrag)}/yr
         </div>
       )}
       {(asset.histOcc && asset.histOcc.length >= 2) && (
         <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px",marginTop:"6px" }}>
-          <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:"3px",padding:"4px 6px" }}>
-            <div style={{ fontSize:"7px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>Occupancy</div>
+          <div style={{ background:"rgba(255,255,255,0.03)",borderRadius:"3px",padding:"4px 6px" }}>
+            <div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>Occupancy</div>
             <div style={{ height:"20px" }}><Spark data={asset.histOcc} color={asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red} height={20} /></div>
           </div>
-          <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:"3px",padding:"4px 6px" }}>
-            <div style={{ fontSize:"7px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>Rent/sqm</div>
+          <div style={{ background:"rgba(255,255,255,0.03)",borderRadius:"3px",padding:"4px 6px" }}>
+            <div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>Rent/sqm</div>
             <div style={{ height:"20px" }}><Spark data={asset.histRent||[]} color={T.hiAcc} height={20} /></div>
           </div>
-          <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:"3px",padding:"4px 6px" }}>
-            <div style={{ fontSize:"7px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>GAV</div>
+          <div style={{ background:"rgba(255,255,255,0.03)",borderRadius:"3px",padding:"4px 6px" }}>
+            <div style={{ fontSize:"8px",color:T.txtM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1px" }}>GAV</div>
             <div style={{ height:"20px" }}><Spark data={asset.histVal||[]} color={T.acc} height={20} /></div>
           </div>
         </div>
       )}
       <div style={{ display:"flex",alignItems:"center",gap:"6px",marginTop:"6px" }}>
-        <span style={{ fontSize:"8px",color:T.txtM,flexShrink:0,width:"52px" }}>Occupancy</span>
+        <span style={{ fontSize:"9px",color:T.txtM,flexShrink:0,width:"52px" }}>Occupancy</span>
         <div style={{ width:"140px",height:"3px",background:T.bdr,borderRadius:"2px",flexShrink:0 }}><div className="logi-occ-bar" style={{ height:"100%",width:(asset.occupancy*100)+"%",background:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,borderRadius:"2px" }} /></div>
-        <span style={{ fontSize:"8px",color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,fontWeight:700 }}>{fmtP(asset.occupancy)}</span>
+        <span style={{ fontSize:"9px",color:asset.occupancy>0.85?T.grn:asset.occupancy>0.6?T.amb:T.red,fontWeight:700 }}>{fmtP(asset.occupancy)}</span>
       </div>
       <div style={S.row}>
         {MAINT.map(mt => <button key={mt.id} style={btnSt(mt.id==="refurb"?"amber":mt.id==="esg"?"green":"default")} onClick={() => onMaint(asset.id, mt.id)}>{mt.name} ({fmtK(asset.gla * mt.costPerSqm)})</button>)}
@@ -1273,10 +1243,10 @@ function AcqCard({ asset, onAcquire, ok }) {
   return (
     <div className="logi-card" style={{ ...S.card, opacity:ok?1:0.5 }}>
       <div style={{ display:"flex",gap:"12px" }}>
-        <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.06)" }}><WHouse condition={asset.condition} gla={asset.gla} assetClass={asset.assetClass} seed={asset.visualSeed||0} /></div>
+        <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.08)" }}><WHouse condition={asset.condition} gla={asset.gla} assetClass={asset.assetClass} seed={asset.visualSeed||0} /></div>
         <div style={{ flex:1 }}>
           <div style={{ display:"flex",justifyContent:"space-between" }}>
-            <div><div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{asset.name}</div><div style={{ fontSize:"11px",color:T.txtD }}>{asset.assetClassName} · {mktName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" · "}<span style={{ color:T.hiAcc }}>{asset.tenant}</span></>}</div></div>
+            <div><div style={{ fontSize:"15px",fontWeight:700,color:T.wht }}>{asset.name}</div><div style={{ fontSize:"12px",color:T.txtD }}>{asset.assetClassName} · {mktName}{mktCity ? <span style={{ color:T.txtM }}>, {mktCity}</span> : ""}{asset.tenant && <>{" · "}<span style={{ color:T.hiAcc }}>{asset.tenant}</span></>}</div></div>
             <span style={condSt(asset.condition)}>Gr {asset.condition}</span>
           </div>
         </div>
@@ -1300,8 +1270,8 @@ function DevCard({ site, onDev, ok }) {
   return (
     <div className="logi-card" style={{ ...S.card, opacity:ok?1:0.5 }}>
       <div style={{ display:"flex",gap:"12px" }}>
-        <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.06)" }}><WHouse condition="A" gla={site.gla} developing={true} assetClass={site.assetClass} seed={parseInt(site.id.replace(/\D/g,""))||0} /></div>
-        <div style={{ flex:1 }}><div style={{ fontSize:"14px",fontWeight:700,color:T.wht }}>{site.name}</div><div style={{ fontSize:"11px",color:T.txtD }}>{ac?.name} · {mktName}</div></div>
+        <div style={{ width:"100px",minWidth:"100px",height:"66px",borderRadius:"4px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.08)" }}><WHouse condition="A" gla={site.gla} developing={true} assetClass={site.assetClass} seed={parseInt(site.id.replace(/\D/g,""))||0} /></div>
+        <div style={{ flex:1 }}><div style={{ fontSize:"15px",fontWeight:700,color:T.wht }}>{site.name}</div><div style={{ fontSize:"12px",color:T.txtD }}>{ac?.name} · {mktName}</div></div>
       </div>
       <div style={S.grid}>
         <div><TipLbl label="GLA" style={S.stat} /><div style={S.val}>{(site.gla/1000).toFixed(0)}k</div></div>
@@ -1319,12 +1289,12 @@ function TeamPanel({ team, onHire, onFire }) {
   return (
     <div>
       <div style={S.sec}>Team Structure</div>
-      <div style={{ ...S.card, background:T.accD, border:"1px solid "+T.acc, marginBottom:"8px" }}><div style={{ fontSize:"12px",color:T.hiAcc,fontWeight:700 }}>Quarterly Team Cost: {fmtK(teamQCost(team))}</div></div>
+      <div style={{ ...S.card, background:T.accD, border:"1px solid "+T.acc, marginBottom:"8px" }}><div style={{ fontSize:"13px",color:T.hiAcc,fontWeight:700 }}>Quarterly Team Cost: {fmtK(teamQCost(team))}</div></div>
       {TEAM_ROLES.map(r => { const n = team[r.id] || 0; return (
         <div key={r.id} style={{ ...S.card, marginBottom:"5px" }}>
-          <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"3px" }}><span style={{ fontSize:"12px",fontWeight:700,color:T.wht }}>{r.name}</span><span style={{ fontSize:"16px",fontWeight:700,color:T.hiAcc }}>{n}</span></div>
-          <div style={{ fontSize:"10px",color:T.txtD,marginBottom:"4px" }}>{r.desc}</div>
-          <div style={{ fontSize:"10px",color:T.txtM,marginBottom:"5px" }}>Salary: {fmtK(r.salaryCost)}/yr</div>
+          <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"3px" }}><span style={{ fontSize:"13px",fontWeight:700,color:T.wht }}>{r.name}</span><span style={{ fontSize:"16px",fontWeight:700,color:T.hiAcc }}>{n}</span></div>
+          <div style={{ fontSize:"11px",color:T.txtD,marginBottom:"4px" }}>{r.desc}</div>
+          <div style={{ fontSize:"11px",color:T.txtM,marginBottom:"5px" }}>Salary: {fmtK(r.salaryCost)}/yr</div>
           <div style={S.row}><button style={btnSt("green")} onClick={() => onHire(r.id)}>+ Hire</button>{n > 0 && <button style={btnSt("red")} onClick={() => onFire(r.id)}>- Remove</button>}</div>
         </div>
       ); })}
@@ -1337,9 +1307,9 @@ function MarketIntelPanel({ marketData }) {
   const md = marketData || {};
   return (
     <div>
-      <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px" }}>Live Market Intelligence</div>
+      <div style={{ fontSize:"10px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"10px" }}>Live Market Intelligence</div>
       <div style={{ overflowX:"auto",marginBottom:"10px" }}>
-        <table style={{ width:"100%",borderCollapse:"collapse",fontSize:"10px" }}>
+        <table style={{ width:"100%",borderCollapse:"collapse",fontSize:"11px" }}>
           <thead><tr style={{ borderBottom:"1px solid "+T.bdr }}>{["Market","NER \u20AC/sqm","\u0394 QoQ","Prime Yield","Vacancy","Demand"].map(h => <th key={h} style={{ padding:"4px 6px",color:T.txtM,fontWeight:600,textAlign:"left",whiteSpace:"nowrap" }}>{h}</th>)}</tr></thead>
           <tbody>
             {MARKETS.map((mkt,i) => {
@@ -1348,13 +1318,13 @@ function MarketIntelPanel({ marketData }) {
               const growthColor = growth > 0.02 ? T.grn : growth < -0.02 ? T.red : T.txtD;
               const isSelected = selMkt === mkt.id;
               return (
-                <tr key={mkt.id} onClick={() => setSelMkt(isSelected ? null : mkt.id)} style={{ borderBottom:"1px solid rgba(255,255,255,0.03)",cursor:"pointer",background:isSelected?"rgba(138,154,170,0.06)":i%2===0?"rgba(255,255,255,0.01)":"transparent" }}>
-                  <td style={{ padding:"5px 6px",color:T.txt,fontWeight:600,whiteSpace:"nowrap" }}>{mkt.name}</td>
+                <tr key={mkt.id} onClick={() => setSelMkt(isSelected ? null : mkt.id)} style={{ borderBottom:"1px solid rgba(255,255,255,0.04)",cursor:"pointer",background:isSelected?"rgba(148,168,190,0.08)":i%2===0?"rgba(255,255,255,0.02)":"transparent" }}>
+                  <td style={{ padding:"5px 6px",color:T.wht,fontWeight:600,whiteSpace:"nowrap" }}>{mkt.name}</td>
                   <td style={{ padding:"5px 6px",color:T.wht,fontWeight:700 }}>{"\u20AC"}{(d.ner||mkt.baseRent).toFixed(0)}</td>
                   <td style={{ padding:"5px 6px",color:growthColor,fontWeight:700 }}>{growth>=0?"+":""}{(growth*100).toFixed(1)}%</td>
                   <td style={{ padding:"5px 6px",color:T.txtD }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</td>
                   <td style={{ padding:"5px 6px",color:(d.marketVacancy||0.07)>0.10?T.red:T.grn,fontWeight:600 }}>{fmtP(d.marketVacancy||0.07)}</td>
-                  <td style={{ padding:"5px 6px" }}><div style={{ display:"flex",alignItems:"center",gap:"4px" }}><div style={{ width:"40px",height:"3px",background:T.bdr,borderRadius:"2px" }}><div style={{ height:"100%",width:((d.demandIndex||60)+"%"),background:(d.demandIndex||60)>70?T.grn:(d.demandIndex||60)>45?T.amb:T.red,borderRadius:"2px" }} /></div><span style={{ color:T.txtD,fontSize:"9px" }}>{d.demandIndex||60}</span></div></td>
+                  <td style={{ padding:"5px 6px" }}><div style={{ display:"flex",alignItems:"center",gap:"4px" }}><div style={{ width:"40px",height:"3px",background:T.bdr,borderRadius:"2px" }}><div style={{ height:"100%",width:((d.demandIndex||60)+"%"),background:(d.demandIndex||60)>70?T.grn:(d.demandIndex||60)>45?T.amb:T.red,borderRadius:"2px" }} /></div><span style={{ color:T.txtD,fontSize:"10px" }}>{d.demandIndex||60}</span></div></td>
                 </tr>
               );
             })}
@@ -1365,13 +1335,13 @@ function MarketIntelPanel({ marketData }) {
         const mkt = MARKETS.find(m => m.id === selMkt);
         const d = md[selMkt] || {};
         return (
-          <div style={{ ...S.card,background:"rgba(138,154,170,0.04)",border:"1px solid rgba(138,154,170,0.15)" }}>
-            <div style={{ fontSize:"13px",fontWeight:700,color:T.wht,marginBottom:"8px" }}>{mkt.name} — {mkt.city}</div>
-            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"10px" }}>
-              <div><div style={{ color:T.txtM }}>Net Effective Rent</div><div style={{ color:T.wht,fontWeight:700,fontSize:"14px" }}>{"\u20AC"}{(d.ner||mkt.baseRent).toFixed(1)}/sqm</div></div>
-              <div><div style={{ color:T.txtM }}>QoQ Rental Growth</div><div style={{ color:(d.rentalGrowthQoQ||0)>0?T.grn:T.red,fontWeight:700,fontSize:"14px" }}>{(d.rentalGrowthQoQ||0)>=0?"+":""}{((d.rentalGrowthQoQ||0)*100).toFixed(2)}%</div></div>
-              <div><div style={{ color:T.txtM }}>Prime Cap Rate</div><div style={{ color:T.wht,fontWeight:700,fontSize:"14px" }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</div></div>
-              <div><div style={{ color:T.txtM }}>Market Vacancy</div><div style={{ color:(d.marketVacancy||0.07)>0.10?T.red:T.grn,fontWeight:700,fontSize:"14px" }}>{fmtP(d.marketVacancy||0.07)}</div></div>
+          <div style={{ ...S.card,background:"rgba(148,168,190,0.06)",border:"1px solid rgba(148,168,190,0.20)" }}>
+            <div style={{ fontSize:"14px",fontWeight:700,color:T.wht,marginBottom:"8px" }}>{mkt.name} — {mkt.city}</div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"11px" }}>
+              <div><div style={{ color:T.txtD }}>Net Effective Rent</div><div style={{ color:T.wht,fontWeight:700,fontSize:"15px" }}>{"\u20AC"}{(d.ner||mkt.baseRent).toFixed(1)}/sqm</div></div>
+              <div><div style={{ color:T.txtD }}>QoQ Rental Growth</div><div style={{ color:(d.rentalGrowthQoQ||0)>0?T.grn:T.red,fontWeight:700,fontSize:"15px" }}>{(d.rentalGrowthQoQ||0)>=0?"+":""}{((d.rentalGrowthQoQ||0)*100).toFixed(2)}%</div></div>
+              <div><div style={{ color:T.txtD }}>Prime Cap Rate</div><div style={{ color:T.wht,fontWeight:700,fontSize:"15px" }}>{(d.primeYield||mkt.capRate).toFixed(2)}%</div></div>
+              <div><div style={{ color:T.txtD }}>Market Vacancy</div><div style={{ color:(d.marketVacancy||0.07)>0.10?T.red:T.grn,fontWeight:700,fontSize:"15px" }}>{fmtP(d.marketVacancy||0.07)}</div></div>
             </div>
           </div>
         );
@@ -1391,43 +1361,43 @@ function FinancingPanel({ state, onDrawDebt, onRepayDebt }) {
   const esg = calcESG(state.portfolio||[]);
   return (
     <div>
-      <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Debt Financing</div>
-      <div style={{ ...S.card,background:"rgba(138,154,170,0.04)",border:"1px solid rgba(138,154,170,0.15)",marginBottom:"10px" }}>
-        <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",fontSize:"10px" }}>
-          <div><div style={{ color:T.txtM }}>Total Debt</div><div style={{ color:T.wht,fontWeight:800,fontSize:"14px" }}>{fmtM(totalDebt)}</div></div>
-          <div><div style={{ color:T.txtM }}>Portfolio LTV</div><div style={{ color:ltv>0.65?T.red:ltv>0.50?T.amb:T.grn,fontWeight:800,fontSize:"14px" }}>{fmtP(ltv)}</div></div>
-          <div><div style={{ color:T.txtM }}>Annual Interest</div><div style={{ color:T.red,fontWeight:800,fontSize:"14px" }}>{fmtM((state.debtDrawdowns||[]).reduce((a,d)=>a+d.amount*d.rate/100,0))}</div></div>
+      <div style={{ fontSize:"10px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Debt Financing</div>
+      <div style={{ ...S.card,background:"rgba(148,168,190,0.06)",border:"1px solid rgba(148,168,190,0.20)",marginBottom:"10px" }}>
+        <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",fontSize:"11px" }}>
+          <div><div style={{ color:T.txtD }}>Total Debt</div><div style={{ color:T.wht,fontWeight:800,fontSize:"15px" }}>{fmtM(totalDebt)}</div></div>
+          <div><div style={{ color:T.txtD }}>Portfolio LTV</div><div style={{ color:ltv>0.65?T.red:ltv>0.50?T.amb:T.grn,fontWeight:800,fontSize:"15px" }}>{fmtP(ltv)}</div></div>
+          <div><div style={{ color:T.txtD }}>Annual Interest</div><div style={{ color:T.red,fontWeight:800,fontSize:"15px" }}>{fmtM((state.debtDrawdowns||[]).reduce((a,d)=>a+d.amount*d.rate/100,0))}</div></div>
         </div>
         <div style={{ marginTop:"7px",height:"3px",background:T.bdr,borderRadius:"2px" }}><div style={{ height:"100%",width:Math.min(100,ltv*100)+"%",background:ltv>0.65?T.red:ltv>0.50?T.amb:T.grn,borderRadius:"2px",transition:"width 0.4s" }} /></div>
-        <div style={{ fontSize:"8px",color:T.txtM,marginTop:"2px" }}>Covenant limit: 70% LTV</div>
+        <div style={{ fontSize:"9px",color:T.txtM,marginTop:"2px" }}>Covenant limit: 70% LTV</div>
       </div>
       {(state.debtDrawdowns||[]).length > 0 && (
         <div style={{ marginBottom:"10px" }}>
-          <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"5px",textTransform:"uppercase" }}>Outstanding Facilities</div>
+          <div style={{ fontSize:"10px",color:T.txtD,fontWeight:600,marginBottom:"5px",textTransform:"uppercase" }}>Outstanding Facilities</div>
           {state.debtDrawdowns.map(d => { const dt = DEBT_TYPES.find(x => x.id === d.type) || DEBT_TYPES[0]; return (
             <div key={d.id} style={{ ...S.card,padding:"7px 10px",marginBottom:"5px",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-              <div><div style={{ fontSize:"10px",fontWeight:700,color:T.txt }}>{dt.name}</div><div style={{ fontSize:"9px",color:T.txtM }}>{fmtM(d.amount)} @ {d.rate.toFixed(2)}% p.a.</div></div>
+              <div><div style={{ fontSize:"11px",fontWeight:700,color:T.wht }}>{dt.name}</div><div style={{ fontSize:"10px",color:T.txtD }}>{fmtM(d.amount)} @ {d.rate.toFixed(2)}% p.a.</div></div>
               <button style={{ ...btnSt("red"),fontSize:"9px",padding:"3px 7px" }} onClick={() => onRepayDebt(d.id)}>Repay</button>
             </div>
           ); })}
         </div>
       )}
-      <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"6px",textTransform:"uppercase" }}>Available Facilities</div>
+      <div style={{ fontSize:"10px",color:T.txtD,fontWeight:600,marginBottom:"6px",textTransform:"uppercase" }}>Available Facilities</div>
       {DEBT_TYPES.map(dt => {
         const effectiveRate = dt.fixedRate ? dt.fixedRate : (BASE_RATE + dt.spread - spreadReduction);
         const maxDraw = Math.max(0, m.totalGAV * dt.ltv - totalDebt);
         const greenLocked = dt.id === "green" && esg < 65;
         return (
-          <div key={dt.id} onClick={() => !greenLocked && setSelDebt(selDebt===dt.id?null:dt.id)} style={{ ...S.card,marginBottom:"6px",cursor:greenLocked?"not-allowed":"pointer",opacity:greenLocked?0.5:1,border:"1px solid "+(selDebt===dt.id?T.acc:T.bdr),background:selDebt===dt.id?"rgba(138,154,170,0.06)":T.card }}>
+          <div key={dt.id} onClick={() => !greenLocked && setSelDebt(selDebt===dt.id?null:dt.id)} style={{ ...S.card,marginBottom:"6px",cursor:greenLocked?"not-allowed":"pointer",opacity:greenLocked?0.5:1,border:"1px solid "+(selDebt===dt.id?T.acc:T.bdr),background:selDebt===dt.id?"rgba(148,168,190,0.08)":T.card }}>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-              <div><div style={{ fontSize:"11px",fontWeight:700,color:T.wht }}>{dt.name}</div><div style={{ fontSize:"9px",color:T.txtD,marginTop:"1px" }}>{dt.desc}{greenLocked?" — requires ESG score >= 65":""}</div></div>
-              <div style={{ textAlign:"right" }}><div style={{ fontSize:"13px",fontWeight:800,color:T.hiAcc }}>{effectiveRate.toFixed(2)}%</div><div style={{ fontSize:"8px",color:T.txtM }}>LTV {(dt.ltv*100).toFixed(0)}% max</div></div>
+              <div><div style={{ fontSize:"12px",fontWeight:700,color:T.wht }}>{dt.name}</div><div style={{ fontSize:"10px",color:T.txtD,marginTop:"1px" }}>{dt.desc}{greenLocked?" — requires ESG score >= 65":""}</div></div>
+              <div style={{ textAlign:"right" }}><div style={{ fontSize:"14px",fontWeight:800,color:T.hiAcc }}>{effectiveRate.toFixed(2)}%</div><div style={{ fontSize:"9px",color:T.txtM }}>LTV {(dt.ltv*100).toFixed(0)}% max</div></div>
             </div>
             {selDebt === dt.id && (
-              <div style={{ marginTop:"8px",paddingTop:"8px",borderTop:"1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ fontSize:"9px",color:T.txtM,marginBottom:"4px" }}>Drawdown amount (max {fmtM(maxDraw)})</div>
+              <div style={{ marginTop:"8px",paddingTop:"8px",borderTop:"1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ fontSize:"10px",color:T.txtD,marginBottom:"4px" }}>Drawdown amount (max {fmtM(maxDraw)})</div>
                 <div style={{ display:"flex",gap:"5px",alignItems:"center" }}>
-                  <input type="number" placeholder="e.g. 50000000" value={drawAmt} onChange={e => setDrawAmt(e.target.value)} style={{ flex:1,padding:"5px 8px",background:"#06080a",border:"1px solid "+T.bdr,borderRadius:"3px",color:T.txt,fontSize:"10px",fontFamily:"inherit" }} />
+                  <input type="number" placeholder="e.g. 50000000" value={drawAmt} onChange={e => setDrawAmt(e.target.value)} style={{ flex:1,padding:"5px 8px",background:"#0a0e14",border:"1px solid "+T.bdr,borderRadius:"3px",color:T.wht,fontSize:"11px",fontFamily:"inherit" }} />
                   <button style={{ ...btnSt("green"),padding:"5px 10px" }} onClick={() => { const amt = Number(drawAmt); if (amt > 0 && amt <= maxDraw) { onDrawDebt(dt.id, amt, effectiveRate); setDrawAmt(""); setSelDebt(null); } }}>Drawdown</button>
                 </div>
               </div>
@@ -1466,122 +1436,23 @@ function StartScreen({ onStart }) {
     window.addEventListener("resize", onResize);
     const onMouseMove = (e) => { mouseRef.current = { x: e.clientX / w, y: e.clientY / h }; };
     window.addEventListener("mousemove", onMouseMove);
-
-    // Grid
     const gridSpacing = 60;
-    let gridOffset = 0;
-
-    // Trucks moving along routes
-    const trucks = Array.from({ length: 12 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 0.6,
-      size: 3 + Math.random() * 3, alpha: 0.15 + Math.random() * 0.2,
-    }));
-
-    // Warehouse nodes
-    const nodes = Array.from({ length: 14 }, () => ({
-      x: 80 + Math.random() * (w - 160), y: 80 + Math.random() * (h - 160),
-      size: 10 + Math.random() * 16, pulse: Math.random() * Math.PI * 2,
-    }));
-
-    // Connection lines between nodes
+    const trucks = Array.from({ length: 12 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 0.6, size: 3 + Math.random() * 3, alpha: 0.15 + Math.random() * 0.2 }));
+    const nodes = Array.from({ length: 14 }, () => ({ x: 80 + Math.random() * (w - 160), y: 80 + Math.random() * (h - 160), size: 10 + Math.random() * 16, pulse: Math.random() * Math.PI * 2 }));
     const connections = [];
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
-        if (Math.sqrt(dx*dx + dy*dy) < 400) connections.push([i, j]);
-      }
-    }
-
-    // Parcels flowing along connections
-    const parcels = connections.slice(0, 10).map((c, idx) => ({
-      conn: c, t: Math.random(), speed: 0.002 + Math.random() * 0.003,
-      dir: idx % 2 === 0 ? 1 : -1, size: 2 + Math.random() * 2,
-    }));
-
+    for (let i = 0; i < nodes.length; i++) { for (let j = i + 1; j < nodes.length; j++) { const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y; if (Math.sqrt(dx*dx + dy*dy) < 400) connections.push([i, j]); } }
+    const parcels = connections.slice(0, 10).map((c, idx) => ({ conn: c, t: Math.random(), speed: 0.002 + Math.random() * 0.003, dir: idx % 2 === 0 ? 1 : -1, size: 2 + Math.random() * 2 }));
     const draw = (time) => {
       ctx.clearRect(0, 0, w, h);
-
-      // Moving grid
-      gridOffset = (time * 0.008) % gridSpacing;
-      ctx.strokeStyle = "rgba(74, 138, 191, 0.04)";
-      ctx.lineWidth = 0.5;
-      for (let x = -gridSpacing + gridOffset; x < w + gridSpacing; x += gridSpacing) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-      }
-      for (let y = -gridSpacing + (gridOffset * 0.5); y < h + gridSpacing; y += gridSpacing) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-      }
-
-      // Connection routes (dashed)
-      connections.forEach(([i, j]) => {
-        const a = nodes[i], b = nodes[j];
-        ctx.save();
-        ctx.setLineDash([4, 8]);
-        ctx.strokeStyle = "rgba(74, 138, 191, 0.08)";
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        ctx.restore();
-      });
-
-      // Parcels flowing along routes
-      parcels.forEach(p => {
-        p.t += p.speed * p.dir;
-        if (p.t > 1) { p.t = 1; p.dir = -1; }
-        if (p.t < 0) { p.t = 0; p.dir = 1; }
-        const a = nodes[p.conn[0]], b = nodes[p.conn[1]];
-        const px = a.x + (b.x - a.x) * p.t;
-        const py = a.y + (b.y - a.y) * p.t;
-        ctx.fillStyle = "rgba(74, 138, 191, 0.35)";
-        ctx.fillRect(px - p.size/2, py - p.size/2, p.size, p.size);
-      });
-
-      // Warehouse nodes (pulsing with parallax)
+      const gridOffset = (time * 0.008) % gridSpacing;
+      ctx.strokeStyle = "rgba(74, 138, 191, 0.04)"; ctx.lineWidth = 0.5;
+      for (let x = -gridSpacing + gridOffset; x < w + gridSpacing; x += gridSpacing) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = -gridSpacing + (gridOffset * 0.5); y < h + gridSpacing; y += gridSpacing) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+      connections.forEach(([i, j]) => { const a = nodes[i], b = nodes[j]; ctx.save(); ctx.setLineDash([4, 8]); ctx.strokeStyle = "rgba(74, 138, 191, 0.08)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore(); });
+      parcels.forEach(p => { p.t += p.speed * p.dir; if (p.t > 1) { p.t = 1; p.dir = -1; } if (p.t < 0) { p.t = 0; p.dir = 1; } const a = nodes[p.conn[0]], b = nodes[p.conn[1]]; const px = a.x + (b.x - a.x) * p.t; const py = a.y + (b.y - a.y) * p.t; ctx.fillStyle = "rgba(74, 138, 191, 0.35)"; ctx.fillRect(px - p.size/2, py - p.size/2, p.size, p.size); });
       const mx = mouseRef.current.x, my = mouseRef.current.y;
-      nodes.forEach(n => {
-        n.pulse += 0.015;
-        const pulseR = n.size + Math.sin(n.pulse) * 4;
-        const depth = 0.5 + (n.size / 26) * 0.5;
-        const px = n.x + (mx - 0.5) * 30 * depth;
-        const py = n.y + (my - 0.5) * 20 * depth;
-        // Outer glow
-        ctx.beginPath(); ctx.arc(px, py, pulseR + 8, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(90, 154, 106, 0.03)"; ctx.fill();
-        // Building shape
-        ctx.fillStyle = "rgba(90, 154, 106, 0.07)";
-        ctx.fillRect(px - n.size * 0.7, py - n.size * 0.4, n.size * 1.4, n.size * 0.8);
-        // Roof
-        ctx.beginPath();
-        ctx.moveTo(px - n.size * 0.8, py - n.size * 0.4);
-        ctx.lineTo(px, py - n.size * 0.7);
-        ctx.lineTo(px + n.size * 0.8, py - n.size * 0.4);
-        ctx.fillStyle = "rgba(90, 154, 106, 0.10)"; ctx.fill();
-        // Dock doors
-        const doors = Math.max(2, Math.floor(n.size / 6));
-        const dw = (n.size * 1.2) / doors;
-        for (let d = 0; d < doors; d++) {
-          ctx.fillStyle = "rgba(90, 154, 106, 0.12)";
-          ctx.fillRect(px - n.size * 0.55 + d * dw, py + n.size * 0.1, dw * 0.7, n.size * 0.3);
-        }
-      });
-
-      // Trucks
-      trucks.forEach(t => {
-        t.x += t.vx; t.y += t.vy;
-        if (t.x < -20) t.x = w + 20; if (t.x > w + 20) t.x = -20;
-        if (t.y < -20) t.y = h + 20; if (t.y > h + 20) t.y = -20;
-        ctx.save();
-        ctx.translate(t.x, t.y);
-        ctx.rotate(Math.atan2(t.vy, t.vx));
-        // Cab
-        ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha})`;
-        ctx.fillRect(-t.size * 0.4, -t.size * 0.3, t.size * 0.5, t.size * 0.6);
-        // Trailer
-        ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha * 0.7})`;
-        ctx.fillRect(-t.size * 1.5, -t.size * 0.35, t.size * 1.1, t.size * 0.7);
-        ctx.restore();
-      });
-
+      nodes.forEach(n => { n.pulse += 0.015; const pulseR = n.size + Math.sin(n.pulse) * 4; const depth = 0.5 + (n.size / 26) * 0.5; const px = n.x + (mx - 0.5) * 30 * depth; const py = n.y + (my - 0.5) * 20 * depth; ctx.beginPath(); ctx.arc(px, py, pulseR + 8, 0, Math.PI * 2); ctx.fillStyle = "rgba(90, 154, 106, 0.03)"; ctx.fill(); ctx.fillStyle = "rgba(90, 154, 106, 0.07)"; ctx.fillRect(px - n.size * 0.7, py - n.size * 0.4, n.size * 1.4, n.size * 0.8); ctx.beginPath(); ctx.moveTo(px - n.size * 0.8, py - n.size * 0.4); ctx.lineTo(px, py - n.size * 0.7); ctx.lineTo(px + n.size * 0.8, py - n.size * 0.4); ctx.fillStyle = "rgba(90, 154, 106, 0.10)"; ctx.fill(); const doors = Math.max(2, Math.floor(n.size / 6)); const dw = (n.size * 1.2) / doors; for (let d = 0; d < doors; d++) { ctx.fillStyle = "rgba(90, 154, 106, 0.12)"; ctx.fillRect(px - n.size * 0.55 + d * dw, py + n.size * 0.1, dw * 0.7, n.size * 0.3); } });
+      trucks.forEach(t => { t.x += t.vx; t.y += t.vy; if (t.x < -20) t.x = w + 20; if (t.x > w + 20) t.x = -20; if (t.y < -20) t.y = h + 20; if (t.y > h + 20) t.y = -20; ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(Math.atan2(t.vy, t.vx)); ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha})`; ctx.fillRect(-t.size * 0.4, -t.size * 0.3, t.size * 0.5, t.size * 0.6); ctx.fillStyle = `rgba(74, 138, 191, ${t.alpha * 0.7})`; ctx.fillRect(-t.size * 1.5, -t.size * 0.35, t.size * 1.1, t.size * 0.7); ctx.restore(); });
       animRef.current = requestAnimationFrame(draw);
     };
     animRef.current = requestAnimationFrame(draw);
@@ -1591,22 +1462,20 @@ function StartScreen({ onStart }) {
   const wrap = { minHeight:"100vh",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif",color:T.txt,padding:"20px",position:"relative",overflow:"hidden" };
   const cont = { maxWidth:"540px",width:"100%",position:"relative",zIndex:2 };
   const opt = (sel) => ({ padding:"11px 12px",background:sel?T.accD:T.card,border:"1px solid "+(sel?T.acc:T.bdr),borderRadius:"4px",cursor:"pointer",marginBottom:"6px" });
-  const mktSt = (sel) => ({ padding:"9px 10px",background:sel?T.accD:T.card,border:"1px solid "+(sel?T.acc:T.bdr),borderRadius:"4px",cursor:"pointer",textAlign:"center" });
 
   function MktTile({ m, sel, onToggle }) {
     const [hov, setHov] = useState(false);
-    const ref = useRef(null);
     return (
-      <div ref={ref} style={{ padding:"9px 10px", background:sel?T.accD:hov?"rgba(138,154,170,0.06)":T.card, border:"1px solid "+(sel?T.acc:hov?"rgba(138,154,170,0.25)":T.bdr), borderRadius:"4px", cursor:"pointer", textAlign:"center", position:"relative", transition:"all 0.2s ease", boxShadow:hov&&!sel?"0 0 12px rgba(138,154,170,0.08)":"none", transform:hov?"translateY(-1px)":"translateY(0)" }} onClick={onToggle} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-        <div style={{ fontSize:"11px",fontWeight:600,color:sel?T.hiAcc:hov?T.wht:T.txt }}>{m.name}</div>
-        <div style={{ fontSize:"9px",color:T.txtD }}>Cap {m.capRate}% · {"\u20AC"}{m.baseRent}/sqm</div>
+      <div style={{ padding:"9px 10px", background:sel?T.accD:hov?"rgba(148,168,190,0.08)":T.card, border:"1px solid "+(sel?T.acc:hov?"rgba(148,168,190,0.30)":T.bdr), borderRadius:"4px", cursor:"pointer", textAlign:"center", position:"relative", transition:"all 0.2s ease", boxShadow:hov&&!sel?"0 0 12px rgba(148,168,190,0.10)":"none", transform:hov?"translateY(-1px)":"translateY(0)" }} onClick={onToggle} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+        <div style={{ fontSize:"12px",fontWeight:600,color:sel?T.hiAcc:hov?T.wht:T.txt }}>{m.name}</div>
+        <div style={{ fontSize:"10px",color:T.txtD }}>Cap {m.capRate}% · {"\u20AC"}{m.baseRent}/sqm</div>
         {hov && (
-          <div style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#181c24", border:"1px solid #2a2e38", borderRadius:"4px", padding:"8px 10px", fontSize:"9px", color:T.txt, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 4px 16px rgba(0,0,0,0.7)", lineHeight:1.6, pointerEvents:"none", textAlign:"left" }}>
+          <div style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#222838", border:"1px solid #3a4050", borderRadius:"4px", padding:"8px 10px", fontSize:"10px", color:T.txt, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 4px 16px rgba(0,0,0,0.7)", lineHeight:1.6, pointerEvents:"none", textAlign:"left" }}>
             <div style={{ fontWeight:700, color:T.wht, marginBottom:"2px" }}>{m.name} — {m.city}</div>
             <div>Base rent: <span style={{ color:T.hiAcc, fontWeight:700 }}>{"\u20AC"}{m.baseRent}/sqm</span></div>
             <div>Prime yield: <span style={{ color:T.hiAcc, fontWeight:700 }}>{m.capRate}%</span></div>
             <div>Demand index: <span style={{ color:m.demand>0.8?T.grn:m.demand>0.7?T.amb:T.red, fontWeight:700 }}>{Math.round(m.demand*100)}/100</span></div>
-            <div style={{ position:"absolute", top:"100%", left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"5px solid #2a2e38" }} />
+            <div style={{ position:"absolute", top:"100%", left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"5px solid #3a4050" }} />
           </div>
         )}
       </div>
@@ -1621,33 +1490,31 @@ function StartScreen({ onStart }) {
       <div style={{ position:"absolute",inset:0,zIndex:1,background:"radial-gradient(ellipse at center, rgba(12,14,18,0.4) 0%, rgba(12,14,18,0.85) 70%, rgba(12,14,18,0.97) 100%)",pointerEvents:"none" }} />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>{`
-        .logi-card:hover { transform: translateY(-2px); border-color: rgba(138,154,170,0.35) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .logi-card:hover { transform: translateY(-2px); border-color: rgba(148,168,190,0.40) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
         .logi-modal { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .logi-occ-bar { animation: occGrow 0.6s cubic-bezier(0.4,0,0.2,1) forwards; }
         @keyframes occGrow { from { width: 0%; } }
-        @keyframes gradeC_pulse { 0%,100%{ box-shadow: 0 0 0px rgba(160,64,64,0); } 50%{ box-shadow: 0 0 6px rgba(160,64,64,0.5); } }
+        @keyframes gradeC_pulse { 0%,100%{ box-shadow: 0 0 0px rgba(208,96,96,0); } 50%{ box-shadow: 0 0 6px rgba(208,96,96,0.5); } }
       `}</style>
       <div style={cont}>
         <div style={{ textAlign:"center",marginBottom:"36px" }}>
-          <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:"10px",marginBottom:"4px" }}><div style={{ position:"relative" }}><Logo size={36} /><span style={{ position:"absolute",inset:0,background:"linear-gradient(90deg, transparent 0%, rgba(138,154,170,0.15) 50%, transparent 100%)",backgroundSize:"200% 100%",animation:"titleSweep 3s ease-in-out infinite",pointerEvents:"none",mixBlendMode:"screen",opacity:0.5,borderRadius:"4px" }} /></div></div>
-          <div style={{ fontSize:"10px",color:T.txtD,letterSpacing:"0.12em",textTransform:"uppercase" }}>European Logistics Real Estate Simulator</div>
-          <style>{`
-            @keyframes titleSweep { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-          `}</style>
+          <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:"10px",marginBottom:"4px" }}><div style={{ position:"relative" }}><Logo size={36} /><span style={{ position:"absolute",inset:0,background:"linear-gradient(90deg, transparent 0%, rgba(148,168,190,0.15) 50%, transparent 100%)",backgroundSize:"200% 100%",animation:"titleSweep 3s ease-in-out infinite",pointerEvents:"none",mixBlendMode:"screen",opacity:0.5,borderRadius:"4px" }} /></div></div>
+          <div style={{ fontSize:"11px",color:T.txtD,letterSpacing:"0.12em",textTransform:"uppercase" }}>European Logistics Real Estate Simulator</div>
+          <style>{`@keyframes titleSweep { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
         </div>
         {saved && step === 0 && (
           <div style={{ marginBottom:"16px" }}>
             <div style={{ ...opt(false),background:T.grnD,border:"1px solid "+T.grn,cursor:"pointer",textAlign:"center" }} onClick={() => onStart("__load__")}>
-              <div style={{ fontSize:"13px",fontWeight:700,color:T.grn,marginBottom:"2px" }}>Continue: {saved.companyName}</div>
-              <div style={{ fontSize:"10px",color:T.txtD }}>{getQL(saved.quarter,saved.year)} · {saved.portfolio?.length||0} assets · {fmtM(saved.cash)}</div>
+              <div style={{ fontSize:"14px",fontWeight:700,color:T.grn,marginBottom:"2px" }}>Continue: {saved.companyName}</div>
+              <div style={{ fontSize:"11px",color:T.txtD }}>{getQL(saved.quarter,saved.year)} · {saved.portfolio?.length||0} assets · {fmtM(saved.cash)}</div>
             </div>
-            <div style={{ textAlign:"center",fontSize:"9px",color:T.txtM,margin:"10px 0 4px",letterSpacing:"0.08em",textTransform:"uppercase" }}>— or start fresh —</div>
+            <div style={{ textAlign:"center",fontSize:"10px",color:T.txtM,margin:"10px 0 4px",letterSpacing:"0.08em",textTransform:"uppercase" }}>— or start fresh —</div>
           </div>
         )}
         <div style={{ display:"flex",gap:"5px",justifyContent:"center",marginBottom:"20px" }}>{[0,1,2].map(i => <div key={i} style={{ width:"7px",height:"7px",borderRadius:"50%",background:step>=i?T.acc:T.bdr }} />)}</div>
-        {step === 0 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 1 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Name your platform</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"16px",lineHeight:1.5 }}>You are the CEO of a European logistics real estate platform. Empty buildings cost money — rates, insurance, service charge.</div><input style={{ width:"100%",padding:"11px 12px",background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",color:T.wht,fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box" }} placeholder="e.g. Apex Logistics" value={cn} onChange={e => setCn(e.target.value)} onKeyDown={e => e.key==="Enter"&&ok&&next()} autoFocus /></div>)}
-        {step === 1 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 2 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Capital and mode</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"14px" }}>How much equity?</div>{CAPS.map(o => <div key={o.v} style={opt(cap===o.v)} onClick={() => setCap(o.v)}><div style={{ fontSize:"13px",fontWeight:600,color:cap===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"10px",color:T.txtD }}>{o.d}</div></div>)}<div style={{ marginTop:"10px" }}>{DIFFS.map(o => <div key={o.v} style={opt(diff===o.v)} onClick={() => setDiff(o.v)}><div style={{ fontSize:"13px",fontWeight:600,color:diff===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"10px",color:T.txtD }}>{o.d}</div></div>)}</div></div>)}
-        {step === 2 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 3 of 3</div><div style={{ fontSize:"16px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Starting markets</div><div style={{ fontSize:"12px",color:T.txtD,marginBottom:"12px" }}>Pick up to 4.</div><div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px" }}>{MARKETS.map(m => (<MktTile key={m.id} m={m} sel={sm.includes(m.id)} onToggle={() => toggle(m.id)} />))}</div><div style={{ fontSize:"9px",color:T.txtM,marginTop:"5px",textAlign:"center" }}>{sm.length}/4 selected</div></div>)}
+        {step === 0 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 1 of 3</div><div style={{ fontSize:"17px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Name your platform</div><div style={{ fontSize:"13px",color:T.txtD,marginBottom:"16px",lineHeight:1.5 }}>You are the CEO of a European logistics real estate platform. Empty buildings cost money — rates, insurance, service charge.</div><input style={{ width:"100%",padding:"11px 12px",background:T.card,border:"1px solid "+T.bdr,borderRadius:"4px",color:T.wht,fontSize:"14px",fontFamily:"inherit",outline:"none",boxSizing:"border-box" }} placeholder="e.g. Apex Logistics" value={cn} onChange={e => setCn(e.target.value)} onKeyDown={e => e.key==="Enter"&&ok&&next()} autoFocus /></div>)}
+        {step === 1 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 2 of 3</div><div style={{ fontSize:"17px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Capital and mode</div><div style={{ fontSize:"13px",color:T.txtD,marginBottom:"14px" }}>How much equity?</div>{CAPS.map(o => <div key={o.v} style={opt(cap===o.v)} onClick={() => setCap(o.v)}><div style={{ fontSize:"14px",fontWeight:600,color:cap===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"11px",color:T.txtD }}>{o.d}</div></div>)}<div style={{ marginTop:"10px" }}>{DIFFS.map(o => <div key={o.v} style={opt(diff===o.v)} onClick={() => setDiff(o.v)}><div style={{ fontSize:"14px",fontWeight:600,color:diff===o.v?T.hiAcc:T.wht }}>{o.l}</div><div style={{ fontSize:"11px",color:T.txtD }}>{o.d}</div></div>)}</div></div>)}
+        {step === 2 && (<div style={{ opacity:stepAnim?0:1, transform:stepAnim?"translateY(12px)":"translateY(0)", transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)" }}><div style={{ fontSize:"10px",color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"5px" }}>Step 3 of 3</div><div style={{ fontSize:"17px",fontWeight:700,color:T.wht,marginBottom:"3px" }}>Starting markets</div><div style={{ fontSize:"13px",color:T.txtD,marginBottom:"12px" }}>Pick up to 4.</div><div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"6px" }}>{MARKETS.map(m => (<MktTile key={m.id} m={m} sel={sm.includes(m.id)} onToggle={() => toggle(m.id)} />))}</div><div style={{ fontSize:"10px",color:T.txtM,marginTop:"5px",textAlign:"center" }}>{sm.length}/4 selected</div></div>)}
         <div style={{ display:"flex",gap:"6px",marginTop:"24px" }}>
           {step > 0 && <button style={{ padding:"11px 16px",background:"transparent",color:T.txtD,border:"1px solid "+T.bdr,borderRadius:"4px",cursor:"pointer",fontSize:"11px",fontWeight:600,fontFamily:"inherit" }} onClick={() => setStep(step-1)}>Back</button>}
           <button style={nxtSt(ok)} onClick={() => ok && next()}>{step < 2 ? "Continue" : "Launch Simulator"}</button>
@@ -1708,6 +1575,12 @@ export default function LogisticsRESimulator() {
   const irr = calcIRR(state.initialCash||state.cash, m.totalGAV, state.cash, state.quarter);
   const noiNegative = m.noi < 0;
 
+  /* P&L label + value style helpers — BIGGER & BRIGHTER */
+  const plLabel = { fontSize:"12px",color:"#c8d0dc",fontWeight:600 };
+  const plSub = { fontSize:"10px",color:T.txtD };
+  const plVal = (color) => ({ fontSize:"13px",fontWeight:700,color: color || T.wht });
+  const plValBig = (color) => ({ fontSize:"14px",fontWeight:800,color: color || T.wht });
+
   return (
     <div style={S.app}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -1722,30 +1595,30 @@ export default function LogisticsRESimulator() {
         const deltaStr = (v, fmt) => (v >= 0 ? "+" : "") + fmt(v);
         return (
           <div className="logi-modal" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.70)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter', sans-serif" }}>
-            <div style={{ background:"#0a0c10",border:"1px solid #2a2e38",borderRadius:"4px",padding:"24px",maxWidth:"480px",width:"92%",boxShadow:"0 8px 40px rgba(0,0,0,0.6)" }}>
+            <div style={{ background:"#0e1218",border:"1px solid "+T.bdr,borderRadius:"4px",padding:"24px",maxWidth:"480px",width:"92%",boxShadow:"0 8px 40px rgba(0,0,0,0.6)" }}>
               <div style={{ textAlign:"center",marginBottom:"16px" }}>
-                <div style={{ fontSize:"10px",color:T.hiAcc,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px" }}>Quarter Complete</div>
+                <div style={{ fontSize:"11px",color:T.hiAcc,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"4px" }}>Quarter Complete</div>
                 <div style={{ fontSize:"24px",fontWeight:900,color:T.wht }}>{q.quarter}</div>
               </div>
-              <div style={{ background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"4px",padding:"12px",marginBottom:"12px" }}>
-                <div style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Quarterly Cash Flow</div>
-                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Rental income</span><span style={{ fontSize:"10px",fontWeight:700,color:T.grn }}>{fmtK(q.rent)}</span></div>
-                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Property costs</span><span style={{ fontSize:"10px",fontWeight:700,color:T.red }}>({fmtK(q.propCosts)})</span></div>
-                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Team G&A</span><span style={{ fontSize:"10px",fontWeight:700,color:T.red }}>({fmtK(q.ga)})</span></div>
-                {q.debtInt > 0 && <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"10px",color:T.txtD }}>Debt interest</span><span style={{ fontSize:"10px",fontWeight:700,color:T.red }}>({fmtK(q.debtInt)})</span></div>}
-                <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"5px",marginTop:"5px" }}><span style={{ fontSize:"11px",fontWeight:800,color:T.wht }}>Net Cash Flow</span><span style={{ fontSize:"13px",fontWeight:900,color:q.netCashFlow >= 0 ? T.grn : "#c04040" }}>{q.netCashFlow >= 0 ? "+" : ""}{fmtK(q.netCashFlow)}</span></div>
+              <div style={{ background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",borderRadius:"4px",padding:"12px",marginBottom:"12px" }}>
+                <div style={{ fontSize:"10px",fontWeight:700,color:T.txtD,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"8px" }}>Quarterly Cash Flow</div>
+                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"11px",color:T.txtD }}>Rental income</span><span style={{ fontSize:"12px",fontWeight:700,color:T.grn }}>{fmtK(q.rent)}</span></div>
+                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"11px",color:T.txtD }}>Property costs</span><span style={{ fontSize:"12px",fontWeight:700,color:T.red }}>({fmtK(q.propCosts)})</span></div>
+                <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"11px",color:T.txtD }}>Team G&A</span><span style={{ fontSize:"12px",fontWeight:700,color:T.red }}>({fmtK(q.ga)})</span></div>
+                {q.debtInt > 0 && <div style={{ display:"flex",justifyContent:"space-between",marginBottom:"3px" }}><span style={{ fontSize:"11px",color:T.txtD }}>Debt interest</span><span style={{ fontSize:"12px",fontWeight:700,color:T.red }}>({fmtK(q.debtInt)})</span></div>}
+                <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"5px",marginTop:"5px" }}><span style={{ fontSize:"12px",fontWeight:800,color:T.wht }}>Net Cash Flow</span><span style={{ fontSize:"14px",fontWeight:900,color:q.netCashFlow >= 0 ? T.grn : "#d06060" }}>{q.netCashFlow >= 0 ? "+" : ""}{fmtK(q.netCashFlow)}</span></div>
               </div>
               <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginBottom:"12px" }}>
-                {[{l:"GAV",v:fmtM(q.gavAfter),d:deltaStr(gavDelta, fmtM),dc:deltaCol(gavDelta)},{l:"Occupancy",v:fmtP(q.occAfter),d:(occDelta>=0?"+":"")+(occDelta*100).toFixed(1)+"pp",dc:deltaCol(occDelta),vc:q.occAfter>0.85?T.grn:q.occAfter>0.6?T.amb:T.red},{l:"NOI p.a.",v:fmtM(q.noiAfter),d:deltaStr(noiDelta, fmtM),dc:deltaCol(noiDelta),vc:q.noiAfter<0?"#c04040":T.grn}].map((x,i)=>(
-                  <div key={i} style={{ background:"rgba(255,255,255,0.02)",borderRadius:"4px",padding:"8px",textAlign:"center" }}>
-                    <div style={{ fontSize:"9px",color:T.txtM,fontWeight:600,marginBottom:"2px" }}>{x.l}</div>
-                    <div style={{ fontSize:"14px",fontWeight:800,color:x.vc||T.wht }}>{x.v}</div>
-                    <div style={{ fontSize:"10px",fontWeight:700,color:x.dc }}>{x.d}</div>
+                {[{l:"GAV",v:fmtM(q.gavAfter),d:deltaStr(gavDelta, fmtM),dc:deltaCol(gavDelta)},{l:"Occupancy",v:fmtP(q.occAfter),d:(occDelta>=0?"+":"")+(occDelta*100).toFixed(1)+"pp",dc:deltaCol(occDelta),vc:q.occAfter>0.85?T.grn:q.occAfter>0.6?T.amb:T.red},{l:"NOI p.a.",v:fmtM(q.noiAfter),d:deltaStr(noiDelta, fmtM),dc:deltaCol(noiDelta),vc:q.noiAfter<0?"#d06060":T.grn}].map((x,i)=>(
+                  <div key={i} style={{ background:"rgba(255,255,255,0.03)",borderRadius:"4px",padding:"8px",textAlign:"center" }}>
+                    <div style={{ fontSize:"10px",color:T.txtD,fontWeight:600,marginBottom:"2px" }}>{x.l}</div>
+                    <div style={{ fontSize:"15px",fontWeight:800,color:x.vc||T.wht }}>{x.v}</div>
+                    <div style={{ fontSize:"11px",fontWeight:700,color:x.dc }}>{x.d}</div>
                   </div>
                 ))}
               </div>
-              {q.issues > 0 && <div style={{ background:"rgba(160,64,64,0.06)",border:"1px solid rgba(160,64,64,0.2)",borderRadius:"4px",padding:"8px 10px",marginBottom:"12px",fontSize:"10px",color:T.red }}>{q.issues} asset{q.issues > 1 ? "s" : ""} with unresolved issues</div>}
-              {q.newEvents.length > 0 && <div style={{ maxHeight:"100px",overflowY:"auto",marginBottom:"12px" }}>{q.newEvents.slice(0, 6).map((e, i) => (<div key={i} style={{ fontSize:"10px",color:T.txtD,lineHeight:1.6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{e}</div>))}{q.newEvents.length > 6 && <div style={{ fontSize:"9px",color:T.txtM }}>+{q.newEvents.length - 6} more</div>}</div>}
+              {q.issues > 0 && <div style={{ background:"rgba(208,96,96,0.08)",border:"1px solid rgba(208,96,96,0.25)",borderRadius:"4px",padding:"8px 10px",marginBottom:"12px",fontSize:"11px",color:T.red }}>{q.issues} asset{q.issues > 1 ? "s" : ""} with unresolved issues</div>}
+              {q.newEvents.length > 0 && <div style={{ maxHeight:"100px",overflowY:"auto",marginBottom:"12px" }}>{q.newEvents.slice(0, 6).map((e, i) => (<div key={i} style={{ fontSize:"11px",color:T.txtD,lineHeight:1.6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{e}</div>))}{q.newEvents.length > 6 && <div style={{ fontSize:"10px",color:T.txtM }}>+{q.newEvents.length - 6} more</div>}</div>}
               <button onClick={() => setQtrModal(null)} style={{ width:"100%",padding:"10px",background:T.accD,color:T.wht,border:"1px solid "+T.acc,borderRadius:"4px",cursor:"pointer",fontSize:"12px",fontWeight:700,fontFamily:"inherit",letterSpacing:"0.04em" }}>Continue</button>
             </div>
           </div>
@@ -1753,30 +1626,30 @@ export default function LogisticsRESimulator() {
       })()}
 
       {(() => {
-        const healthCol = m.noi < 0 ? "#a04040" : m.avgOcc > 0.85 ? "#5a9a6a" : m.avgOcc > 0.6 ? "#6a8a9a" : "#a08840";
+        const healthCol = m.noi < 0 ? "#d06060" : m.avgOcc > 0.85 ? "#6abd7a" : m.avgOcc > 0.6 ? T.amb : "#c0a850";
         return (
           <div style={{ position:"relative" }}>
             <div style={S.hdr}>
-        <div style={S.logo}><div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht,letterSpacing:"0.05em",position:"relative",paddingBottom:"3px" }}>{state.companyName.toUpperCase()}<span style={{ position:"absolute",bottom:0,left:0,right:0,height:"1.5px",background:`linear-gradient(90deg, ${m.noi < 0 ? "#a04040" : m.avgOcc > 0.85 ? "#5a9a6a" : "#6a8a9a"}90, transparent)`,borderRadius:"1px" }} /></div><div style={{ marginTop:"2px" }}><Logo size={16} /></div></div></div>
-        <NewsFeed items={state.newsLog || []} />
-        <div style={{ display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0 }}>
-          <div style={{ padding:"5px 12px",background:T.grnD,border:"1px solid rgba(90,154,106,0.3)",borderRadius:"4px" }}><div style={{ fontSize:"9px",color:T.grn,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>CASH</div><div style={{ fontSize:"17px",fontWeight:800,color:T.grn }}>{fmtM(state.cash)}</div></div>
-          <div style={{ padding:"5px 12px",background:T.accD,border:"1px solid rgba(138,154,170,0.3)",borderRadius:"4px" }}><div style={{ fontSize:"9px",color:T.hiAcc,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>PERIOD</div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht }}>{ql}</div></div>
-          <button style={{ padding:"9px 18px",background:"#2a1010",color:"#c04040",border:"1px solid #5a2020",borderRadius:"4px",cursor:"pointer",fontSize:"11px",fontWeight:800,fontFamily:"inherit",letterSpacing:"0.05em",textTransform:"uppercase" }} onClick={onAdvance}>Next Quarter</button>
-          <button style={{ ...btnSt("green"),padding:"5px 9px",fontSize:"9px" }} onClick={onSave}>{saved ? "Saved" : "Save"}</button>
-          <button style={{ ...btnSt("default"),padding:"5px 9px",fontSize:"9px" }} onClick={onReset}>Reset</button>
-        </div>
-      </div>
+              <div style={S.logo}><div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht,letterSpacing:"0.05em",position:"relative",paddingBottom:"3px" }}>{state.companyName.toUpperCase()}<span style={{ position:"absolute",bottom:0,left:0,right:0,height:"1.5px",background:`linear-gradient(90deg, ${healthCol}90, transparent)`,borderRadius:"1px" }} /></div><div style={{ marginTop:"2px" }}><Logo size={16} /></div></div></div>
+              <NewsFeed items={state.newsLog || []} />
+              <div style={{ display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0 }}>
+                <div style={{ padding:"5px 12px",background:T.grnD,border:"1px solid rgba(106,189,122,0.35)",borderRadius:"4px" }}><div style={{ fontSize:"9px",color:T.grn,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>CASH</div><div style={{ fontSize:"17px",fontWeight:800,color:T.grn }}>{fmtM(state.cash)}</div></div>
+                <div style={{ padding:"5px 12px",background:T.accD,border:"1px solid rgba(148,168,190,0.35)",borderRadius:"4px" }}><div style={{ fontSize:"9px",color:T.hiAcc,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>PERIOD</div><div style={{ fontSize:"15px",fontWeight:800,color:T.wht }}>{ql}</div></div>
+                <button style={{ padding:"9px 18px",background:"#2e1414",color:"#e06060",border:"1px solid #6a2828",borderRadius:"4px",cursor:"pointer",fontSize:"11px",fontWeight:800,fontFamily:"inherit",letterSpacing:"0.05em",textTransform:"uppercase" }} onClick={onAdvance}>Next Quarter</button>
+                <button style={{ ...btnSt("green"),padding:"5px 9px",fontSize:"9px" }} onClick={onSave}>{saved ? "Saved" : "Save"}</button>
+                <button style={{ ...btnSt("default"),padding:"5px 9px",fontSize:"9px" }} onClick={onReset}>Reset</button>
+              </div>
+            </div>
             <div style={{ position:"absolute",bottom:0,left:0,right:0,height:"2px",background:`linear-gradient(90deg, transparent 0%, ${healthCol}40 20%, ${healthCol}80 50%, ${healthCol}40 80%, transparent 100%)` }} />
           </div>
         );
       })()}
 
       {noiNegative && (
-        <div style={{ background:"#1a0808",padding:"8px 18px",display:"flex",alignItems:"center",gap:"10px",borderBottom:"1px solid #5a2020" }}>
+        <div style={{ background:"#221010",padding:"8px 18px",display:"flex",alignItems:"center",gap:"10px",borderBottom:"1px solid #6a2828" }}>
           <div style={{ flex:1 }}>
-            <div style={{ fontSize:"11px",fontWeight:800,color:"#c04040",letterSpacing:"0.05em" }}>NOI IS NEGATIVE: {fmtM(m.noi)} p.a.</div>
-            <div style={{ fontSize:"9px",color:"#8a4040" }}>Property costs ({fmtM(m.totalPropCosts)}) + G&A exceed rental income. Void costs: {fmtM(m.totalVoidCost)} p.a.</div>
+            <div style={{ fontSize:"12px",fontWeight:800,color:"#e06060",letterSpacing:"0.05em" }}>NOI IS NEGATIVE: {fmtM(m.noi)} p.a.</div>
+            <div style={{ fontSize:"10px",color:"#b05050" }}>Property costs ({fmtM(m.totalPropCosts)}) + G&A exceed rental income. Void costs: {fmtM(m.totalVoidCost)} p.a.</div>
           </div>
         </div>
       )}
@@ -1787,8 +1660,8 @@ export default function LogisticsRESimulator() {
         <MetricCell label="Total GLA" value={(m.totalGLA/1000).toFixed(0)+"k sqm"} />
         <MetricCell label="Avg Occupancy" value={fmtP(m.avgOcc)} color={m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red} sparkData={state.history.map(h=>h.avgOcc)} sparkColor={m.avgOcc>0.85?T.grn:T.amb} />
         <MetricCell label="GRI p.a." value={fmtM(m.totalGRI)} sparkData={state.history.map(h=>h.totalGRI)} sparkColor={T.grn} />
-        <MetricCell label="NOI p.a." value={fmtM(m.noi)} color={m.noi < 0 ? "#c04040" : T.grn} sparkData={state.history.map(h=>h.noi)} sparkColor={m.noi<0?T.red:T.grn} />
-        <MetricCell label="NOI Yield" value={fmtP(m.noiYield)} color={m.noiYield < 0 ? "#c04040" : undefined} sparkData={state.history.map(h=>h.noiYield)} sparkColor={m.noiYield<0?T.red:T.acc} />
+        <MetricCell label="NOI p.a." value={fmtM(m.noi)} color={m.noi < 0 ? "#e06060" : T.grn} sparkData={state.history.map(h=>h.noi)} sparkColor={m.noi<0?T.red:T.grn} />
+        <MetricCell label="NOI Yield" value={fmtP(m.noiYield)} color={m.noiYield < 0 ? "#e06060" : undefined} sparkData={state.history.map(h=>h.noiYield)} sparkColor={m.noiYield<0?T.red:T.acc} />
         <MetricCell label="Avg WALT" value={m.avgWALT.toFixed(1)+"yr"} sparkData={state.history.map(h=>h.avgWALT)} sparkColor={T.amb} />
       </div>
 
@@ -1796,11 +1669,11 @@ export default function LogisticsRESimulator() {
         <div style={S.lp}>
           <div style={S.tabs}>
             {[
-              {id:"portfolio",label:"Portfolio ("+state.portfolio.length+")",accent:"#8a9aaa"},
-              {id:"acquire",label:"Acquire ("+state.acquisitions.length+")",accent:"#5a9a6a"},
-              {id:"develop",label:"Develop ("+state.devSites.length+")",accent:"#6a8a9a"},
-              {id:"team",label:"Team",accent:"#a08840"},
-              {id:"markets",label:"Markets",accent:"#7a8abf"}
+              {id:"portfolio",label:"Portfolio ("+state.portfolio.length+")",accent:T.hiAcc},
+              {id:"acquire",label:"Acquire ("+state.acquisitions.length+")",accent:T.grn},
+              {id:"develop",label:"Develop ("+state.devSites.length+")",accent:T.amb},
+              {id:"team",label:"Team",accent:"#c0a850"},
+              {id:"markets",label:"Markets",accent:"#8a9acf"}
             ].map(t => (
               <button key={t.id} style={tabSt(tab===t.id, t.accent)} onClick={() => setTab(t.id)}>
                 {t.label}
@@ -1811,21 +1684,22 @@ export default function LogisticsRESimulator() {
           {tab === "portfolio" && (
             <>
               <div style={{ display:"flex",gap:"10px",marginBottom:"10px",alignItems:"stretch" }}>
-                <div style={{ flex:1,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",borderRadius:"4px",padding:"12px 14px",display:"flex",flexDirection:"column",justifyContent:"center",gap:"8px" }}>
-                  <div style={{ fontSize:"10px",fontWeight:800,color:T.wht,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"4px" }}>Portfolio P&L</div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Gross Rental Income</span><span style={{ fontSize:"11px",fontWeight:700,color:T.grn }}>{fmtM(m.totalGRI)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Property Opex (irrecoverable)</span><span style={{ fontSize:"11px",fontWeight:700,color:"#c06060" }}>({fmtM(m.totalPropCosts)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"10px" }}><span style={{ fontSize:"9px",color:"#8a90a0" }}>Void rates + SC shortfall</span><span style={{ fontSize:"10px",fontWeight:600,color:"#c09050" }}>{fmtK(m.totalVoidCost)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"10px" }}><span style={{ fontSize:"9px",color:"#8a90a0" }}>Maintenance drag</span><span style={{ fontSize:"10px",fontWeight:600,color:"#9098a8" }}>{fmtK(m.totalMaintDrag||0)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"4px",marginTop:"4px" }}><span style={{ fontSize:"10px",color:T.wht,fontWeight:700 }}>Net Property Income</span><span style={{ fontSize:"11px",fontWeight:800,color:m.totalNPI < 0 ? "#d05050" : "#6aba7a" }}>{fmtM(m.totalNPI)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>G&A (team salaries)</span><span style={{ fontSize:"11px",fontWeight:700,color:"#c06060" }}>({fmtK(m.gaExp||0)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"4px",marginTop:"4px",background:"rgba(255,255,255,0.03)",margin:"4px -6px 0",padding:"5px 6px",borderRadius:"3px" }}><span style={{ fontSize:"10px",color:T.wht,fontWeight:800 }}>NOI</span><span style={{ fontSize:"12px",fontWeight:900,color:m.noi < 0 ? "#d05050" : "#6aba7a" }}>{fmtM(m.ebitda||0)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",marginTop:"5px" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Depreciation</span><span style={{ fontSize:"10px",fontWeight:600,color:"#c06060" }}>({fmtK(m.depreciation||0)})</span></div>
-                  {m.debtInterest > 0 && <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Debt interest</span><span style={{ fontSize:"10px",fontWeight:600,color:"#c06060" }}>({fmtK(m.debtInterest)})</span></div>}
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"3px",marginTop:"3px" }}><span style={{ fontSize:"10px",color:"#c0c8d4",fontWeight:700 }}>Earnings Before Tax</span><span style={{ fontSize:"11px",fontWeight:800,color:(m.ebt||0) < 0 ? "#d05050" : "#d0d8e0" }}>{fmtM(m.ebt||0)}</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Tax (20%)</span><span style={{ fontSize:"10px",fontWeight:600,color:"#9098a8" }}>({fmtK(m.tax||0)})</span></div>
-                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"4px",marginTop:"4px",background:"rgba(255,255,255,0.03)",margin:"4px -6px 0",padding:"6px 6px",borderRadius:"3px" }}><span style={{ fontSize:"10px",color:T.wht,fontWeight:900 }}>Net Income</span><span style={{ fontSize:"13px",fontWeight:900,color:(m.netIncome||0) < 0 ? "#d05050" : "#6aba7a" }}>{fmtM(m.netIncome||0)}</span></div>
-                  <div style={{ marginTop:"8px" }}><div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}><span style={{ fontSize:"10px",color:"#b0b8c4",fontWeight:600 }}>Avg Occupancy</span><span style={{ fontSize:"13px",fontWeight:800,color:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red }}>{fmtP(m.avgOcc)}</span></div><div style={{ width:"100%",height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"3px" }}><div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red,borderRadius:"2px",transition:"width 0.4s" }} /></div></div>
+                {/* P&L PANEL — BRIGHTER */}
+                <div style={{ flex:1,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"4px",padding:"14px 16px",display:"flex",flexDirection:"column",justifyContent:"center",gap:"8px" }}>
+                  <div style={{ fontSize:"12px",fontWeight:800,color:T.wht,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"4px" }}>Portfolio P&L</div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={plLabel}>Gross Rental Income</span><span style={plVal(T.grn)}>{fmtM(m.totalGRI)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={plLabel}>Property Opex (irrecoverable)</span><span style={plVal("#e07070")}>({fmtM(m.totalPropCosts)})</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"12px" }}><span style={plSub}>Void rates + SC shortfall</span><span style={{ fontSize:"11px",fontWeight:600,color:"#d0a060" }}>{fmtK(m.totalVoidCost)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",paddingLeft:"12px" }}><span style={plSub}>Maintenance drag</span><span style={{ fontSize:"11px",fontWeight:600,color:T.txtD }}>{fmtK(m.totalMaintDrag||0)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"5px",marginTop:"4px" }}><span style={{ fontSize:"12px",color:T.wht,fontWeight:700 }}>Net Property Income</span><span style={plValBig(m.totalNPI < 0 ? "#e06060" : "#7ad08a")}>{fmtM(m.totalNPI)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={plLabel}>G&A (team salaries)</span><span style={plVal("#e07070")}>({fmtK(m.gaExp||0)})</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.12)",paddingTop:"5px",marginTop:"4px",background:"rgba(255,255,255,0.04)",margin:"4px -8px 0",padding:"6px 8px",borderRadius:"3px" }}><span style={{ fontSize:"13px",color:T.wht,fontWeight:800 }}>NOI</span><span style={{ fontSize:"14px",fontWeight:900,color:m.noi < 0 ? "#e06060" : "#7ad08a" }}>{fmtM(m.ebitda||0)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",marginTop:"5px" }}><span style={plLabel}>Depreciation</span><span style={{ fontSize:"11px",fontWeight:600,color:"#e07070" }}>({fmtK(m.depreciation||0)})</span></div>
+                  {m.debtInterest > 0 && <div style={{ display:"flex",justifyContent:"space-between" }}><span style={plLabel}>Debt interest</span><span style={{ fontSize:"11px",fontWeight:600,color:"#e07070" }}>({fmtK(m.debtInterest)})</span></div>}
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.10)",paddingTop:"4px",marginTop:"3px" }}><span style={{ fontSize:"12px",color:"#d0d8e4",fontWeight:700 }}>Earnings Before Tax</span><span style={plValBig((m.ebt||0) < 0 ? "#e06060" : "#d8e0ec")}>{fmtM(m.ebt||0)}</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between" }}><span style={plLabel}>Tax (20%)</span><span style={{ fontSize:"11px",fontWeight:600,color:T.txtD }}>({fmtK(m.tax||0)})</span></div>
+                  <div style={{ display:"flex",justifyContent:"space-between",borderTop:"1px solid rgba(255,255,255,0.12)",paddingTop:"5px",marginTop:"4px",background:"rgba(255,255,255,0.04)",margin:"4px -8px 0",padding:"7px 8px",borderRadius:"3px" }}><span style={{ fontSize:"13px",color:T.wht,fontWeight:900 }}>Net Income</span><span style={{ fontSize:"15px",fontWeight:900,color:(m.netIncome||0) < 0 ? "#e06060" : "#7ad08a" }}>{fmtM(m.netIncome||0)}</span></div>
+                  <div style={{ marginTop:"10px" }}><div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}><span style={plLabel}>Avg Occupancy</span><span style={{ fontSize:"14px",fontWeight:800,color:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red }}>{fmtP(m.avgOcc)}</span></div><div style={{ width:"100%",height:"4px",background:T.bdr,borderRadius:"2px",marginTop:"3px" }}><div style={{ height:"100%",width:(m.avgOcc*100)+"%",background:m.avgOcc>0.85?T.grn:m.avgOcc>0.6?T.amb:T.red,borderRadius:"2px",transition:"width 0.4s" }} /></div></div>
                 </div>
                 <div style={{ width:"220px",flexShrink:0,display:"flex",flexDirection:"column",gap:"6px" }}><EuropeMap portfolio={state.portfolio} />
                   {(() => {
@@ -1836,19 +1710,19 @@ export default function LogisticsRESimulator() {
                     const roles = TEAM_ROLES.map(r => ({ ...r, count: state.team?.[r.id] || 0 })).filter(r => r.count > 0);
                     const totalHC = roles.reduce((a, r) => a + r.count, 0);
                     return (
-                      <div style={{ background:"rgba(255,255,255,0.02)",border:"1px solid "+(isStrained?"rgba(160,64,64,0.25)":"rgba(255,255,255,0.06)"),borderRadius:"4px",padding:"6px 8px" }}>
+                      <div style={{ background:"rgba(255,255,255,0.03)",border:"1px solid "+(isStrained?"rgba(208,96,96,0.30)":"rgba(255,255,255,0.08)"),borderRadius:"4px",padding:"6px 8px" }}>
                         <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px" }}>
                           <span style={{ fontSize:"9px",fontWeight:700,color:T.txtM,letterSpacing:"0.1em",textTransform:"uppercase" }}>Team ({totalHC})</span>
-                          <span style={{ fontSize:"9px",fontWeight:700,color:isStrained?T.red:T.grn }}>{amCount} AM : {opAssets} assets</span>
+                          <span style={{ fontSize:"10px",fontWeight:700,color:isStrained?T.red:T.grn }}>{amCount} AM : {opAssets} assets</span>
                         </div>
                         {roles.map(r => (
                           <div key={r.id} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1px 0" }}>
-                            <span style={{ fontSize:"9px",color:T.txtD }}>{r.name}</span>
-                            <span style={{ fontSize:"10px",fontWeight:700,color:T.txt }}>{r.count}</span>
+                            <span style={{ fontSize:"10px",color:T.txtD }}>{r.name}</span>
+                            <span style={{ fontSize:"11px",fontWeight:700,color:T.wht }}>{r.count}</span>
                           </div>
                         ))}
-                        {totalHC === 0 && <div style={{ fontSize:"9px",color:T.red,textAlign:"center",padding:"2px 0" }}>No team — hire via Team tab</div>}
-                        {isStrained && <div style={{ marginTop:"4px",padding:"3px 6px",background:"rgba(160,64,64,0.06)",border:"1px solid rgba(160,64,64,0.15)",borderRadius:"3px",fontSize:"8px",color:T.red,lineHeight:1.4 }}>AMs overstretched ({ratio === Infinity ? "no AMs" : ratio.toFixed(1)+" assets/AM"})</div>}
+                        {totalHC === 0 && <div style={{ fontSize:"10px",color:T.red,textAlign:"center",padding:"2px 0" }}>No team — hire via Team tab</div>}
+                        {isStrained && <div style={{ marginTop:"4px",padding:"3px 6px",background:"rgba(208,96,96,0.08)",border:"1px solid rgba(208,96,96,0.20)",borderRadius:"3px",fontSize:"9px",color:T.red,lineHeight:1.4 }}>AMs overstretched ({ratio === Infinity ? "no AMs" : ratio.toFixed(1)+" assets/AM"})</div>}
                       </div>
                     );
                   })()}
@@ -1858,9 +1732,9 @@ export default function LogisticsRESimulator() {
               {state.portfolio.length > 0 && (
                 <>
                   <div style={{ display:"flex",alignItems:"center",gap:"6px",marginBottom:"8px",flexWrap:"wrap" }}>
-                    <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Sort by</span>
+                    <span style={{ fontSize:"10px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Sort by</span>
                     {[{id:"distressed",label:"Distressed first"},{id:"npi",label:"NPI"},{id:"occupancy",label:"Occupancy"},{id:"walt",label:"WALT"},{id:"gav",label:"GAV"},{id:"condition",label:"Condition"}].map(s => (
-                      <button key={s.id} onClick={() => setPortSort(s.id)} style={{ padding:"3px 8px",fontSize:"9px",fontWeight:600,fontFamily:"inherit",borderRadius:"3px",cursor:"pointer",border:portSort===s.id?"1px solid "+T.acc:"1px solid rgba(255,255,255,0.08)",background:portSort===s.id?"rgba(138,154,170,0.08)":"transparent",color:portSort===s.id?T.hiAcc:T.txtD }}>{s.label}</button>
+                      <button key={s.id} onClick={() => setPortSort(s.id)} style={{ padding:"3px 8px",fontSize:"10px",fontWeight:600,fontFamily:"inherit",borderRadius:"3px",cursor:"pointer",border:portSort===s.id?"1px solid "+T.acc:"1px solid rgba(255,255,255,0.10)",background:portSort===s.id?"rgba(148,168,190,0.10)":"transparent",color:portSort===s.id?T.hiAcc:T.txtD }}>{s.label}</button>
                     ))}
                   </div>
                   {(() => {
@@ -1882,14 +1756,14 @@ export default function LogisticsRESimulator() {
             const filtered = state.acquisitions.filter(a => { if (acqFilter.market !== "all" && a.market !== acqFilter.market) return false; if (acqFilter.assetClass !== "all" && a.assetClass !== acqFilter.assetClass) return false; return true; });
             const acqMarkets = [...new Set(state.acquisitions.map(a => a.market))];
             const acqACs = [...new Set(state.acquisitions.map(a => a.assetClass))];
-            const selSt = { padding:"4px 6px",fontSize:"9px",fontFamily:"inherit",background:"#06080a",color:T.txt,border:"1px solid rgba(255,255,255,0.1)",borderRadius:"3px",cursor:"pointer" };
+            const selSt = { padding:"4px 6px",fontSize:"10px",fontFamily:"inherit",background:"#0a0e14",color:T.wht,border:"1px solid rgba(255,255,255,0.12)",borderRadius:"3px",cursor:"pointer" };
             return (<>
               <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px",flexWrap:"wrap" }}>
-                <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Filter</span>
+                <span style={{ fontSize:"10px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Filter</span>
                 <select value={acqFilter.market} onChange={e => setAcqFilter(p => ({...p, market:e.target.value}))} style={selSt}><option value="all">All Markets ({state.acquisitions.length})</option>{acqMarkets.map(mId => { const mk = MARKETS.find(x=>x.id===mId); return <option key={mId} value={mId}>{mk?.name} ({state.acquisitions.filter(a=>a.market===mId).length})</option>; })}</select>
                 <select value={acqFilter.assetClass} onChange={e => setAcqFilter(p => ({...p, assetClass:e.target.value}))} style={selSt}><option value="all">All Types</option>{acqACs.map(acId => { const ac = ASSET_CLASSES.find(x=>x.id===acId); return <option key={acId} value={acId}>{ac?.name} ({state.acquisitions.filter(a=>a.assetClass===acId).length})</option>; })}</select>
-                {(acqFilter.market !== "all" || acqFilter.assetClass !== "all") && <button onClick={() => setAcqFilter({market:"all",assetClass:"all"})} style={{ padding:"3px 8px",fontSize:"9px",fontFamily:"inherit",background:"transparent",color:T.txtD,border:"1px solid rgba(255,255,255,0.08)",borderRadius:"3px",cursor:"pointer" }}>Clear</button>}
-                <span style={{ fontSize:"9px",color:T.txtM,marginLeft:"auto" }}>{filtered.length} of {state.acquisitions.length}</span>
+                {(acqFilter.market !== "all" || acqFilter.assetClass !== "all") && <button onClick={() => setAcqFilter({market:"all",assetClass:"all"})} style={{ padding:"3px 8px",fontSize:"10px",fontFamily:"inherit",background:"transparent",color:T.txtD,border:"1px solid rgba(255,255,255,0.10)",borderRadius:"3px",cursor:"pointer" }}>Clear</button>}
+                <span style={{ fontSize:"10px",color:T.txtM,marginLeft:"auto" }}>{filtered.length} of {state.acquisitions.length}</span>
               </div>
               {!filtered.length && <div style={S.empty}>No assets match filters.</div>}
               {filtered.map(a => <AcqCard key={a.id} asset={a} onAcquire={onAcquire} ok={state.cash >= a.askPrice} />)}
@@ -1899,14 +1773,14 @@ export default function LogisticsRESimulator() {
             const filtered = state.devSites.filter(s => { if (devFilter.market !== "all" && s.market !== devFilter.market) return false; if (devFilter.assetClass !== "all" && s.assetClass !== devFilter.assetClass) return false; return true; });
             const devMarkets = [...new Set(state.devSites.map(s => s.market))];
             const devACs = [...new Set(state.devSites.map(s => s.assetClass))];
-            const selSt = { padding:"4px 6px",fontSize:"9px",fontFamily:"inherit",background:"#06080a",color:T.txt,border:"1px solid rgba(255,255,255,0.1)",borderRadius:"3px",cursor:"pointer" };
+            const selSt = { padding:"4px 6px",fontSize:"10px",fontFamily:"inherit",background:"#0a0e14",color:T.wht,border:"1px solid rgba(255,255,255,0.12)",borderRadius:"3px",cursor:"pointer" };
             return (<>
               <div style={{ display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px",flexWrap:"wrap" }}>
-                <span style={{ fontSize:"9px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Filter</span>
+                <span style={{ fontSize:"10px",color:T.txtM,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" }}>Filter</span>
                 <select value={devFilter.market} onChange={e => setDevFilter(p => ({...p, market:e.target.value}))} style={selSt}><option value="all">All Markets ({state.devSites.length})</option>{devMarkets.map(mId => { const mk = MARKETS.find(x=>x.id===mId); return <option key={mId} value={mId}>{mk?.name} ({state.devSites.filter(s=>s.market===mId).length})</option>; })}</select>
                 <select value={devFilter.assetClass} onChange={e => setDevFilter(p => ({...p, assetClass:e.target.value}))} style={selSt}><option value="all">All Types</option>{devACs.map(acId => { const ac = ASSET_CLASSES.find(x=>x.id===acId); return <option key={acId} value={acId}>{ac?.name} ({state.devSites.filter(s=>s.assetClass===acId).length})</option>; })}</select>
-                {(devFilter.market !== "all" || devFilter.assetClass !== "all") && <button onClick={() => setDevFilter({market:"all",assetClass:"all"})} style={{ padding:"3px 8px",fontSize:"9px",fontFamily:"inherit",background:"transparent",color:T.txtD,border:"1px solid rgba(255,255,255,0.08)",borderRadius:"3px",cursor:"pointer" }}>Clear</button>}
-                <span style={{ fontSize:"9px",color:T.txtM,marginLeft:"auto" }}>{filtered.length} of {state.devSites.length}</span>
+                {(devFilter.market !== "all" || devFilter.assetClass !== "all") && <button onClick={() => setDevFilter({market:"all",assetClass:"all"})} style={{ padding:"3px 8px",fontSize:"10px",fontFamily:"inherit",background:"transparent",color:T.txtD,border:"1px solid rgba(255,255,255,0.10)",borderRadius:"3px",cursor:"pointer" }}>Clear</button>}
+                <span style={{ fontSize:"10px",color:T.txtM,marginLeft:"auto" }}>{filtered.length} of {state.devSites.length}</span>
               </div>
               {!filtered.length && <div style={S.empty}>No sites match filters.</div>}
               {filtered.map(s => <DevCard key={s.id} site={s} onDev={onDev} ok={state.cash >= s.devCost} />)}
@@ -1919,9 +1793,9 @@ export default function LogisticsRESimulator() {
         <div style={S.rp}>
           <div style={S.tabs}>
             {[
-              {id:"sentiment",accent:"#a08840"},
-              {id:"charts",accent:"#5a9a6a"},
-              {id:"events",accent:"#7a8abf"}
+              {id:"sentiment",accent:"#c0a850"},
+              {id:"charts",accent:T.grn},
+              {id:"events",accent:"#8a9acf"}
             ].map(t => {
               const biCount = state.team?.bi || 0;
               const label = t.id==="sentiment" ? "Board" : t.id==="charts" ? (biCount > 0 ? "Charts ("+biCount+")" : "Charts [locked]") : "Events";
@@ -1936,28 +1810,28 @@ export default function LogisticsRESimulator() {
             const scoreLabel = bScore >= 75 ? "EXCELLENT" : bScore >= 60 ? "STRONG" : bScore >= 45 ? "DEVELOPING" : bScore >= 25 ? "WEAK" : "CRITICAL";
             return (
               <div>
-                <div style={{ ...S.card, marginBottom:"10px", padding:"18px 14px", background:scoreColor+"10", border:"1px solid "+scoreColor+"30" }}>
+                <div style={{ ...S.card, marginBottom:"10px", padding:"18px 14px", background:scoreColor+"12", border:"1px solid "+scoreColor+"35" }}>
                   <InvestorGauge score={bScore} color={scoreColor} label={scoreLabel} />
                 </div>
                 {irr !== null && (
                   <div style={{ ...S.card, background:irr>0.10?T.grnD:irr>0.05?T.ambD:T.redD, border:"1px solid "+(irr>0.10?T.grn:irr>0.05?T.amb:T.red), marginBottom:"10px", textAlign:"center" }}>
-                    <div style={{ fontSize:"9px",color:irr>0.10?T.grn:irr>0.05?T.amb:T.red,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase" }}>Portfolio IRR</div>
+                    <div style={{ fontSize:"10px",color:irr>0.10?T.grn:irr>0.05?T.amb:T.red,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase" }}>Portfolio IRR</div>
                     <div style={{ fontSize:"22px",fontWeight:800,color:irr>0.10?T.grn:irr>0.05?T.amb:T.red }}>{fmtP(irr)}</div>
-                    <div style={{ fontSize:"9px",color:T.txtD }}>Target: 10-12% net · {(state.quarter/4).toFixed(1)}yr</div>
+                    <div style={{ fontSize:"10px",color:T.txtD }}>Target: 10-12% net · {(state.quarter/4).toFixed(1)}yr</div>
                   </div>
                 )}
                 <div style={S.sec}>Investor Sentiment</div>
                 {sentiments.map((s, i) => (
                   <div key={i} style={{ ...S.card, padding:"8px 12px", marginBottom:"6px" }}>
-                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"3px" }}><span style={{ fontSize:"11px",fontWeight:700,color:T.txt }}>{s.metric}</span><SentBadge mood={s.mood} label={s.label} /></div>
-                    <div style={{ fontSize:"10px",color:T.txtD,lineHeight:1.4 }}>{s.comment}</div>
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"3px" }}><span style={{ fontSize:"12px",fontWeight:700,color:T.wht }}>{s.metric}</span><SentBadge mood={s.mood} label={s.label} /></div>
+                    <div style={{ fontSize:"11px",color:T.txtD,lineHeight:1.4 }}>{s.comment}</div>
                   </div>
                 ))}
                 <div style={{ ...S.sec, marginTop:"14px" }}>Board Commentary</div>
                 {boardComments.map((b, i) => (
                   <div key={i} style={{ ...S.card, padding:"8px 12px", marginBottom:"6px", borderLeft:"3px solid "+T.acc }}>
-                    <div style={{ fontSize:"9px",color:T.hiAcc,fontWeight:600,marginBottom:"3px",textTransform:"uppercase",letterSpacing:"0.05em" }}>{b.member}</div>
-                    <div style={{ fontSize:"10px",color:T.txt,lineHeight:1.5,fontStyle:"italic" }}>{b.text}</div>
+                    <div style={{ fontSize:"10px",color:T.hiAcc,fontWeight:600,marginBottom:"3px",textTransform:"uppercase",letterSpacing:"0.05em" }}>{b.member}</div>
+                    <div style={{ fontSize:"11px",color:T.txt,lineHeight:1.5,fontStyle:"italic" }}>{b.text}</div>
                   </div>
                 ))}
               </div>
@@ -1967,7 +1841,7 @@ export default function LogisticsRESimulator() {
           {rTab === "charts" && (() => {
             const biCount = state.team?.bi || 0;
             const allCharts = [{l:"Portfolio GAV",k:"totalGAV",c:T.acc,f:fmtM},{l:"Occupancy",k:"avgOcc",c:T.grn,f:fmtP},{l:"NOI p.a.",k:"noi",c:T.grn,f:fmtM},{l:"Cash",k:"cash",c:T.amb,f:fmtM}];
-            if (biCount === 0) return (<div style={{ textAlign:"center",padding:"32px 20px" }}><div style={{ fontSize:"14px",fontWeight:700,color:T.wht,marginBottom:"6px" }}>Charts Locked</div><div style={{ fontSize:"11px",color:T.txtD,lineHeight:1.6,marginBottom:"16px" }}>Hire a <span style={{ color:T.hiAcc,fontWeight:700 }}>Business Intelligence</span> analyst to unlock data views.</div><div style={{ fontSize:"10px",color:T.txtM }}>Team tab → Business Intelligence</div></div>);
+            if (biCount === 0) return (<div style={{ textAlign:"center",padding:"32px 20px" }}><div style={{ fontSize:"15px",fontWeight:700,color:T.wht,marginBottom:"6px" }}>Charts Locked</div><div style={{ fontSize:"12px",color:T.txtD,lineHeight:1.6,marginBottom:"16px" }}>Hire a <span style={{ color:T.hiAcc,fontWeight:700 }}>Business Intelligence</span> analyst to unlock data views.</div><div style={{ fontSize:"11px",color:T.txtM }}>Team tab → Business Intelligence</div></div>);
             const visibleCharts = allCharts.slice(0, biCount);
             const lockedCount = allCharts.length - biCount;
             return (
@@ -1975,9 +1849,9 @@ export default function LogisticsRESimulator() {
                 {state.history.length < 2 ? <div style={S.empty}>Advance a few quarters to see data.</div> : visibleCharts.map(ch => {
                   const latestVal = state.history[state.history.length-1]?.[ch.k]||0;
                   const isNegative = latestVal < 0;
-                  return (<div key={ch.k}><div style={S.sec}>{ch.l}</div><div style={{ ...S.card, padding:"8px 12px", marginBottom:"7px", border:isNegative?"1px solid rgba(160,64,64,0.3)":"1px solid "+T.bdr }}><div style={{ display:"flex",justifyContent:"space-between",marginBottom:"4px" }}><span style={{ fontSize:"10px",color:T.txtD }}>{ch.l}</span><span style={{ fontSize:"14px",fontWeight:800,color:isNegative?"#c04040":T.wht }}>{ch.f(latestVal)}</span></div><Spark data={state.history.map(h => h[ch.k])} color={isNegative?T.red:ch.c} height={48} /></div></div>);
+                  return (<div key={ch.k}><div style={S.sec}>{ch.l}</div><div style={{ ...S.card, padding:"8px 12px", marginBottom:"7px", border:isNegative?"1px solid rgba(208,96,96,0.35)":"1px solid "+T.bdr }}><div style={{ display:"flex",justifyContent:"space-between",marginBottom:"4px" }}><span style={{ fontSize:"11px",color:T.txtD }}>{ch.l}</span><span style={{ fontSize:"15px",fontWeight:800,color:isNegative?"#e06060":T.wht }}>{ch.f(latestVal)}</span></div><Spark data={state.history.map(h => h[ch.k])} color={isNegative?T.red:ch.c} height={48} /></div></div>);
                 })}
-                {lockedCount > 0 && <div style={{ ...S.card, textAlign:"center",padding:"12px",opacity:0.5,borderStyle:"dashed" }}><span style={{ fontSize:"10px",color:T.txtM }}>{lockedCount} more chart{lockedCount>1?"s":""} locked — hire more BI analysts</span></div>}
+                {lockedCount > 0 && <div style={{ ...S.card, textAlign:"center",padding:"12px",opacity:0.5,borderStyle:"dashed" }}><span style={{ fontSize:"11px",color:T.txtM }}>{lockedCount} more chart{lockedCount>1?"s":""} locked — hire more BI analysts</span></div>}
               </div>
             );
           })()}
